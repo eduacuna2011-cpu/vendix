@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+    </script>
+    <title>Platform Dashboard — Vendix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="settings-sa.css">
+    <link rel="stylesheet" href="platform-sa.css">
+    <link rel="stylesheet" href="animations.css"></head>
+<body>
+<div class="dashboard-container">
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="6" fill="#6366f1"/>
+                    <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Vendix</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav-list" id="sidebarNav"></ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sa-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Super Admin
+            </div>
+        </div>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <div class="page-breadcrumb">
+                    <span class="breadcrumb-root">Super Admin</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    <span class="breadcrumb-current">Platform Dashboard</span>
+                </div>
+            </div>
+            <div class="navbar-right">
+                <div class="user-profile" id="userProfileBtn">
+                    <div class="avatar"><span id="userAvatar">SA</span></div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Super Administrator</span>
+                        <span class="user-role" id="userRole">Super Admin</span>
+                    </div>
+                    <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+        </header>
+
+        <main class="plat-page">
+
+            <!-- Header -->
+            <div class="plat-header">
+                <div>
+                    <h1>Platform Dashboard</h1>
+                    <p>Real-time overview of every business on the platform.</p>
+                </div>
+                <button class="sa-btn sa-btn-primary" onclick="refresh()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Refresh
+                </button>
+            </div>
+
+            <!-- Telegram Bot Banner -->
+            <a href="https://t.me/vendixadmin_bot" target="_blank" style="
+                display:flex;align-items:center;gap:16px;
+                background:linear-gradient(135deg,#0d1b4b,#152158);
+                border:1px solid rgba(99,102,241,.3);
+                border-radius:14px;padding:16px 22px;margin-bottom:20px;
+                text-decoration:none;transition:all .2s;
+            " onmouseover="this.style.borderColor='rgba(99,102,241,.6)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(99,102,241,.3)';this.style.transform=''">
+                <div style="width:42px;height:42px;background:#229ED9;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="white"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;">Panel de administración vía Telegram</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.5);">Gestiona usuarios, ve stats y más desde @vendixadmin_bot</div>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:#229ED9;white-space:nowrap;">Abrir bot →</div>
+            </a>
+
+            <!-- KPI Row -->
+            <div class="plat-kpi-row" id="kpiRow"><!-- JS --></div>
+
+            <!-- Revenue chart row -->
+            <div class="plat-mid-grid">
+                <div class="plat-card plat-card-wide">
+                    <div class="plat-card-head">
+                        <h3>Revenue by Business</h3>
+                        <span class="plat-badge plat-badge-green" id="totalRevBadge">—</span>
+                    </div>
+                    <div class="plat-biz-list" id="bizRevenueList"><!-- JS --></div>
+                </div>
+
+                <div class="plat-card">
+                    <div class="plat-card-head">
+                        <h3>Top Sellers</h3>
+                        <span class="plat-badge" id="sellerCountBadge">—</span>
+                    </div>
+                    <div class="plat-seller-list" id="topSellerList"><!-- JS --></div>
+                </div>
+            </div>
+
+            <!-- Bottom grid -->
+            <div class="plat-bottom-grid">
+                <div class="plat-card">
+                    <div class="plat-card-head"><h3>Business Registry</h3></div>
+                    <div class="plat-table-wrap">
+                        <table class="sa-table">
+                            <thead><tr><th>Business</th><th>Admin</th><th>Status</th><th>Sellers</th><th>Revenue</th><th>Since</th></tr></thead>
+                            <tbody id="bizTable"><!-- JS --></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="plat-card">
+                    <div class="plat-card-head"><h3>Recent Transactions</h3></div>
+                    <div class="plat-table-wrap">
+                        <table class="sa-table">
+                            <thead><tr><th>ID</th><th>Business</th><th>Seller</th><th>Amount</th><th>Date</th></tr></thead>
+                            <tbody id="recentTx"><!-- JS --></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ VENDIX SALES ══ -->
+            <div style="margin-top:32px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <div>
+                        <h2 style="font-size:17px;font-weight:800;">Vendix Sales — Ingresos de Licencias</h2>
+                        <p style="font-size:13px;color:var(--text-secondary);margin-top:3px;">Seguimiento de licencias vendidas y MRR de la plataforma.</p>
+                    </div>
+                    <span id="vendixSalesBadge" style="
+                        background:rgba(99,102,241,.1);color:#6366f1;
+                        font-size:12px;font-weight:700;
+                        padding:4px 14px;border-radius:20px;
+                        border:1px solid rgba(99,102,241,.2);
+                    ">Cargando...</span>
+                </div>
+
+                <!-- MRR KPI Row -->
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;" id="vendixKpiRow">
+                    <div class="plat-kpi-card" style="background:var(--surface);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;padding:18px;">
+                        <div style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">MRR Activo</div>
+                        <div id="vMRR" style="font-size:24px;font-weight:900;color:#6366f1;">S/. 0</div>
+                        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Ingresos mensuales</div>
+                    </div>
+                    <div class="plat-kpi-card" style="background:var(--surface);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;padding:18px;">
+                        <div style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Licencias Activas</div>
+                        <div id="vLicencias" style="font-size:24px;font-weight:900;color:#10b981;">0</div>
+                        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Cuentas creadas</div>
+                    </div>
+                    <div class="plat-kpi-card" style="background:var(--surface);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;padding:18px;">
+                        <div style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Pagos Confirmados</div>
+                        <div id="vPagados" style="font-size:24px;font-weight:900;color:#f59e0b;">0</div>
+                        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Clientes que pagaron</div>
+                    </div>
+                    <div class="plat-kpi-card" style="background:var(--surface);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;padding:18px;">
+                        <div style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Solicitudes Totales</div>
+                        <div id="vTotal" style="font-size:24px;font-weight:900;color:var(--text-primary,#0f172a);">0</div>
+                        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Desde el checkout</div>
+                    </div>
+                </div>
+
+                <!-- Plan breakdown + leads table -->
+                <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;" id="vendixGrid">
+
+                    <!-- Plan breakdown -->
+                    <div style="background:var(--surface);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;padding:18px;">
+                        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Resumen de suscripciones</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-color,#e2e8f0);">
+                            <div>
+                                <div style="font-size:13px;font-weight:600;">Plan Vendix</div>
+                                <div style="font-size:11px;color:var(--text-secondary);">S/. 15.99/mes</div>
+                            </div>
+                            <span id="planVendix" style="background:rgba(99,102,241,.1);color:#6366f1;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;">0</span>
+                        </div>
+                        <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+                            <div style="display:flex;justify-content:space-between;font-size:13px;">
+                                <span style="color:var(--text-secondary);">Pagados activos</span>
+                                <span id="planPagados" style="font-weight:700;color:#10b981;">0</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:13px;">
+                                <span style="color:var(--text-secondary);">En prueba (trial)</span>
+                                <span id="planTrial" style="font-weight:700;color:#f59e0b;">0</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:13px;">
+                                <span style="color:var(--text-secondary);">Sin cuenta creada</span>
+                                <span id="planPendiente" style="font-weight:700;color:#94a3b8;">0</span>
+                            </div>
+                        </div>
+                        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-color,#e2e8f0);">
+                            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">MRR potencial si todos pagaran</div>
+                            <div id="planMRRPotencial" style="font-size:20px;font-weight:900;color:#6366f1;">S/. 0.00</div>
+                        </div>
+                    </div>
+
+                    <!-- Leads table -->
+                    <div style="background:var(--surface);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;overflow:hidden;">
+                        <div style="padding:16px 18px;border-bottom:1px solid var(--border-color,#e2e8f0);font-size:13px;font-weight:700;">
+                            Historial de solicitudes
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="sa-table" style="font-size:13px;">
+                                <thead>
+                                    <tr>
+                                        <th>Negocio</th>
+                                        <th>Contacto</th>
+                                        <th>Plan</th>
+                                        <th>Pago</th>
+                                        <th>Cuenta</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vendixLeadsTable">
+                                    <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-secondary);">Cargando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="api-client.js" defer></script>
+<script src="auth.js" defer></script>
+<script src="sidebar.js" defer></script>
+<script src="platform-sa.js" defer></script>
+<script src="vendix-sales.js" defer></script>
+</body>
+</html>
+
+
+
+

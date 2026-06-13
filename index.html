@@ -1,0 +1,354 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+    </script>
+    <title>Inventory & Sales Management Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="sellers.css">
+    <link rel="stylesheet" href="animations.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script></head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="6" fill="#6366f1"/>
+                        <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Vendix</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list" id="sidebarNav"></ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <header class="top-navbar">
+                <div class="navbar-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <div class="search-bar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <input type="text" placeholder="Search products, orders, customers...">
+                    </div>
+                </div>
+                
+                <div class="navbar-right">
+                    <button class="icon-btn notification-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        
+                    </button>
+                    <div class="user-profile" id="userProfileBtn">
+                        <div class="avatar"><span id="userAvatar">JD</span></div>
+                        <div class="user-info">
+                            <span class="user-name" id="userName">User</span>
+                            <span class="user-role" id="userRole">Role</span>
+                        </div>
+                        <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <main class="dashboard-content">
+
+                <!-- ── SELLER PROFILE VIEW (shown when user is a Seller) ── -->
+                <div id="sellerDashboard" style="display:none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 id="spName">My Dashboard</h1>
+                            <p class="page-subtitle" id="spSubtitle">Your sales performance overview</p>
+                        </div>
+                    </div>
+                    <div class="stats-grid" id="spKpis">
+                        <div class="stat-card">
+                            <div class="stat-icon total-orders">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                                    <line x1="3" y1="6" x2="21" y2="6"/>
+                                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Orders</span>
+                                <span class="stat-value" id="spTotalOrders">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon total-revenue">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Sales</span>
+                                <span class="stat-value" id="spTotalSales">$0.00</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon total-commissions">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 8v4l3 3"/>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Commission Earned</span>
+                                <span class="stat-value" id="spCommission">$0.00</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon total-products">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Avg Order Value</span>
+                                <span class="stat-value" id="spAvgOrder">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Telegram Bot Banner (Seller) -->
+                    <a href="https://t.me/vendixadmin_bot" target="_blank" style="
+                        display:flex;align-items:center;gap:16px;
+                        background:linear-gradient(135deg,#0d1b4b,#152158);
+                        border:1px solid rgba(99,102,241,.3);
+                        border-radius:14px;padding:18px 22px;margin-top:20px;margin-bottom:4px;
+                        text-decoration:none;transition:all .2s;
+                    " onmouseover="this.style.borderColor='rgba(99,102,241,.6)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(99,102,241,.3)';this.style.transform=''">
+                        <div style="width:44px;height:44px;background:#229ED9;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;">Registra ventas desde Telegram</div>
+                            <div style="font-size:12px;color:rgba(255,255,255,.5);">Sin abrir el navegador — @vendixadmin_bot</div>
+                        </div>
+                        <div style="font-size:12px;font-weight:700;color:#229ED9;white-space:nowrap;">Abrir bot →</div>
+                    </a>
+
+                    <div class="content-grid" style="margin-top:24px;">
+                        <div class="content-card full-width">
+                            <div class="card-header">
+                                <h2>Recent Transactions</h2>
+                            </div>
+                            <div class="card-content" style="padding:0;">
+                                <table class="sellers-table" style="width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Product</th>
+                                            <th>Qty</th>
+                                            <th>Total</th>
+                                            <th>Commission</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="spTxBody"></tbody>
+                                </table>
+                                <div class="empty-state" id="spTxEmpty" style="display:none;">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+                                    <h3>No transactions yet</h3>
+                                    <p>Your sales will appear here</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ADMIN DASHBOARD VIEW ── -->
+                <div id="adminDashboard">
+
+                    <div class="page-header">
+                        <div>
+                            <h1 id="adminWelcome">Dashboard</h1>
+                            <p class="page-subtitle" id="adminDate"></p>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card c-indigo">
+                            <div class="kpi-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            </div>
+                            <div class="kpi-label">Revenue This Month</div>
+                            <div class="kpi-value" id="kpiRevenue">—</div>
+                            <span class="kpi-badge flat" id="kpiRevenueBadge"></span>
+                        </div>
+                        <div class="kpi-card c-green">
+                            <div class="kpi-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                            </div>
+                            <div class="kpi-label">Net Profit</div>
+                            <div class="kpi-value" id="kpiProfit">—</div>
+                            <span class="kpi-badge flat" id="kpiProfitBadge"></span>
+                        </div>
+                        <div class="kpi-card c-blue">
+                            <div class="kpi-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                            </div>
+                            <div class="kpi-label">Orders This Month</div>
+                            <div class="kpi-value" id="kpiOrders">—</div>
+                            <span class="kpi-badge flat" id="kpiOrdersBadge"></span>
+                        </div>
+                        <div class="kpi-card c-orange">
+                            <div class="kpi-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <div class="kpi-label">Active Sellers</div>
+                            <div class="kpi-value" id="kpiSellers">—</div>
+                            <span class="kpi-badge flat" id="kpiSellersBadge"></span>
+                        </div>
+                        <div class="kpi-card c-red">
+                            <div class="kpi-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            </div>
+                            <div class="kpi-label">Low Stock Items</div>
+                            <div class="kpi-value" id="kpiLowStock">—</div>
+                            <span class="kpi-badge flat" id="kpiLowStockBadge"></span>
+                        </div>
+                    </div>
+
+                    <!-- Chart + Top Sellers -->
+                    <div class="dash-row dash-row-2">
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h2>Revenue &amp; Profit</h2>
+                                <select class="chart-period-select" id="chartPeriod" onchange="updateChart()">
+                                    <option value="6">Last 6 months</option>
+                                    <option value="3">Last 3 months</option>
+                                    <option value="12">Last 12 months</option>
+                                </select>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h2>Top Sellers</h2>
+                                <span style="font-size:11px;color:var(--text-3);">This month</span>
+                            </div>
+                            <div class="leaderboard-list" id="leaderboardList">
+                                <div class="dash-empty">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Telegram Bot Banner -->
+                    <a href="https://t.me/vendixadmin_bot" target="_blank" style="
+                        display:flex;align-items:center;gap:16px;
+                        background:linear-gradient(135deg,#0d1b4b,#152158);
+                        border:1px solid rgba(99,102,241,.3);
+                        border-radius:14px;padding:18px 22px;margin-bottom:20px;
+                        text-decoration:none;transition:all .2s;
+                    " onmouseover="this.style.borderColor='rgba(99,102,241,.6)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(99,102,241,.3)';this.style.transform=''">
+                        <div style="width:44px;height:44px;background:#229ED9;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;">Gestiona tu negocio desde Telegram</div>
+                            <div style="font-size:12px;color:rgba(255,255,255,.5);">Ventas, inventario y más desde @vendixadmin_bot</div>
+                        </div>
+                        <div style="font-size:12px;font-weight:700;color:#229ED9;white-space:nowrap;">Abrir bot →</div>
+                    </a>
+
+                    <!-- Recent Transactions -->
+                    <div class="dash-card" style="margin-bottom:20px;">
+                        <div class="dash-card-header">
+                            <h2>Recent Transactions</h2>
+                            <div class="dash-filters">
+                                <input type="date" class="dash-date-input" id="filterFrom" onchange="applyTxFilter()">
+                                <input type="date" class="dash-date-input" id="filterTo" onchange="applyTxFilter()">
+                                <button class="btn-filter-clear" onclick="clearTxFilter()">Clear</button>
+                                <button class="btn-export" onclick="exportCSV()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Export CSV
+                                </button>
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="dash-tx-table" id="txTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Date</th>
+                                        <th>Seller</th>
+                                        <th>Payment</th>
+                                        <th>Total</th>
+                                        <th>Profit</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="txTableBody"></tbody>
+                            </table>
+                            <div class="dash-empty" id="txEmpty" style="display:none;">No transactions found</div>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock + Top Products -->
+                    <div class="dash-row dash-row-equal">
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h2>Low Stock Alerts</h2>
+                                <a href="inventory.html" style="font-size:12px;color:var(--primary);font-weight:600;text-decoration:none;">View inventory →</a>
+                            </div>
+                            <div class="low-stock-list" id="lowStockList">
+                                <div class="dash-empty">Loading…</div>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h2>Top Products</h2>
+                                <span style="font-size:11px;color:var(--text-3);">By revenue</span>
+                            </div>
+                            <div class="top-products-list" id="topProductsList">
+                                <div class="dash-empty">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- end adminDashboard -->
+            </main>
+        </div>
+    </div>
+
+    <script src="api-client.js" defer></script>
+    <script src="auth.js" defer></script>
+    <script src="sidebar.js" defer></script>
+    <script src="script.js" defer></script>
+</body>
+</html>
+
+
+
+
+
