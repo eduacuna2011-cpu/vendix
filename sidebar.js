@@ -112,7 +112,67 @@ function renderSidebar() {
     }).join('');
 }
 
+// ── Bottom Navigation Bar (mobile) ────────────────────────────────────────────
+function renderBottomNav() {
+    const user = getCurrentUser();
+    const userMenuRole = user ? getUserMenuRole(user.role) : '';
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const sourceItems = userMenuRole === 'superadmin' ? superAdminMenuItems : menuItems;
+    const filteredItems = sourceItems.filter(item => canAccessMenuItem(userMenuRole, item.roles));
+
+    // Max 5 items in bottom nav
+    const navItems = filteredItems.slice(0, 5);
+
+    const nav = document.createElement('nav');
+    nav.className = 'mobile-bottom-nav';
+    nav.innerHTML = `<ul>${navItems.map(item => {
+        const isActive = item.href === currentPath || item.href === (currentPath + '.html');
+        const label = item.name === 'Sellers' && userMenuRole === 'seller' ? 'Perfil' : item.name;
+        return `<li><a href="${item.href}" class="${isActive ? 'active' : ''}">
+            ${icons[item.icon]}
+            <span>${label}</span>
+        </a></li>`;
+    }).join('')}</ul>`;
+    document.body.appendChild(nav);
+}
+
+// ── Sidebar Overlay (mobile) ──────────────────────────────────────────────────
+function initMobileOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+
+    const sidebar  = document.getElementById('sidebar');
+    const toggle   = document.getElementById('menuToggle');
+
+    function openSidebar() {
+        sidebar?.classList.add('active');
+        overlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+        sidebar?.classList.remove('active');
+        overlay.classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+
+    toggle?.addEventListener('click', () => {
+        if (sidebar?.classList.contains('active')) closeSidebar();
+        else openSidebar();
+    });
+    overlay.addEventListener('click', closeSidebar);
+
+    // Close on nav link click (mobile)
+    sidebar?.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => { if (window.innerWidth <= 768) closeSidebar(); });
+    });
+}
+
 // Initialize Sidebar
 if (typeof document !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', renderSidebar);
+    document.addEventListener('DOMContentLoaded', () => {
+        renderSidebar();
+        renderBottomNav();
+        initMobileOverlay();
+    });
 }
