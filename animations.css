@@ -1,0 +1,254 @@
+/* ─── Page fade-in on load ─────────────────────────────────────── */
+/* Body starts invisible; auth.js adds .page-ready after checks pass */
+body {
+    opacity: 0;
+}
+body.page-ready {
+    opacity: 1;
+    animation: pageFadeIn 0.18s ease-out;
+}
+
+@keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Sidebar nav links ────────────────────────────────────────── */
+.nav-link {
+    transition: background 0.15s ease, color 0.15s ease, padding-left 0.15s ease;
+}
+
+.nav-item.active .nav-link,
+.nav-link:hover {
+    padding-left: 18px;
+}
+
+/* ─── Stat cards ───────────────────────────────────────────────── */
+.stat-card {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* ─── Content cards ────────────────────────────────────────────── */
+.content-card {
+    transition: box-shadow 0.18s ease;
+}
+
+.content-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+
+/* ─── Buttons ──────────────────────────────────────────────────── */
+.btn {
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.25);
+}
+
+.btn:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: none;
+}
+
+.btn-icon {
+    transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.btn-icon:hover {
+    transform: scale(1.12);
+}
+
+.btn-icon:active {
+    transform: scale(0.95);
+}
+
+/* ─── Modals ───────────────────────────────────────────────────── */
+.modal {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.modal.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    transform: scale(0.95) translateY(8px);
+    transition: transform 0.2s ease;
+}
+
+.modal.show .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+/* ─── Table rows ───────────────────────────────────────────────── */
+tbody tr {
+    transition: background 0.12s ease;
+}
+
+/* ─── Form inputs ──────────────────────────────────────────────── */
+input, select, textarea {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+
+/* ─── Status badges ────────────────────────────────────────────── */
+.status-badge, .sp-chip {
+    transition: transform 0.12s ease;
+}
+
+.status-badge:hover, .sp-chip:hover {
+    transform: scale(1.05);
+}
+
+/* ─── Avatar / user profile btn ────────────────────────────────── */
+.user-profile {
+    transition: background 0.15s ease, border-radius 0.15s ease;
+    border-radius: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.user-profile:hover {
+    background: var(--border, rgba(0,0,0,0.06));
+}
+
+/* ─── Logo ─────────────────────────────────────────────────────── */
+.logo svg {
+    transition: transform 0.2s ease;
+}
+
+.logo:hover svg {
+    transform: rotate(-6deg) scale(1.08);
+}
+
+/* ─── Skeleton loader (for tables while data loads) ────────────── */
+.skeleton {
+    background: linear-gradient(90deg, var(--border, #e2e8f0) 25%, var(--surface, #f8fafc) 50%, var(--border, #e2e8f0) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-row td {
+    padding: 12px 16px;
+}
+
+.skeleton-line {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--border, #e2e8f0) 25%, var(--surface, #f8fafc) 50%, var(--border, #e2e8f0) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+}
+
+/* ─── Toast notifications ──────────────────────────────────────── */
+.toast {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateY(8px);
+    opacity: 0;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ─── SA panels ────────────────────────────────────────────────── */
+.sa-panel {
+    animation: panelSlideIn 0.18s ease-out;
+}
+
+@keyframes panelSlideIn {
+    from { opacity: 0; transform: translateX(6px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Dropdown arrow rotation ──────────────────────────────────── */
+.dropdown-arrow {
+    transition: transform 0.2s ease;
+}
+
+.user-profile.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* ─── Icon buttons in navbar ───────────────────────────────────── */
+.icon-btn {
+    transition: transform 0.12s ease, background 0.12s ease;
+    border-radius: 8px;
+}
+
+.icon-btn:hover {
+    transform: scale(1.08);
+    background: var(--border, rgba(0,0,0,0.05));
+}
+
+.icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* ─── Copy buttons ─────────────────────────────────────────────── */
+.copy-btn {
+    transition: background 0.12s ease, transform 0.1s ease;
+}
+
+.copy-btn:active {
+    transform: scale(0.92);
+}
+
+/* ─── Plat KPI cards ───────────────────────────────────────────── */
+.plat-kpi {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.plat-kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+}
+
+/* ─── Settings tabs ────────────────────────────────────────────── */
+.settings-tab, .sa-tab {
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* ─── Menu toggle (hamburger) ──────────────────────────────────── */
+.menu-toggle {
+    transition: transform 0.15s ease;
+}
+
+.menu-toggle:active {
+    transform: scale(0.9);
+}
+
+/* ─── Smooth color transitions everywhere ──────────────────────── */
+*, *::before, *::after {
+    transition-property: background-color, border-color, color;
+    transition-duration: 0.15s;
+    transition-timing-function: ease;
+}
+
+/* Prevent transition override on elements that need custom transitions */
+.btn, .btn-icon, .nav-link, .stat-card, .modal, .modal-content,
+.icon-btn, .copy-btn, .plat-kpi, .settings-tab, .sa-tab,
+input, select, textarea, .toast, .sa-panel {
+    transition-property: all;
+}

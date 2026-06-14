@@ -1,0 +1,382 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobante de pago — Vendix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary:  #6366f1;
+            --success:  #10b981;
+            --text-1:   #0f172a;
+            --text-2:   #475569;
+            --text-3:   #94a3b8;
+            --border:   #e2e8f0;
+            --surface:  #ffffff;
+            --bg:       #f8fafc;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-1);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* TOP BAR */
+        .topbar {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            height: 60px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 9px;
+            font-size: 18px; font-weight: 800; color: var(--text-1); text-decoration: none;
+        }
+        .logo-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .secure-tag { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-3); font-weight: 500; }
+
+        /* STEPS */
+        .steps-bar {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 12px 24px; display: flex; justify-content: center;
+        }
+        .step-item { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+        .step-item.done   { color: var(--success); }
+        .step-item.active { color: var(--primary); }
+        .step-circle {
+            width: 24px; height: 24px; border-radius: 50%;
+            border: 2px solid currentColor;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 800; flex-shrink: 0;
+        }
+        .step-item.done .step-circle   { background: var(--success); border-color: var(--success); color: #fff; }
+        .step-item.active .step-circle { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .step-line { width: 44px; height: 2px; background: var(--border); margin: 0 8px; flex-shrink: 0; align-self: center; }
+        .step-line.done { background: var(--success); }
+        @media (max-width: 480px) { .step-item span { display: none; } .step-line { width: 22px; } }
+
+        /* LAYOUT */
+        .page-wrap { max-width: 520px; margin: 0 auto; padding: 40px 16px; }
+
+        /* CARD */
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 20px; overflow: hidden;
+        }
+
+        /* UPLOAD SECTION */
+        .upload-head {
+            padding: 28px 28px 20px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        .upload-head-icon {
+            width: 56px; height: 56px; border-radius: 16px;
+            background: rgba(99,102,241,.1); color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; margin: 0 auto 16px;
+        }
+        .upload-head h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+        .upload-head p  { font-size: 14px; color: var(--text-2); }
+
+        .upload-body { padding: 24px 28px; }
+
+        /* DROP ZONE */
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 14px; padding: 32px 20px;
+            text-align: center; cursor: pointer;
+            transition: all .2s; background: var(--bg);
+            position: relative;
+        }
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(99,102,241,.04);
+        }
+        .drop-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .drop-icon { font-size: 36px; margin-bottom: 10px; }
+        .drop-title { font-size: 14px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+        .drop-sub   { font-size: 12px; color: var(--text-3); }
+        .drop-btn {
+            display: inline-block; margin-top: 12px;
+            background: var(--primary); color: #fff;
+            padding: 8px 20px; border-radius: 8px;
+            font-size: 13px; font-weight: 700;
+        }
+
+        /* PREVIEW */
+        .preview-wrap {
+            display: none; margin-top: 14px;
+            border: 1px solid var(--border); border-radius: 12px;
+            overflow: hidden; position: relative;
+        }
+        .preview-wrap img {
+            width: 100%; max-height: 280px; object-fit: contain;
+            background: var(--bg);
+        }
+        .preview-remove {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,.5); color: #fff;
+            border: none; border-radius: 6px; padding: 4px 10px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+        .preview-name {
+            padding: 8px 12px; font-size: 12px;
+            color: var(--text-2); background: var(--bg);
+            border-top: 1px solid var(--border); font-weight: 500;
+        }
+
+        /* NOTICE */
+        .notice {
+            display: flex; gap: 10px; align-items: flex-start;
+            background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2);
+            border-radius: 12px; padding: 14px 16px; margin-top: 20px;
+        }
+        .notice-icon { font-size: 18px; flex-shrink: 0; }
+        .notice-text { font-size: 13px; color: #92400e; line-height: 1.6; }
+        .notice-text strong { font-weight: 700; }
+
+        /* SUBMIT */
+        .btn-submit {
+            width: 100%; padding: 16px; margin-top: 20px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; border: none; border-radius: 13px;
+            font-size: 16px; font-weight: 800; font-family: inherit;
+            cursor: pointer; transition: all .2s;
+            box-shadow: 0 4px 18px rgba(99,102,241,.35);
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+        }
+        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 26px rgba(99,102,241,.45); }
+        .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+        /* SUCCESS STATE */
+        .success-state {
+            display: none; padding: 40px 28px; text-align: center;
+        }
+        .success-circle {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: rgba(16,185,129,.12); color: var(--success);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; margin: 0 auto 20px;
+        }
+        .success-state h2 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+        .success-state p  { font-size: 14px; color: var(--text-2); line-height: 1.7; }
+
+        .verify-box {
+            background: rgba(99,102,241,.06); border: 1px solid rgba(99,102,241,.15);
+            border-radius: 14px; padding: 18px 20px; margin: 24px 0;
+            text-align: left;
+        }
+        .verify-step { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .verify-step:last-child { margin-bottom: 0; }
+        .verify-num {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--primary); color: #fff;
+            font-size: 12px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .verify-step span { font-size: 13px; color: var(--text-2); }
+
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--text-3); font-size: 13px; font-weight: 500;
+            text-decoration: none; margin-top: 16px; transition: color .15s;
+        }
+        .back-link:hover { color: var(--primary); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin .7s linear infinite; }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <a href="landing.html" class="logo">
+        <div class="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+        </div>
+        Vendix
+    </a>
+    <div class="secure-tag">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Pago seguro
+    </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps-bar">
+    <div class="step-item done">
+        <div class="step-circle">✓</div>
+        <span>Plan</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step-item done">
+        <div class="step-circle">✓</div>
+        <span>Datos</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step-item done">
+        <div class="step-circle">✓</div>
+        <span>Pago</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step-item active">
+        <div class="step-circle">4</div>
+        <span>Listo</span>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="page-wrap">
+    <div class="card">
+
+        <!-- UPLOAD FORM -->
+        <div id="uploadSection">
+            <div class="upload-head">
+                <div class="upload-head-icon">📎</div>
+                <h2>Sube tu comprobante</h2>
+                <p>Adjunta la captura de tu pago por Yape para que podamos verificarlo.</p>
+            </div>
+
+            <div class="upload-body">
+                <div class="drop-zone" id="dropZone">
+                    <input type="file" id="fileInput" accept="image/*,.pdf" onchange="onFileSelect(this)">
+                    <div class="drop-icon">🖼️</div>
+                    <div class="drop-title">Arrastra tu captura aquí</div>
+                    <div class="drop-sub">o haz click para seleccionar</div>
+                    <div class="drop-btn">Seleccionar archivo</div>
+                </div>
+
+                <div class="preview-wrap" id="previewWrap">
+                    <img id="previewImg" src="" alt="Comprobante">
+                    <button class="preview-remove" onclick="removeFile()">✕ Quitar</button>
+                    <div class="preview-name" id="previewName"></div>
+                </div>
+
+                <div class="notice">
+                    <div class="notice-icon">⏱️</div>
+                    <div class="notice-text">
+                        <strong>El administrador verificará tu pago</strong> y activará tu cuenta en menos de 1 hora. Te llegará un WhatsApp con tus credenciales de acceso.
+                    </div>
+                </div>
+
+                <button class="btn-submit" id="submitBtn" onclick="submitProof()" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Enviar comprobante
+                </button>
+            </div>
+        </div>
+
+        <!-- SUCCESS -->
+        <div class="success-state" id="successSection">
+            <div class="success-circle">✓</div>
+            <h2>¡Comprobante enviado!</h2>
+            <p>Recibimos tu captura de pago. El administrador la revisará y activará tu cuenta pronto.</p>
+
+            <div class="verify-box">
+                <div class="verify-step">
+                    <div class="verify-num">1</div>
+                    <span>✅ Comprobante recibido</span>
+                </div>
+                <div class="verify-step">
+                    <div class="verify-num">2</div>
+                    <span>⏳ El administrador verifica el pago (menos de 1 hora)</span>
+                </div>
+                <div class="verify-step">
+                    <div class="verify-num">3</div>
+                    <span>📱 Te enviamos tus credenciales por WhatsApp</span>
+                </div>
+            </div>
+
+            <p style="font-size:13px;color:var(--text-3);">¿Tienes dudas? Escríbenos al WhatsApp.</p>
+            <a href="https://wa.me/51966127203?text=Hola!%20Acabo%20de%20enviar%20mi%20comprobante%20de%20pago%20en%20Vendix" target="_blank"
+               style="display:inline-flex;align-items:center;gap:8px;margin-top:12px;background:#25d366;color:#fff;padding:12px 24px;border-radius:11px;font-size:14px;font-weight:700;text-decoration:none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Escribir al soporte
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const p        = new URLSearchParams(window.location.search);
+    const name     = p.get('name')     || '';
+    const business = p.get('business') || '';
+    const phone    = p.get('phone')    || '';
+    const plan     = p.get('plan')     || 'vendix';
+
+    let selectedFile = null;
+
+    // Drag & drop
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file) showPreview(file);
+    });
+
+    function onFileSelect(input) {
+        if (input.files[0]) showPreview(input.files[0]);
+    }
+
+    function showPreview(file) {
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('previewName').textContent = file.name;
+            document.getElementById('previewWrap').style.display = 'block';
+            document.getElementById('submitBtn').disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeFile() {
+        selectedFile = null;
+        document.getElementById('previewWrap').style.display = 'none';
+        document.getElementById('previewImg').src = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('submitBtn').disabled = true;
+    }
+
+    function submitProof() {
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Enviando...`;
+
+        // Notify via WhatsApp (opens in background tab)
+        const msg = encodeURIComponent(`🧾 Nuevo comprobante de pago\n👤 ${name}\n🏪 ${business}\n📱 ${phone}\n📦 Plan: ${plan}\n\nEl cliente ha subido su comprobante en Vendix.`);
+        const tab = window.open(`https://wa.me/51966127203?text=${msg}`, '_blank');
+
+        setTimeout(() => {
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('successSection').style.display = 'block';
+        }, 1200);
+    }
+</script>
+<style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin .7s linear infinite; }
+</style>
+</body>
+</html>
+

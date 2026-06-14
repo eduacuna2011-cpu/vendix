@@ -1,0 +1,424 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud enviada — Vendix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary:   #6366f1;
+            --primary-d: #4f46e5;
+            --success:   #10b981;
+            --text-1:    #0f172a;
+            --text-2:    #475569;
+            --text-3:    #94a3b8;
+            --border:    #e2e8f0;
+            --surface:   #ffffff;
+            --bg:        #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #f0f0ff 0%, #f8fafc 100%);
+            color: var(--text-1);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            background: rgba(255,255,255,.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px;
+        }
+
+        .logo {
+            display: flex; align-items: center; gap: 9px;
+            font-size: 18px; font-weight: 800; color: var(--text-1);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ── MAIN ── */
+        .main {
+            flex: 1;
+            display: flex; align-items: center; justify-content: center;
+            padding: 40px 16px;
+        }
+
+        .wrap {
+            max-width: 600px; width: 100%;
+        }
+
+        /* ── SUCCESS HEADER ── */
+        .success-header {
+            text-align: center; margin-bottom: 32px;
+        }
+
+        .check-circle {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg, rgba(16,185,129,.15), rgba(16,185,129,.05));
+            border: 2px solid rgba(16,185,129,.3);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            animation: popIn .5s cubic-bezier(.175,.885,.32,1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+
+        .check-svg { color: var(--success); }
+
+        .success-header h1 {
+            font-size: 26px; font-weight: 900; margin-bottom: 8px;
+            letter-spacing: -.5px;
+        }
+
+        .success-header p {
+            font-size: 15px; color: var(--text-2); max-width: 400px; margin: 0 auto;
+        }
+
+        /* ── DETAILS CARD ── */
+        .details-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            animation: fadeUp .4s ease both;
+            animation-delay: .15s;
+        }
+
+        @keyframes fadeUp {
+            from { transform: translateY(16px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        .card-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .card-header-icon {
+            width: 34px; height: 34px; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+        }
+
+        .card-header h2 { font-size: 14px; font-weight: 700; }
+        .card-header p  { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+
+        .card-body { padding: 0; }
+
+        .detail-row {
+            display: flex; align-items: center;
+            padding: 14px 22px;
+            border-bottom: 1px solid var(--border);
+            gap: 14px;
+        }
+        .detail-row:last-child { border-bottom: none; }
+
+        .detail-icon {
+            width: 34px; height: 34px; border-radius: 8px;
+            background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; flex-shrink: 0;
+        }
+
+        .detail-label {
+            font-size: 11px; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: .5px;
+            margin-bottom: 2px;
+        }
+
+        .detail-value {
+            font-size: 14px; font-weight: 600; color: var(--text-1);
+        }
+
+        /* ── PLAN BADGE ── */
+        .plan-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(99,102,241,.08);
+            border: 1px solid rgba(99,102,241,.2);
+            color: var(--primary);
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 13px; font-weight: 700;
+        }
+
+        /* ── NEXT STEPS ── */
+        .next-steps {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px; padding: 22px;
+            margin-bottom: 16px;
+            animation: fadeUp .4s ease both;
+            animation-delay: .25s;
+        }
+
+        .next-steps h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+
+        .step-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .step-item {
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+
+        .step-num {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; font-size: 11px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; margin-top: 1px;
+        }
+
+        .step-text { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+        .step-text strong { color: var(--text-1); }
+
+        /* ── ACTIONS ── */
+        .actions {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            animation: fadeUp .4s ease both;
+            animation-delay: .35s;
+        }
+
+        .btn-wa {
+            flex: 1; min-width: 180px;
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+            background: #25d366; color: #fff;
+            padding: 14px 20px; border-radius: 12px;
+            font-size: 14px; font-weight: 700;
+            text-decoration: none; transition: all .2s;
+            box-shadow: 0 4px 14px rgba(37,211,102,.3);
+        }
+        .btn-wa:hover { background: #1ebe5d; transform: translateY(-1px); }
+
+        .btn-back {
+            flex: 1; min-width: 140px;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            background: var(--surface); color: var(--text-2);
+            padding: 14px 20px; border-radius: 12px;
+            font-size: 14px; font-weight: 600;
+            text-decoration: none; transition: all .2s;
+            border: 1.5px solid var(--border);
+        }
+        .btn-back:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* ── FOOTER ── */
+        footer {
+            text-align: center; padding: 20px;
+            font-size: 12px; color: var(--text-3);
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <a href="landing.html" class="logo">
+        <div class="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+        </div>
+        Vendix
+    </a>
+    <span style="font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:5px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Solicitud segura
+    </span>
+</div>
+
+<style>
+.steps-bar{background:#fff;border-bottom:1px solid var(--border);padding:12px 24px;display:flex;justify-content:center;}
+.stp{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--text-3);}
+.stp.done{color:var(--success);}
+.stp.active{color:var(--primary);}
+.stp-circle{width:24px;height:24px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;}
+.stp.done .stp-circle{background:var(--success);border-color:var(--success);color:#fff;}
+.stp.active .stp-circle{background:var(--primary);border-color:var(--primary);color:#fff;}
+.stp-line{width:44px;height:2px;background:var(--border);margin:0 8px;flex-shrink:0;align-self:center;}
+.stp-line.done{background:var(--success);}
+@media(max-width:480px){.stp span{display:none;}.stp-line{width:22px;}}
+</style>
+<div class="steps-bar">
+    <div class="stp done"><div class="stp-circle">✓</div><span>Plan</span></div>
+    <div class="stp-line done"></div>
+    <div class="stp done"><div class="stp-circle">✓</div><span>Datos</span></div>
+    <div class="stp-line done"></div>
+    <div class="stp active"><div class="stp-circle">✓</div><span>Listo</span></div>
+</div>
+
+<div class="main">
+    <div class="wrap">
+
+        <!-- SUCCESS HEADER -->
+        <div class="success-header">
+            <div class="check-circle">
+                <svg class="check-svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </div>
+            <h1>¡Solicitud enviada!</h1>
+            <p>Recibimos tus datos. Te contactamos en menos de <strong>1 hora</strong> para activar tu cuenta.</p>
+        </div>
+
+        <!-- YOUR DETAILS -->
+        <div class="details-card">
+            <div class="card-header">
+                <div class="card-header-icon" style="background:rgba(99,102,241,.08);">📋</div>
+                <div>
+                    <h2>Tus datos registrados</h2>
+                    <p>Esto es lo que recibimos de tu parte</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="detail-row">
+                    <div class="detail-icon">🏪</div>
+                    <div>
+                        <div class="detail-label">Negocio</div>
+                        <div class="detail-value" id="dBusiness">—</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon">👤</div>
+                    <div>
+                        <div class="detail-label">Nombre</div>
+                        <div class="detail-value" id="dName">—</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon">📧</div>
+                    <div>
+                        <div class="detail-label">Correo electrónico</div>
+                        <div class="detail-value" id="dEmail">—</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon">📱</div>
+                    <div>
+                        <div class="detail-label">WhatsApp</div>
+                        <div class="detail-value" id="dPhone">—</div>
+                    </div>
+                </div>
+                <div class="detail-row" id="dBizTypeRow" style="display:none;">
+                    <div class="detail-icon">🏷️</div>
+                    <div>
+                        <div class="detail-label">Tipo de negocio</div>
+                        <div class="detail-value" id="dBizType">—</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon">📦</div>
+                    <div>
+                        <div class="detail-label">Plan elegido</div>
+                        <div class="detail-value"><span class="plan-tag" id="dPlan">—</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="next-steps">
+            <h3>¿Qué pasa ahora?</h3>
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-text"><strong>Te escribimos por WhatsApp</strong> en menos de 1 hora para confirmar tu solicitud.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-text"><strong>Activamos tu cuenta</strong> con tus 3 días de prueba gratuita sin tarjeta.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-text"><strong>Te enviamos tus credenciales</strong> (usuario y contraseña) para entrar al sistema.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-text"><strong>Empieza a vender</strong> — agrega tus productos y registra tu primera venta.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="actions">
+            <a id="waBtn" href="#" class="btn-wa" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Confirmar por WhatsApp
+            </a>
+            <a href="landing.html" class="btn-back">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Volver al inicio
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<footer>© 2025 Vendix · Tu solicitud fue guardada de forma segura</footer>
+
+<script>
+    const PLANS = {
+        vendix:  { label: 'Vendix',   price: 'S/. 15.99/mes' },
+        starter: { label: 'Starter',  price: 'S/. 15.99/mes' },
+        negocio: { label: 'Vendix',   price: 'S/. 15.99/mes' },
+        pro:     { label: 'Vendix',   price: 'S/. 15.99/mes' }
+    };
+
+    const p = new URLSearchParams(window.location.search);
+    const name     = p.get('name')     || '';
+    const business = p.get('business') || '';
+    const email    = p.get('email')    || '';
+    const phone    = p.get('phone')    || '';
+    const plan     = p.get('plan')     || 'negocio';
+    const bizType  = p.get('bizType')  || '';
+
+    // If no data at all redirect back
+    if (!name && !business) window.location.href = 'checkout.html';
+
+    document.getElementById('dName').textContent     = name     || '—';
+    document.getElementById('dBusiness').textContent = business || '—';
+    document.getElementById('dEmail').textContent    = email    || '—';
+    document.getElementById('dPhone').textContent    = phone    || '—';
+
+    if (bizType) {
+        document.getElementById('dBizType').textContent = bizType;
+        document.getElementById('dBizTypeRow').style.display = 'flex';
+    }
+
+    const planInfo = PLANS[plan] || PLANS.negocio;
+    document.getElementById('dPlan').textContent = planInfo.label + ' · ' + planInfo.price;
+
+    // WhatsApp link
+    const waNumber = '51966127203';
+    const msg = encodeURIComponent(
+        `Hola! Acabo de completar el checkout de Vendix 🚀\n\n` +
+        `📦 Plan: ${planInfo.label} (${planInfo.price})\n` +
+        `🏪 Negocio: ${business}${bizType ? ' (' + bizType + ')' : ''}\n` +
+        `👤 Nombre: ${name}\n` +
+        `📧 Email: ${email}\n\n` +
+        `Quiero empezar los 3 días gratis!`
+    );
+    document.getElementById('waBtn').href = `https://wa.me/${waNumber}?text=${msg}`;
+</script>
+
+</body>
+</html>
+

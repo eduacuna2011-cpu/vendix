@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vendix">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <title>Vendix — Sistema de Inventario y Ventas para tu Negocio</title>
     <meta name="description" content="Controla tu inventario, gestiona tus vendedores y aumenta tus ventas con Vendix. Simple, rápido y profesional.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1446,6 +1452,7 @@ document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale')
     <p>© 2025 Vendix · Sistema de inventario y ventas para negocios en Perú</p>
 </footer>
 
+<script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>
 </html>
 

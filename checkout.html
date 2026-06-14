@@ -1,0 +1,535 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vendix">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <title>Checkout — Vendix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary:   #6366f1;
+            --primary-d: #4f46e5;
+            --success:   #10b981;
+            --danger:    #ef4444;
+            --text-1:    #0f172a;
+            --text-2:    #475569;
+            --text-3:    #94a3b8;
+            --border:    #e2e8f0;
+            --surface:   #ffffff;
+            --bg:        #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-1);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .topbar-logo {
+            display: flex; align-items: center; gap: 9px;
+            font-size: 18px; font-weight: 800; color: var(--text-1);
+            text-decoration: none;
+        }
+
+        .topbar-logo-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .topbar-secure {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; color: var(--text-3); font-weight: 500;
+        }
+
+        /* ── STEPS ── */
+        .steps-bar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex; justify-content: center; gap: 0;
+        }
+
+        .step-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; font-weight: 600; color: var(--text-3);
+        }
+
+        .step-item.active { color: var(--primary); }
+        .step-item.done   { color: var(--success); }
+
+        .step-circle {
+            width: 26px; height: 26px; border-radius: 50%;
+            border: 2px solid currentColor;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; flex-shrink: 0;
+        }
+
+        .step-item.done .step-circle { background: var(--success); border-color: var(--success); color: #fff; }
+        .step-item.active .step-circle { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+        .step-line {
+            width: 48px; height: 2px;
+            background: var(--border);
+            margin: 0 8px; flex-shrink: 0;
+            align-self: center;
+        }
+
+        .step-line.done { background: var(--success); }
+
+        /* ── LAYOUT ── */
+        .checkout-wrap {
+            max-width: 960px; margin: 0 auto;
+            padding: 32px 24px;
+            display: grid; grid-template-columns: 1fr 380px;
+            gap: 24px; align-items: start;
+        }
+
+        /* ── FORM CARD ── */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+        }
+
+        .form-card-header {
+            padding: 22px 24px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-card-header h2 { font-size: 17px; font-weight: 700; }
+        .form-card-header p  { font-size: 13px; color: var(--text-3); margin-top: 3px; }
+
+        .form-body { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+
+        /* Plan selector */
+        .plan-options { display: flex; flex-direction: column; gap: 10px; }
+
+        .plan-option {
+            border: 2px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            cursor: pointer; transition: all .18s;
+            display: flex; align-items: center; gap: 14px;
+            position: relative;
+        }
+
+        .plan-option:hover { border-color: var(--primary); }
+        .plan-option.selected { border-color: var(--primary); background: rgba(99,102,241,.04); }
+
+        .plan-option input[type="radio"] { display: none; }
+
+        .plan-radio {
+            width: 20px; height: 20px; border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: all .18s;
+        }
+
+        .plan-option.selected .plan-radio {
+            border-color: var(--primary); background: var(--primary);
+        }
+
+        .plan-radio-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #fff; opacity: 0; transition: opacity .18s;
+        }
+
+        .plan-option.selected .plan-radio-dot { opacity: 1; }
+
+        .plan-info { flex: 1; }
+        .plan-name { font-size: 14px; font-weight: 700; }
+        .plan-desc { font-size: 12px; color: var(--text-3); }
+
+        .plan-price-tag {
+            font-size: 16px; font-weight: 800; color: var(--text-1);
+            white-space: nowrap;
+        }
+
+        .plan-badge {
+            position: absolute; top: -8px; right: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; font-size: 10px; font-weight: 700;
+            padding: 2px 10px; border-radius: 10px; text-transform: uppercase;
+        }
+
+        /* Form fields */
+        .field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        .field { display: flex; flex-direction: column; gap: 5px; }
+
+        .field label {
+            font-size: 12px; font-weight: 700; color: var(--text-2);
+            text-transform: uppercase; letter-spacing: .4px;
+        }
+
+        .field input, .field select {
+            padding: 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px; font-family: inherit;
+            color: var(--text-1);
+            background: var(--surface);
+            outline: none;
+            transition: border-color .18s;
+        }
+
+        .field input:focus, .field select:focus { border-color: var(--primary); }
+        .field input.error, .field select.error { border-color: var(--danger); }
+
+        .field-error { font-size: 11px; color: var(--danger); font-weight: 500; }
+
+        /* Section divider */
+        .section-divider {
+            display: flex; align-items: center; gap: 12px;
+            font-size: 12px; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: .5px;
+        }
+
+        .section-divider::before,
+        .section-divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+
+        /* ── ORDER SUMMARY ── */
+        .summary-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+            position: sticky; top: 24px;
+        }
+
+        .summary-header {
+            padding: 20px 22px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-header h3 { font-size: 15px; font-weight: 700; }
+
+        .summary-body { padding: 20px 22px; }
+
+        .summary-plan-name {
+            font-size: 16px; font-weight: 800; color: var(--text-1);
+            margin-bottom: 4px;
+        }
+
+        .summary-plan-desc { font-size: 13px; color: var(--text-3); margin-bottom: 18px; }
+
+        .summary-features { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+
+        .summary-feature {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--text-2);
+        }
+
+        .summary-check {
+            width: 16px; height: 16px; border-radius: 50%;
+            background: rgba(16,185,129,.12); color: var(--success);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 800; flex-shrink: 0;
+        }
+
+        .summary-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+        .summary-row {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; color: var(--text-2); margin-bottom: 8px;
+        }
+
+        .summary-total {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 18px; font-weight: 800; color: var(--text-1);
+            margin-top: 12px;
+        }
+
+        .summary-trial {
+            background: rgba(16,185,129,.08);
+            border: 1px solid rgba(16,185,129,.2);
+            border-radius: 10px; padding: 12px;
+            text-align: center; margin-top: 16px;
+        }
+
+        .summary-trial-title { font-size: 13px; font-weight: 700; color: var(--success); }
+        .summary-trial-desc  { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+        /* ── PAY BUTTON ── */
+        .btn-pay {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 800; font-family: inherit;
+            cursor: pointer; transition: all .2s;
+            box-shadow: 0 4px 16px rgba(99,102,241,.35);
+            margin-top: 20px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        .btn-pay:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,.45); }
+        .btn-pay:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+        .pay-note {
+            text-align: center; font-size: 12px; color: var(--text-3);
+            margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+
+        /* ── SUCCESS SCREEN ── */
+        .success-screen {
+            display: none;
+            text-align: center; padding: 48px 24px;
+        }
+
+        .success-icon {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: rgba(16,185,129,.12); color: var(--success);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; margin: 0 auto 20px;
+        }
+
+        .success-screen h2 { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+        .success-screen p  { font-size: 15px; color: var(--text-2); max-width: 380px; margin: 0 auto 28px; }
+
+        .btn-whatsapp {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: #25d366; color: #fff;
+            padding: 14px 28px; border-radius: 12px;
+            font-size: 15px; font-weight: 700;
+            text-decoration: none; transition: all .2s;
+            box-shadow: 0 4px 16px rgba(37,211,102,.35);
+        }
+
+        .btn-whatsapp:hover { background: #1ebe5d; transform: translateY(-1px); }
+
+        .success-note { font-size: 13px; color: var(--text-3); margin-top: 16px; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 740px) {
+            .checkout-wrap { grid-template-columns: 1fr; }
+            .summary-card  { position: static; order: -1; }
+            .field-group   { grid-template-columns: 1fr; }
+            .steps-bar .step-item span { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <a href="landing.html" class="topbar-logo">
+        <div class="topbar-logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+        </div>
+        Vendix
+    </a>
+    <div class="topbar-secure">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Pago seguro
+    </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps-bar">
+    <div class="step-item done">
+        <div class="step-circle">✓</div>
+        <span>Plan</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step-item active">
+        <div class="step-circle">2</div>
+        <span>Datos</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item">
+        <div class="step-circle">3</div>
+        <span>Listo</span>
+    </div>
+</div>
+
+<!-- CHECKOUT -->
+<div class="checkout-wrap">
+
+    <!-- LEFT: FORM -->
+    <div>
+        <!-- Contact info -->
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>Tus datos</h2>
+                <p>Para crear tu cuenta y contactarte</p>
+            </div>
+            <div class="form-body" id="contactForm">
+                <div class="section-divider">Negocio</div>
+                <div class="field">
+                    <label>Nombre del negocio *</label>
+                    <input type="text" id="businessName" placeholder="Ej: Boutique Lorena">
+                    <span class="field-error" id="err-businessName"></span>
+                </div>
+                <div class="section-divider">Propietario</div>
+                <div class="field-group">
+                    <div class="field">
+                        <label>Tu nombre completo *</label>
+                        <input type="text" id="fullName" placeholder="Ej: María García">
+                        <span class="field-error" id="err-fullName"></span>
+                    </div>
+                    <div class="field">
+                        <label>WhatsApp *</label>
+                        <input type="tel" id="phone" placeholder="Ej: 987654321">
+                        <span class="field-error" id="err-phone"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Correo electrónico *</label>
+                    <input type="email" id="email" placeholder="Ej: maria@gmail.com">
+                    <span class="field-error" id="err-email"></span>
+                </div>
+                <div class="field">
+                    <label>¿Qué tipo de negocio tienes?</label>
+                    <select id="bizType">
+                        <option value="">Seleccionar...</option>
+                        <option>Tienda de ropa / boutique</option>
+                        <option>Zapatería</option>
+                        <option>Tienda de accesorios</option>
+                        <option>Minimarket / abarrotes</option>
+                        <option>Ferretería</option>
+                        <option>Farmacia / botica</option>
+                        <option>Otro</option>
+                    </select>
+                </div>
+
+                <button class="btn-pay" onclick="submitOrder()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Solicitar acceso — 3 días gratis
+                </button>
+
+                <p class="pay-note">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Sin tarjeta de crédito · Cancela cuando quieras
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- RIGHT: ORDER SUMMARY -->
+    <div class="summary-card">
+        <div class="summary-header">
+            <h3>Resumen del pedido</h3>
+        </div>
+        <div class="summary-body">
+            <div class="summary-plan-name">Plan Vendix</div>
+            <div class="summary-plan-desc">Todo ilimitado · S/. 15.99/mes</div>
+
+            <div class="summary-features">
+                <div class="summary-feature"><div class="summary-check">✓</div> Vendedores ilimitados</div>
+                <div class="summary-feature"><div class="summary-check">✓</div> Productos ilimitados</div>
+                <div class="summary-feature"><div class="summary-check">✓</div> Ventas ilimitadas</div>
+                <div class="summary-feature"><div class="summary-check">✓</div> Dashboard con gráficas</div>
+                <div class="summary-feature"><div class="summary-check">✓</div> Export CSV/Excel</div>
+                <div class="summary-feature"><div class="summary-check">✓</div> Soporte por WhatsApp</div>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-row">
+                <span>Precio mensual</span>
+                <span>S/. 15.99</span>
+            </div>
+            <div class="summary-row" style="color:var(--success);font-weight:600;">
+                <span>3 días gratis</span>
+                <span>- S/. 15.99</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-total">
+                <span>Hoy pagas</span>
+                <span style="color:var(--success);">S/. 0</span>
+            </div>
+
+            <div class="summary-trial">
+                <div class="summary-trial-title">🎁 3 días gratis</div>
+                <div class="summary-trial-desc">Sin tarjeta de crédito. Empieza hoy y paga después.</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function setErr(id, msg) { document.getElementById('err-' + id).textContent = msg; }
+    function clearErrs()     { ['businessName','fullName','phone','email'].forEach(id => setErr(id, '')); }
+    function markError(id, msg) {
+        document.getElementById(id).classList.add('error');
+        setErr(id, msg);
+    }
+
+    async function submitOrder() {
+        clearErrs();
+        const businessName = document.getElementById('businessName').value.trim();
+        const fullName     = document.getElementById('fullName').value.trim();
+        const phone        = document.getElementById('phone').value.trim();
+        const email        = document.getElementById('email').value.trim();
+        const bizType      = document.getElementById('bizType').value;
+        let valid = true;
+
+        if (!businessName) { markError('businessName', 'Ingresa el nombre de tu negocio'); valid = false; }
+        if (!fullName)     { markError('fullName',     'Ingresa tu nombre completo');       valid = false; }
+        if (!phone || phone.length < 7) { markError('phone', 'Ingresa un número válido');   valid = false; }
+        if (!email || !email.includes('@')) { markError('email', 'Ingresa un correo válido'); valid = false; }
+        if (!valid) return;
+
+        ['businessName','fullName','phone','email'].forEach(id => document.getElementById(id).classList.remove('error'));
+
+        // sendBeacon survives page navigation — fetch gets cancelled on redirect
+        const payload = JSON.stringify({ fullName, businessName, email, phone, plan: 'vendix', bizType });
+        const sent = navigator.sendBeacon('/api/leads', new Blob([payload], { type: 'application/json' }));
+        if (!sent) {
+            // Fallback if sendBeacon fails (rare)
+            await fetch('/api/leads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: payload
+            }).catch(() => {});
+        }
+
+        const btn = document.querySelector('.btn-pay');
+        btn.disabled = true;
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Enviando...`;
+
+        const params = new URLSearchParams({
+            name:     fullName,
+            business: businessName,
+            email,
+            phone,
+            plan:     'vendix',
+            bizType:  bizType || ''
+        });
+        window.location.href = 'customer-details.html?' + params.toString();
+    }
+</script>
+
+<script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
+</body>
+</html>
+

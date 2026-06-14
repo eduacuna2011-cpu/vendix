@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\eduac\\\\CascadeProjects\\\\inventory-sales-dashboard\" -Recurse -Force)",
+      "Bash(Select-Object -First 100)",
+      "Bash(Format-Table FullName, PSIsContainer)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\eduac\\\\CascadeProjects\\\\inventory-sales-dashboard\" -Recurse -Force | Where-Object {$_.PSIsContainer} | ForEach-Object {$_.FullName.Replace\\('C:\\\\Users\\\\eduac\\\\CascadeProjects\\\\inventory-sales-dashboard', ''\\)})",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    { "source": "/", "destination": "/landing.html", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/api/cron/(.*)", "destination": "/api/cron/$1.js" },
+    { "source": "/api/(.*)", "destination": "/api/index.js" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/check-subscriptions",
+      "schedule": "0 13 * * *"
+    }
+  ]
+}

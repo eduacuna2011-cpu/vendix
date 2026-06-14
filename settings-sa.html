@@ -1,0 +1,366 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vendix">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <script>
+        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+    </script>
+    <title>Super Admin Settings — Vendix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="settings-sa.css">
+    <link rel="stylesheet" href="animations.css"></head>
+<body>
+<div class="dashboard-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="6" fill="#6366f1"/>
+                    <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Vendix</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav-list" id="sidebarNav">
+                <!-- rendered by sidebar.js -->
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sa-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Super Admin
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main-content">
+
+        <!-- Navbar -->
+        <header class="top-navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <div class="page-breadcrumb">
+                    <span class="breadcrumb-root">Super Admin</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    <span class="breadcrumb-current">Settings</span>
+                </div>
+            </div>
+            <div class="navbar-right">
+                <div class="user-profile" id="userProfileBtn">
+                    <div class="avatar" id="navAvatar"><span id="userAvatar">SA</span></div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Super Administrator</span>
+                        <span class="user-role" id="userRole">Super Admin</span>
+                    </div>
+                    <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="sa-settings-page">
+
+            <!-- Hero Header -->
+            <div class="sa-hero">
+                <div class="sa-hero-left">
+                    <div class="sa-hero-avatar" id="heroAvatar">SA</div>
+                    <div class="sa-hero-info">
+                        <div class="sa-hero-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            Super Administrator
+                        </div>
+                        <h1 id="heroName">Super Administrator</h1>
+                        <p id="heroSub">System-wide control · All businesses</p>
+                    </div>
+                </div>
+                <div class="sa-hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-val" id="hsTotalBiz">—</span>
+                        <span class="hero-stat-label">Businesses</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-val" id="hsTotalUsers">—</span>
+                        <span class="hero-stat-label">Users</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-val" id="hsTotalTx">—</span>
+                        <span class="hero-stat-label">Transactions</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="sa-tabs">
+                <button class="sa-tab active" data-tab="profile">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Profile
+                </button>
+                <button class="sa-tab" data-tab="security">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Security
+                </button>
+                <button class="sa-tab danger-tab" data-tab="danger">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Danger Zone
+                </button>
+            </div>
+
+            <!-- Panels -->
+            <div class="sa-panels">
+
+                <!-- ── PROFILE ── -->
+                <section class="sa-panel active" id="panel-profile">
+                    <div class="sa-grid-2">
+                        <div class="sa-card">
+                            <div class="sa-card-header">
+                                <h3>Personal Information</h3>
+                                <p>Update your display name and contact details.</p>
+                            </div>
+                            <form class="sa-form" id="profileForm">
+                                <div class="sa-field">
+                                    <label>Full Name</label>
+                                    <input type="text" id="fullName" placeholder="Super Administrator" autocomplete="off">
+                                    <span class="sa-field-error" id="fullNameError"></span>
+                                </div>
+                                <div class="sa-field">
+                                    <label>Email Address</label>
+                                    <input type="email" id="saEmail" placeholder="admin@example.com" autocomplete="off">
+                                    <span class="sa-field-error" id="emailError"></span>
+                                </div>
+                                <div class="sa-actions">
+                                    <button type="submit" class="sa-btn sa-btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="sa-card sa-card-identity">
+                            <div class="sa-card-header">
+                                <h3>Identity</h3>
+                                <p>Your account credentials and role.</p>
+                            </div>
+                            <div class="sa-identity-block">
+                                <div class="sa-identity-avatar" id="identityAvatar">SA</div>
+                                <div class="sa-identity-rows">
+                                    <div class="sa-id-row">
+                                        <span class="sa-id-key">Username</span>
+                                        <code class="sa-id-val" id="idUsername">superadmin</code>
+                                    </div>
+                                    <div class="sa-id-row">
+                                        <span class="sa-id-key">Role</span>
+                                        <span class="sa-role-chip">Super Admin</span>
+                                    </div>
+                                    <div class="sa-id-row">
+                                        <span class="sa-id-key">Access</span>
+                                        <span class="sa-access-chip">All Businesses</span>
+                                    </div>
+                                    <div class="sa-id-row">
+                                        <span class="sa-id-key">Session</span>
+                                        <span class="sa-id-val" id="idSession">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── SECURITY ── -->
+                <section class="sa-panel" id="panel-security">
+                    <div class="sa-grid-2">
+                        <div class="sa-card">
+                            <div class="sa-card-header">
+                                <h3>Change Username</h3>
+                                <p>Must be unique across the platform.</p>
+                            </div>
+                            <form class="sa-form" id="usernameForm">
+                                <div class="sa-field">
+                                    <label>Current Username</label>
+                                    <input type="text" id="currentUsernameDisplay" disabled>
+                                </div>
+                                <div class="sa-field">
+                                    <label>New Username</label>
+                                    <input type="text" id="newUsername" placeholder="new_username" autocomplete="off">
+                                    <span class="sa-field-error" id="newUsernameError"></span>
+                                </div>
+                                <div class="sa-field">
+                                    <label>Confirm with Password</label>
+                                    <div class="sa-pw-wrap">
+                                        <input type="password" id="usernameConfirmPassword" placeholder="Current password">
+                                        <button type="button" class="sa-pw-toggle" data-target="usernameConfirmPassword">
+                                            <svg class="eye-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            <svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                        </button>
+                                    </div>
+                                    <span class="sa-field-error" id="usernameConfirmError"></span>
+                                </div>
+                                <div class="sa-actions">
+                                    <button type="submit" class="sa-btn sa-btn-primary">Update Username</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="sa-card">
+                            <div class="sa-card-header">
+                                <h3>Change Password</h3>
+                                <p>Use a strong, unique password.</p>
+                            </div>
+                            <form class="sa-form" id="passwordForm">
+                                <div class="sa-field">
+                                    <label>Current Password</label>
+                                    <div class="sa-pw-wrap">
+                                        <input type="password" id="currentPassword" placeholder="••••••••">
+                                        <button type="button" class="sa-pw-toggle" data-target="currentPassword">
+                                            <svg class="eye-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            <svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                        </button>
+                                    </div>
+                                    <span class="sa-field-error" id="currentPasswordError"></span>
+                                </div>
+                                <div class="sa-field">
+                                    <label>New Password</label>
+                                    <div class="sa-pw-wrap">
+                                        <input type="password" id="newPassword" placeholder="••••••••">
+                                        <button type="button" class="sa-pw-toggle" data-target="newPassword">
+                                            <svg class="eye-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            <svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="sa-strength" id="strengthMeter" style="display:none">
+                                        <div class="sa-strength-bar"><div class="sa-strength-fill" id="strengthFill"></div></div>
+                                        <span class="sa-strength-label" id="strengthLabel"></span>
+                                    </div>
+                                    <span class="sa-field-error" id="newPasswordError"></span>
+                                </div>
+                                <div class="sa-field">
+                                    <label>Confirm New Password</label>
+                                    <div class="sa-pw-wrap">
+                                        <input type="password" id="confirmPassword" placeholder="••••••••">
+                                        <button type="button" class="sa-pw-toggle" data-target="confirmPassword">
+                                            <svg class="eye-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            <svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                        </button>
+                                    </div>
+                                    <span class="sa-field-error" id="confirmPasswordError"></span>
+                                </div>
+                                <div class="sa-actions">
+                                    <button type="submit" class="sa-btn sa-btn-primary">Change Password</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── DANGER ZONE ── -->
+                <section class="sa-panel" id="panel-danger">
+                    <div class="sa-danger-header">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <div>
+                            <h3>Danger Zone</h3>
+                            <p>Irreversible actions. Proceed with extreme caution.</p>
+                        </div>
+                    </div>
+
+                    <div class="sa-danger-grid">
+                        <div class="sa-danger-card">
+                            <div class="sa-danger-card-icon orange">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            </div>
+                            <div class="sa-danger-card-info">
+                                <h4>Logout Everywhere</h4>
+                                <p>Terminate all active sessions on all devices.</p>
+                            </div>
+                            <button class="sa-btn sa-btn-warning" onclick="logoutAll()">Logout All</button>
+                        </div>
+
+                        <div class="sa-danger-card">
+                            <div class="sa-danger-card-icon red">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                            </div>
+                            <div class="sa-danger-card-info">
+                                <h4>Wipe All Transactions</h4>
+                                <p>Permanently delete every transaction across all businesses.</p>
+                            </div>
+                            <button class="sa-btn sa-btn-danger" onclick="openConfirm('wipe-transactions')">Wipe Data</button>
+                        </div>
+
+                        <div class="sa-danger-card">
+                            <div class="sa-danger-card-icon red">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            </div>
+                            <div class="sa-danger-card-info">
+                                <h4>Wipe All Products</h4>
+                                <p>Permanently delete every product in every business.</p>
+                            </div>
+                            <button class="sa-btn sa-btn-danger" onclick="openConfirm('wipe-products')">Wipe Data</button>
+                        </div>
+
+                        <div class="sa-danger-card nuclear">
+                            <div class="sa-danger-card-icon nuclear-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg>
+                            </div>
+                            <div class="sa-danger-card-info">
+                                <h4>Factory Reset</h4>
+                                <p>Delete ALL businesses, admins, sellers, products and transactions. Platform returns to initial state.</p>
+                            </div>
+                            <button class="sa-btn sa-btn-nuclear" onclick="openConfirm('factory-reset')">Factory Reset</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div><!-- /panels -->
+        </main>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal" id="confirmModal">
+    <div class="sa-confirm-modal">
+        <div class="sa-confirm-icon" id="confirmIcon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h3 id="confirmTitle">Confirm Action</h3>
+        <p id="confirmMessage">This action cannot be undone.</p>
+        <div class="sa-confirm-word-row">
+            <span>Type <strong id="confirmWord">DELETE</strong> to confirm:</span>
+            <input type="text" id="confirmInput" placeholder="" autocomplete="off">
+        </div>
+        <div class="sa-confirm-actions">
+            <button class="sa-btn sa-btn-secondary" onclick="closeConfirm()">Cancel</button>
+            <button class="sa-btn sa-btn-danger" id="confirmActionBtn" disabled onclick="executeConfirm()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="sa-toast" id="toast"><span id="toastMsg"></span></div>
+<div class="sa-toast sa-toast-error" id="toastError"><span id="toastErrorMsg"></span></div>
+
+<script src="api-client.js" defer></script>
+<script src="auth.js" defer></script>
+<script src="sidebar.js" defer></script>
+<script src="settings-sa.js" defer></script>
+<script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,482 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vendix">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <script>
+        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+    </script>
+    <title>Users - Vendix Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="settings-sa.css">
+    <link rel="stylesheet" href="users.css">
+    <link rel="stylesheet" href="animations.css"></head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="6" fill="#6366f1"/>
+                        <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Vendix</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list" id="sidebarNav"></ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sa-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    Super Admin
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Top Navigation Bar -->
+            <header class="top-navbar">
+                <div class="navbar-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div class="page-breadcrumb">
+                        <span class="breadcrumb-root">Super Admin</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        <span class="breadcrumb-current">Admin Users</span>
+                    </div>
+                </div>
+                <div class="navbar-right">
+                    <div class="user-profile" id="userProfileBtn">
+                        <div class="avatar"><span id="userAvatar">SA</span></div>
+                        <div class="user-info">
+                            <span class="user-name" id="userName">Super Administrator</span>
+                            <span class="user-role" id="userRole">Super Admin</span>
+                        </div>
+                        <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="users-content">
+
+                <!-- Page Header -->
+                <div class="users-page-header">
+                    <div>
+                        <h1>Admin Users</h1>
+                        <p>Manage business accounts and their administrators.</p>
+                    </div>
+                    <button class="btn btn-primary" id="addAdminUserBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Admin User
+                    </button>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Businesses</div>
+                            <div class="stat-value" id="totalBusinesses">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Active Businesses</div>
+                            <div class="stat-value" id="activeBusinesses">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Created This Month</div>
+                            <div class="stat-value" id="createdThisMonth">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="1" x2="12" y2="23"/>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Revenue</div>
+                            <div class="stat-value" id="totalRevenue">S/. 0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Users Section -->
+                <div class="admin-users-section">
+                    <div class="section-header">
+                        <h2>Admin Users (Businesses)</h2>
+                    </div>
+
+                    <!-- Search and Filter -->
+                    <div class="search-filter-bar">
+                        <div class="search-box">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <input type="text" id="searchInput" placeholder="Search by business name, admin name, username, or email...">
+                        </div>
+                        <div class="filter-box">
+                            <select id="statusFilter">
+                                <option value="all">All Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Disabled">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Admin Users Table -->
+                    <div class="table-container">
+                        <table class="admin-users-table">
+                            <thead>
+                                <tr>
+                                    <th>Business Name</th>
+                                    <th>Admin Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Trial</th>
+                                    <th>Created Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUsersBody">
+                                <!-- Admin users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ── SOLICITUDES (Leads from checkout) ── -->
+                <div class="admin-users-section" style="margin-top:32px;" id="leadsSection">
+                    <div class="section-header" style="display:flex;align-items:center;gap:12px;">
+                        <h2 style="margin:0;">Solicitudes de Vendix</h2>
+                        <span id="leadsBadge" style="
+                            display:none;
+                            background:#ef4444;color:#fff;
+                            font-size:11px;font-weight:800;
+                            padding:2px 9px;border-radius:20px;
+                            animation:pulse 2s infinite;
+                        "></span>
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:13px;margin:6px 0 16px;">Clientes que llenaron el checkout de la landing page.</p>
+
+                    <div class="table-container">
+                        <table class="admin-users-table">
+                            <thead>
+                                <tr>
+                                    <th>Negocio</th>
+                                    <th>Contacto</th>
+                                    <th>Plan</th>
+                                    <th>Pago</th>
+                                    <th>Cuenta</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leadsBody">
+                                <tr><td colspan="7" style="text-align:center;color:var(--text-secondary);">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Credentials Modal for Leads ── -->
+    <div class="modal" id="leadCredsModal" style="display:none;">
+        <div class="modal-content" style="max-width:480px;">
+            <div class="modal-header">
+                <h2>Cuenta creada ✓</h2>
+                <button class="modal-close" onclick="document.getElementById('leadCredsModal').style.display='none'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom:16px;color:var(--text-secondary);">Comparte estas credenciales con el cliente por WhatsApp.</p>
+                <div class="credentials-display" id="leadCredsDisplay"></div>
+                <div style="display:flex;gap:10px;margin-top:20px;">
+                    <button class="btn btn-primary" id="leadCredsWA" onclick="openLeadWA()" style="flex:1;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Enviar por WhatsApp
+                    </button>
+                    <button class="btn" onclick="document.getElementById('leadCredsModal').style.display='none'" style="flex:1;">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Admin User Modal -->
+    <div class="modal" id="adminUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Admin User</h2>
+                <button class="modal-close" id="closeModalBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="adminUserForm">
+                    <input type="hidden" id="adminUserId">
+                    <div class="form-group">
+                        <label for="businessName">Business Name *</label>
+                        <input type="text" id="businessName" required placeholder="Enter business name">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminFullName">Admin Full Name *</label>
+                        <input type="text" id="adminFullName" required placeholder="Enter admin full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminEmail">Email *</label>
+                        <input type="email" id="adminEmail" required placeholder="Enter email address">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminPhone">Phone Number *</label>
+                        <input type="tel" id="adminPhone" required placeholder="Enter phone number">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credentials Modal -->
+    <div class="modal" id="credentialsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Admin User Created Successfully</h2>
+                <button class="modal-close" id="closeCredentialsModalBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="credentials-info">
+                    <p class="info-text">Please save these credentials. You won't be able to see them again.</p>
+                    <div class="credential-item">
+                        <label>Business Name:</label>
+                        <div class="credential-value" id="credBusinessName"></div>
+                    </div>
+                    <div class="credential-item">
+                        <label>Username:</label>
+                        <div class="credential-value-with-copy">
+                            <span id="credUsername"></span>
+                            <button class="copy-btn" onclick="copyToClipboard('credUsername')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="credential-item">
+                        <label>Password:</label>
+                        <div class="credential-value-with-copy">
+                            <span id="credPassword"></span>
+                            <button class="copy-btn" onclick="copyToClipboard('credPassword')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="credential-item" id="credLoginLinkRow">
+                        <label>Magic Login Link:</label>
+                        <div class="credential-value-with-copy">
+                            <input type="text" id="credLoginLink" readonly style="flex:1;font-size:12px;border:none;background:none;color:var(--text-2);outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('credLoginLink').value)">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="credential-actions">
+                    <button class="btn btn-secondary" onclick="copyAllCredentials()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                        Copy All Credentials
+                    </button>
+                    <button class="btn btn-primary" id="closeCredentialsBtn">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Delete Admin User</h2>
+                <button class="modal-close" id="closeDeleteModalBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this admin user and their business? This action cannot be undone.</p>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                    <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Business Profile Modal (Super Admin read-only) -->
+    <div class="modal" id="statsModal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Business Profile</h2>
+                <button class="modal-close" id="closeStatsModalBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="business-stats">
+                    <h3 id="statsBusinessName"></h3>
+
+                    <div class="profile-admin-info">
+                        <h4>Admin Information</h4>
+                        <div class="profile-info-grid">
+                            <div class="profile-info-item">
+                                <span class="profile-info-label">Admin Name</span>
+                                <span class="profile-info-value" id="profileAdminName"></span>
+                            </div>
+                            <div class="profile-info-item">
+                                <span class="profile-info-label">Username</span>
+                                <span class="profile-info-value" id="profileAdminUsername"></span>
+                            </div>
+                            <div class="profile-info-item">
+                                <span class="profile-info-label">Email</span>
+                                <span class="profile-info-value" id="profileAdminEmail"></span>
+                            </div>
+                            <div class="profile-info-item">
+                                <span class="profile-info-label">Phone</span>
+                                <span class="profile-info-value" id="profileAdminPhone"></span>
+                            </div>
+                            <div class="profile-info-item">
+                                <span class="profile-info-label">Status</span>
+                                <span class="profile-info-value" id="profileAdminStatus"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="profile-section-title">Store Metrics</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">Total Products</div>
+                            <div class="stat-value" id="statTotalProducts">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Sales</div>
+                            <div class="stat-value" id="statTotalSales">S/. 0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Profit</div>
+                            <div class="stat-value" id="statTotalProfit">S/. 0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Orders</div>
+                            <div class="stat-value" id="statTotalOrders">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Sellers</div>
+                            <div class="stat-value" id="statTotalSellers">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Active Sellers</div>
+                            <div class="stat-value" id="statActiveSellers">0</div>
+                        </div>
+                    </div>
+
+                    <h4 class="profile-section-title">Sellers</h4>
+                    <div class="table-container">
+                        <table class="admin-users-table profile-sellers-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="profileSellersBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-client.js" defer></script>
+    <script src="auth.js" defer></script>
+    <script src="sidebar.js" defer></script>
+    <script src="users.js" defer></script>
+<script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
+</body>
+</html>
+
+
+
+
