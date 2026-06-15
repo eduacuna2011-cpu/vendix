@@ -74,7 +74,7 @@ async function getUser(session) {
     return u || null;
 }
 
-const BASE_URL = 'https://inventory-sales-dashboard-postgres.vercel.app';
+const BASE_URL = 'https://vendix-app.vercel.app';
 const magicLink = (username, pw) => {
     const token = Buffer.from(JSON.stringify({ u: username, p: pw })).toString('base64');
     return `${BASE_URL}/login.html?auto=${token}`;
