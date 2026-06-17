@@ -28,8 +28,11 @@ router.get('/', async (req, res) => {
         sql += ' GROUP BY t.id ORDER BY t.date DESC';
 
         if (req.query.limit) {
-            params.push(parseInt(req.query.limit));
-            sql += ` LIMIT $${params.length}`;
+            const lim = parseInt(req.query.limit);
+            if (!isNaN(lim) && lim > 0) {
+                params.push(lim);
+                sql += ` LIMIT $${params.length}`;
+            }
         }
 
         const { rows } = await db.query(sql, params);

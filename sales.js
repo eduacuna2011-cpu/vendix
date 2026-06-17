@@ -347,7 +347,7 @@ async function loadRecentSales() {
                 <td>${fd}</td>
                 <td>${itemLabel}</td>
                 <td>S/. ${parseFloat(t.total || 0).toFixed(2)}</td>
-                <td>${t.payment_method || 'Cash'}</td>
+                <td>${escapeHtml(t.payment_method || 'Cash')}</td>
                 <td>${escapeHtml(t.seller_name || '—')}</td>
                 <td class="${profitClass}">S/. ${parseFloat(t.profit || 0).toFixed(2)}</td>
                 <td>

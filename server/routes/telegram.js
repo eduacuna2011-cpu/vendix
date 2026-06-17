@@ -431,6 +431,8 @@ async function handleLowStock(chatId, user) {
 }
 
 async function handleRecentSales(chatId, user) {
+    if (!user.business_id) return send(chatId, '❌ Esta función no está disponible para Super Admin.',
+        { reply_markup: { inline_keyboard: [[{ text: '🏠 Menú', callback_data: 'menu' }]] } });
     const { rows } = await q(
         `SELECT t.id, t.total, t.date, t.payment_method, t.seller_name,
                 json_agg(json_build_object('name', ti.product_name, 'qty', ti.quantity, 'total', ti.total) ORDER BY ti.id) AS items
