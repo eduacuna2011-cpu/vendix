@@ -325,13 +325,27 @@ async function loadRecentSales() {
 
         recentSalesBody.innerHTML = transactions.map(t => {
             const date        = new Date(t.date);
-            const fd          = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const fd          = date.toLocaleString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
             const profitClass = parseFloat(t.profit || 0) >= 0 ? 'profit-positive' : 'profit-negative';
             const hasReceipt  = !!_getReceipt(t.id);
-            return `<tr>
+            const items       = Array.isArray(t.items) ? t.items : [];
+            const itemCount   = items.length;
+            const itemLabel   = itemCount ? `<span class="sale-items-toggle" onclick="toggleSaleItems(${t.id})" title="Ver productos">${itemCount} producto${itemCount !== 1 ? 's' : ''} ▾</span>` : '—';
+            const itemsHtml   = itemCount ? `
+                <tr class="sale-items-detail" id="sale-items-${t.id}" style="display:none">
+                    <td colspan="8">
+                        <div class="sale-items-list">
+                            ${items.map((it, i) => {
+                                const connector = i === items.length - 1 ? '└──' : '├──';
+                                return `<span>${connector} ${escapeHtml(it.product_name)} × ${it.quantity} → S/. ${parseFloat(it.total || 0).toFixed(2)}</span>`;
+                            }).join('')}
+                        </div>
+                    </td>
+                </tr>` : '';
+            return `<tr class="sale-row" data-id="${t.id}">
                 <td>#${String(t.id).padStart(6, '0')}</td>
                 <td>${fd}</td>
-                <td>${t.items ? t.items.length + ' item' + (t.items.length !== 1 ? 's' : '') : '—'}</td>
+                <td>${itemLabel}</td>
                 <td>S/. ${parseFloat(t.total || 0).toFixed(2)}</td>
                 <td>${t.payment_method || 'Cash'}</td>
                 <td>${escapeHtml(t.seller_name || '—')}</td>
@@ -341,11 +355,20 @@ async function loadRecentSales() {
                         ? `<button class="btn-sm btn-outline" onclick="viewReceiptById(${t.id})">View Receipt</button>`
                         : `<span style="color:var(--text-3);font-size:12px;">—</span>`}
                 </td>
-            </tr>`;
+            </tr>${itemsHtml}`;
         }).join('');
     } catch (err) {
         console.error('loadRecentSales error:', err);
     }
+}
+
+function toggleSaleItems(id) {
+    const row = document.getElementById(`sale-items-${id}`);
+    if (!row) return;
+    const visible = row.style.display !== 'none';
+    row.style.display = visible ? 'none' : 'table-row';
+    const toggle = document.querySelector(`.sale-row[data-id="${id}"] .sale-items-toggle`);
+    if (toggle) toggle.textContent = toggle.textContent.replace(visible ? '▴' : '▾', visible ? '▾' : '▴');
 }
 
 // ─── Search ───────────────────────────────────────────────────────────────────

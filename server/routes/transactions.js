@@ -59,9 +59,9 @@ router.get('/stats', async (req, res) => {
 
         const { rows: [r] } = await db.query(
             `SELECT
-                COALESCE(SUM(total) FILTER (WHERE date::date = CURRENT_DATE), 0)                                  AS sales_today,
-                COALESCE(SUM(total) FILTER (WHERE date_trunc('month',date) = date_trunc('month',NOW())), 0)       AS sales_month,
-                COUNT(*) FILTER (WHERE date_trunc('month',date) = date_trunc('month',NOW()))                      AS orders_month,
+                COALESCE(SUM(total) FILTER (WHERE DATE(date AT TIME ZONE 'America/Lima') = DATE(NOW() AT TIME ZONE 'America/Lima')), 0)  AS sales_today,
+                COALESCE(SUM(total) FILTER (WHERE date_trunc('month', date AT TIME ZONE 'America/Lima') = date_trunc('month', NOW() AT TIME ZONE 'America/Lima')), 0) AS sales_month,
+                COUNT(*) FILTER (WHERE date_trunc('month', date AT TIME ZONE 'America/Lima') = date_trunc('month', NOW() AT TIME ZONE 'America/Lima'))               AS orders_month,
                 COUNT(*)                                                                                           AS total_orders
              FROM transactions t WHERE 1=1 ${scope.where}${sellerWhere}`,
             params
@@ -90,13 +90,23 @@ router.get('/recent', async (req, res) => {
         }
         params.push(parseInt(req.query.limit) || 5);
         const { rows } = await db.query(
-            `SELECT t.id, t.date, t.total, t.profit, t.payment_method, t.seller_name
+            `SELECT t.id, t.date, t.total, t.profit, t.payment_method, t.seller_name,
+                    json_agg(json_build_object(
+                        'product_name', ti.product_name,
+                        'quantity', ti.quantity,
+                        'unit_price', ti.unit_price,
+                        'total', ti.total
+                    ) ORDER BY ti.id) AS items
              FROM transactions t
+             LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
              WHERE 1=1 ${scope.where}${sellerWhere}
-             ORDER BY t.date DESC
+             GROUP BY t.id ORDER BY t.date DESC
              LIMIT $${params.length}`,
             params
         );
+        rows.forEach(r => {
+            if (r.items && r.items[0] && r.items[0].product_name === null) r.items = [];
+        });
         res.json(rows);
     } catch (err) {
         console.error(err);

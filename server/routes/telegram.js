@@ -1,4 +1,4 @@
-// ══════════════════════════════════════════════════════════════════════════════
+﻿// ══════════════════════════════════════════════════════════════════════════════
 // Vendix Telegram Bot — roles: Super Admin / Business Admin / Seller
 // ══════════════════════════════════════════════════════════════════════════════
 const router = require('express').Router();
@@ -167,7 +167,7 @@ async function handleSAStats(chatId) {
                COALESCE(SUM(total),0) AS revenue,
                COUNT(DISTINCT business_id)::int AS businesses
         FROM transactions
-        WHERE DATE(date AT TIME ZONE 'America/Lima')=CURRENT_DATE AT TIME ZONE 'America/Lima'
+        WHERE DATE(date AT TIME ZONE 'America/Lima')=DATE(NOW() AT TIME ZONE 'America/Lima')
     `);
     const { rows: [biz] } = await q(`SELECT COUNT(*)::int AS total FROM businesses`);
     const { rows: [users] } = await q(`SELECT COUNT(*)::int AS total FROM users WHERE role!='Super Admin'`);
@@ -210,7 +210,7 @@ async function handleLeadDetail(chatId, leadId) {
         `📱 Teléfono: ${l.phone}\n` +
         `📧 Email: ${l.email || '—'}\n` +
         `💳 Pago: ${l.paid ? '✅ Confirmado' : '⏳ Pendiente'}\n` +
-        `📅 Fecha: ${new Date(l.created_at).toLocaleDateString('es-PE')}`,
+        `📅 Fecha: ${new Date(l.created_at).toLocaleDateString('es-PE',{timeZone:'America/Lima'})}`,
         { reply_markup: { inline_keyboard: [
             [{ text: '✅ Crear cuenta ahora', callback_data: `create_lead_${l.id}` }],
             [{ text: '📋 Ver todas', callback_data: 'sa_leads' }, { text: '🏠 Menú', callback_data: 'menu' }]
@@ -355,14 +355,14 @@ async function handleStatsToday(chatId, user) {
     const params   = isSA(user) ? [] : [user.business_id];
     const { rows: [tx] } = await q(
         `SELECT COUNT(*)::int AS orders, COALESCE(SUM(total),0) AS revenue
-         FROM transactions t ${bizWhere} ${bizWhere ? 'AND' : 'WHERE'} DATE(date AT TIME ZONE 'America/Lima')=CURRENT_DATE AT TIME ZONE 'America/Lima'`
+         FROM transactions t ${bizWhere} ${bizWhere ? 'AND' : 'WHERE'} DATE(date AT TIME ZONE 'America/Lima')=DATE(NOW() AT TIME ZONE 'America/Lima')`
             .replace('WHERE AND', 'WHERE'),
         params
     );
     // simpler query
     const p2 = isSA(user) ? [] : [user.business_id];
-    const w2 = isSA(user) ? "WHERE DATE(t.date AT TIME ZONE 'America/Lima')=CURRENT_DATE AT TIME ZONE 'America/Lima'"
-                           : "WHERE t.business_id=$1 AND DATE(t.date AT TIME ZONE 'America/Lima')=CURRENT_DATE AT TIME ZONE 'America/Lima'";
+    const w2 = isSA(user) ? "WHERE DATE(t.date AT TIME ZONE 'America/Lima')=DATE(NOW() AT TIME ZONE 'America/Lima')"
+                           : "WHERE t.business_id=$1 AND DATE(t.date AT TIME ZONE 'America/Lima')=DATE(NOW() AT TIME ZONE 'America/Lima')";
     const { rows: sellers } = await q(
         `SELECT u.full_name, COALESCE(SUM(t.total),0) AS total, COUNT(t.id)::int AS orders
          FROM transactions t JOIN users u ON u.id=t.seller_id
@@ -371,8 +371,21 @@ async function handleStatsToday(chatId, user) {
     const sText = sellers.length
         ? sellers.map((s, i) => `  ${['🥇','🥈','🥉'][i]} ${s.full_name} — ${sol(s.total)}`).join('\n')
         : '  Sin ventas aún';
+
+    const p3 = isSA(user) ? [] : [user.business_id];
+    const w3 = isSA(user) ? "WHERE DATE(t.date AT TIME ZONE 'America/Lima')=DATE(NOW() AT TIME ZONE 'America/Lima')"
+                           : "WHERE t.business_id=$1 AND DATE(t.date AT TIME ZONE 'America/Lima')=DATE(NOW() AT TIME ZONE 'America/Lima')";
+    const { rows: products } = await q(
+        `SELECT ti.product_name, SUM(ti.quantity)::int AS qty, COALESCE(SUM(ti.total),0) AS revenue
+         FROM transaction_items ti JOIN transactions t ON t.id=ti.transaction_id
+         ${w3} GROUP BY ti.product_name ORDER BY qty DESC LIMIT 3`, p3
+    );
+    const pText = products.length
+        ? products.map((p, i) => `  ${['🥇','🥈','🥉'][i]} ${p.product_name} — ×${p.qty} (${sol(p.revenue)})`).join('\n')
+        : '  Sin ventas aún';
+
     await send(chatId,
-        `📊 <b>Estadísticas de hoy</b>\n\n💰 ${sol(tx.revenue)}\n🛒 ${tx.orders} órdenes\n\n<b>Top vendedores:</b>\n${sText}`,
+        `📊 <b>Estadísticas de hoy</b>\n\n💰 ${sol(tx.revenue)}\n🛒 ${tx.orders} órdenes\n\n<b>Top vendedores:</b>\n${sText}\n\n<b>Productos más vendidos:</b>\n${pText}`,
         { reply_markup: { inline_keyboard: [[{ text: '🏠 Menú', callback_data: 'menu' }]] } }
     );
 }
@@ -381,7 +394,7 @@ async function handleMyStats(chatId, user) {
     const { rows: [r] } = await q(
         `SELECT COUNT(*)::int AS orders, COALESCE(SUM(total),0) AS revenue
          FROM transactions
-         WHERE seller_id=$1 AND DATE(date AT TIME ZONE 'America/Lima')=CURRENT_DATE AT TIME ZONE 'America/Lima'`,
+         WHERE seller_id=$1 AND DATE(date AT TIME ZONE 'America/Lima')=DATE(NOW() AT TIME ZONE 'America/Lima')`,
         [user.id]
     );
     await send(chatId,
@@ -419,17 +432,25 @@ async function handleLowStock(chatId, user) {
 
 async function handleRecentSales(chatId, user) {
     const { rows } = await q(
-        `SELECT t.total, t.date, u.full_name AS seller
-         FROM transactions t JOIN users u ON u.id=t.seller_id
-         WHERE t.business_id=$1 ORDER BY t.date DESC LIMIT 8`,
+        `SELECT t.id, t.total, t.date, t.payment_method, t.seller_name,
+                json_agg(json_build_object('name', ti.product_name, 'qty', ti.quantity, 'total', ti.total) ORDER BY ti.id) AS items
+         FROM transactions t
+         LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
+         WHERE t.business_id=$1
+         GROUP BY t.id ORDER BY t.date DESC LIMIT 8`,
         [user.business_id]
     );
     if (!rows.length) return send(chatId, '💰 No hay ventas aún.',
         { reply_markup: { inline_keyboard: [[{ text: '🏠 Menú', callback_data: 'menu' }]] } });
     const lines = rows.map(t => {
-        const d = new Date(t.date).toLocaleString('es-PE', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
-        return `• ${sol(t.total)} — ${t.seller} · ${d}`;
-    }).join('\n');
+        const d = new Date(t.date).toLocaleString('es-PE',{timeZone:'America/Lima',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+        const items = (t.items && t.items[0] && t.items[0].name) ? t.items : [];
+        const itemLines = items.map((it, i) => {
+            const connector = i === items.length - 1 ? '└' : '├';
+            return `  ${connector} ${it.name} ×${it.qty} → ${sol(it.total)}`;
+        }).join('\n');
+        return `💰 <b>Venta #${String(t.id).padStart(4,'0')}</b> — ${sol(t.total)}\n${itemLines ? itemLines + '\n' : ''}  📅 ${d} · ${t.seller_name || '—'}`;
+    }).join('\n\n');
     await send(chatId, `💰 <b>Ventas recientes</b>\n\n${lines}`,
         { reply_markup: { inline_keyboard: [[{ text: '🏠 Menú', callback_data: 'menu' }]] } });
 }
@@ -719,7 +740,7 @@ async function handleSAUserActions(chatId, userId) {
         WHERE u.id = $1`, [userId]);
     if (!u) return send(chatId, '❌ Usuario no encontrado.');
 
-    const trialInfo = u.is_paid ? '✅ Pagado' : (u.trial_ends_at ? `⏳ Trial hasta ${new Date(u.trial_ends_at).toLocaleDateString('es-PE')}` : '⚠️ Sin plan');
+    const trialInfo = u.is_paid ? '✅ Pagado' : (u.trial_ends_at ? `⏳ Trial hasta ${new Date(u.trial_ends_at).toLocaleDateString('es-PE',{timeZone:'America/Lima'})}` : '⚠️ Sin plan');
     const toggleLabel = u.status === 'Active' ? '🔴 Desactivar' : '🟢 Activar';
 
     await send(chatId,
@@ -782,7 +803,7 @@ async function handleSAProfile(chatId, userId) {
         `🛒 Órdenes totales: ${st.orders || 0}\n` +
         `💰 Ventas totales: ${sol(st.revenue)}\n` +
         `📈 Ganancia total: ${sol(st.profit)}\n\n` +
-        `Plan: ${u.is_paid ? '✅ Pagado' : (u.trial_ends_at ? `⏳ Trial hasta ${new Date(u.trial_ends_at).toLocaleDateString('es-PE')}` : '⚠️ Sin plan')}\n` +
+        `Plan: ${u.is_paid ? '✅ Pagado' : (u.trial_ends_at ? `⏳ Trial hasta ${new Date(u.trial_ends_at).toLocaleDateString('es-PE',{timeZone:'America/Lima'})}` : '⚠️ Sin plan')}\n` +
         `Estado: <b>${u.status}</b>`,
         { reply_markup: { inline_keyboard: [[{ text: '◀️ Volver', callback_data: `mgr_user_${userId}` }]] } }
     );
@@ -1135,7 +1156,8 @@ router.post('/webhook', async (req, res) => {
 
 // ─── Setup webhook ────────────────────────────────────────────────────────────
 router.get('/setup', async (req, res) => {
-    const host = process.env.VERCEL_URL || req.headers.host;
+    // Always use the canonical domain — VERCEL_URL changes every deploy
+    const host = process.env.WEBHOOK_HOST || 'vendix-app.vercel.app';
     const url  = `https://${host}/api/telegram/webhook`;
     const r    = await tg('setWebhook', { url, allowed_updates: ['message', 'callback_query'] });
     res.json({ url, result: r });

@@ -8,46 +8,46 @@
 }
 
 :root {
-    /* Brand */
-    --primary:        #6366f1;
-    --primary-dark:   #4f46e5;
-    --primary-light:  #818cf8;
-    --primary-faint:  rgba(99, 102, 241, 0.08);
+    /* Brand — green */
+    --primary:        #00C864;
+    --primary-dark:   #059669;
+    --primary-light:  #34D399;
+    --primary-faint:  rgba(0, 200, 100, 0.09);
 
     /* Semantic */
-    --success:  #10b981;
+    --success:  #00C864;
     --warning:  #f59e0b;
     --danger:   #ef4444;
     --info:     #3b82f6;
 
-    /* Neutral palette */
-    --bg:           #f1f5f9;
-    --surface:      #ffffff;
-    --surface-2:    #f8fafc;
-    --border:       #e2e8f0;
-    --border-soft:  #f1f5f9;
+    /* Neutral palette — dark */
+    --bg:           #05100B;
+    --surface:      #0B1E13;
+    --surface-2:    #0F2A1D;
+    --border:       rgba(0,200,100,0.13);
+    --border-soft:  rgba(0,200,100,0.07);
 
     /* Text */
-    --text-1:  #0f172a;
-    --text-2:  #475569;
-    --text-3:  #94a3b8;
+    --text-1:  #F0FDF4;
+    --text-2:  #A7C4B0;
+    --text-3:  #4B7A64;
 
-    /* Sidebar (dark) */
-    --sidebar-bg:       #0f172a;
-    --sidebar-hover:    rgba(255,255,255,0.06);
-    --sidebar-active:   rgba(99,102,241,0.18);
-    --sidebar-text:     #94a3b8;
-    --sidebar-text-act: #e2e8f0;
+    /* Sidebar */
+    --sidebar-bg:       #030907;
+    --sidebar-hover:    rgba(0,200,100,0.07);
+    --sidebar-active:   rgba(0,200,100,0.15);
+    --sidebar-text:     #4B7A64;
+    --sidebar-text-act: #F0FDF4;
     --sidebar-width:    260px;
 
     /* Layout */
     --navbar-h: 64px;
 
     /* Shadows */
-    --shadow-xs: 0 1px 2px rgba(0,0,0,.05);
-    --shadow-sm: 0 2px 8px rgba(0,0,0,.06);
-    --shadow-md: 0 4px 16px rgba(0,0,0,.08);
-    --shadow-lg: 0 12px 32px rgba(0,0,0,.12);
+    --shadow-xs: 0 1px 2px rgba(0,0,0,.2);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.25);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.3);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,.4);
 
     /* Motion */
     --ease: all .22s cubic-bezier(.4,0,.2,1);
@@ -150,7 +150,7 @@ body {
 
 .nav-item.active .nav-link {
     background: var(--sidebar-active);
-    color: var(--primary-light);
+    color: var(--primary);
 }
 
 .nav-link svg { flex-shrink: 0; opacity: .85; }
@@ -772,6 +772,27 @@ body {
 .profit-positive { color: var(--success); font-weight: 600; }
 .profit-negative { color: var(--danger);  font-weight: 600; }
 
+.sale-items-toggle {
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 12px;
+    white-space: nowrap;
+    user-select: none;
+}
+.sale-items-toggle:hover { text-decoration: underline; }
+.sale-items-detail td { padding: 0 !important; }
+.sale-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 16px 8px 48px;
+    background: var(--surface-2);
+    border-left: 2px solid var(--primary);
+    font-size: 12px;
+    color: var(--text-2);
+    font-family: monospace;
+}
+
 /* ═══════════════════════════════════════════════════════
    Product Grid (Sales page)
 ═══════════════════════════════════════════════════════ */
@@ -1109,62 +1130,51 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════
-   Dark Mode
+   Light Theme (white + green)
 ═══════════════════════════════════════════════════════ */
-[data-theme="dark"] {
-    --bg:        #0f172a;
-    --surface:   #1e293b;
-    --surface-2: #1e293b;
-    --border:    #334155;
-    --border-soft: #1e293b;
+[data-theme="light"] {
+    --bg:           #f1f5f9;
+    --surface:      #ffffff;
+    --surface-2:    #f8fafc;
+    --border:       #e2e8f0;
+    --border-soft:  #f1f5f9;
 
-    --text-1:    #f1f5f9;
-    --text-2:    #94a3b8;
-    --text-3:    #475569;
+    --text-1:  #0f172a;
+    --text-2:  #475569;
+    --text-3:  #94a3b8;
 
-    --sidebar-bg:      #020617;
-    --sidebar-hover:   rgba(255,255,255,0.06);
-    --sidebar-active:  rgba(99,102,241,0.22);
-    --sidebar-text:    #64748b;
-    --sidebar-text-act:#e2e8f0;
+    --sidebar-bg:       #0a1a0f;
+    --sidebar-hover:    rgba(0,200,100,0.08);
+    --sidebar-active:   rgba(0,200,100,0.15);
+    --sidebar-text:     #4B7A64;
+    --sidebar-text-act: #F0FDF4;
 
-    /* Update backwards-compatible aliases */
-    --background-white: var(--surface);
-    --background-light: var(--bg);
-    --background-gray:  var(--surface-2);
-    --text-primary:     var(--text-1);
-    --text-secondary:   var(--text-2);
-    --border-color:     var(--border);
+    --background-white: #ffffff;
+    --background-light: #f1f5f9;
+    --background-gray:  #f8fafc;
+    --text-primary:     #0f172a;
+    --text-secondary:   #475569;
+    --border-color:     #e2e8f0;
 }
 
-[data-theme="dark"] body { background: var(--bg); }
-
-[data-theme="dark"] .top-navbar {
-    background: var(--surface);
-    border-bottom-color: var(--border);
-}
-
-[data-theme="dark"] .modal-content { background: #1e293b; }
-
-[data-theme="dark"] .stat-card,
-[data-theme="dark"] .card,
-[data-theme="dark"] .settings-card,
-[data-theme="dark"] .settings-nav,
-[data-theme="dark"] .table-container,
-[data-theme="dark"] .admin-users-section {
-    background: var(--surface);
-    border-color: var(--border);
-}
-
-[data-theme="dark"] input,
-[data-theme="dark"] select,
-[data-theme="dark"] textarea {
-    background: #0f172a;
-    color: var(--text-1);
-    border-color: var(--border);
-}
-
-[data-theme="dark"] .search-bar { background: #0f172a; }
+[data-theme="light"] body { background: var(--bg); color: var(--text-1); }
+[data-theme="light"] .top-navbar { background: #fff; border-bottom-color: #e2e8f0; }
+[data-theme="light"] .stat-card,
+[data-theme="light"] .card,
+[data-theme="light"] .settings-card,
+[data-theme="light"] .settings-nav,
+[data-theme="light"] .table-container,
+[data-theme="light"] .admin-users-section { background: #fff; border-color: #e2e8f0; }
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea { background: #f8fafc; color: #0f172a; border-color: #e2e8f0; }
+[data-theme="light"] .search-bar { background: #f1f5f9; }
+[data-theme="light"] .modal-content { background: #fff; }
+[data-theme="light"] .user-name { color: #0f172a; }
+[data-theme="light"] .user-role { color: #94a3b8; }
+[data-theme="light"] .page-header h1 { color: #0f172a; }
+[data-theme="light"] .stat-label { color: #475569; }
+[data-theme="light"] .stat-value { color: #0f172a; }
 
 /* ═══════════════════════════════════════════════════════
    Compact Sidebar
