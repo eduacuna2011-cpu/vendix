@@ -90,7 +90,7 @@ window.addToCart = function(productId) {
     const existing = cart.find(i => i.id === productId);
     if (existing) {
         if (existing.quantity < product.stock) existing.quantity++;
-        else { alert('Cannot add more than available stock!'); return; }
+        else { showNotification('Stock insuficiente', true); return; }
     } else {
         cart.push({
             id:        product.id,
@@ -110,7 +110,7 @@ window.updateQuantity = function(productId, change) {
     if (!item) return;
     const newQty = item.quantity + change;
     if (newQty <= 0)              { removeFromCart(productId); return; }
-    if (newQty > item.maxStock)   { alert('Cannot exceed available stock!'); return; }
+    if (newQty > item.maxStock)   { showNotification('Stock insuficiente', true); return; }
     item.quantity = newQty;
     renderCart();
 };
@@ -175,9 +175,9 @@ document.querySelectorAll('.payment-method-option').forEach(opt => {
 
 // ─── Complete Sale ────────────────────────────────────────────────────────────
 completeSaleBtn.addEventListener('click', () => {
-    if (!cart.length) { alert('Cart is empty!'); return; }
+    if (!cart.length) { showNotification('El carrito está vacío', true); return; }
     const pm = document.querySelector('input[name="paymentMethod"]:checked');
-    if (!pm) { alert('Please select a payment method!'); return; }
+    if (!pm) { showNotification('Selecciona un método de pago', true); return; }
     completeSale(pm.value);
 });
 
@@ -220,7 +220,7 @@ async function completeSale(paymentMethod) {
         Promise.all([loadProducts(productSearch?.value || ''), loadRecentSales()]);
         showSaleCompletedModal();
     } catch (err) {
-        alert('Sale failed: ' + err.message);
+        showNotification('Error al procesar la venta: ' + err.message, true);
     } finally {
         completeSaleBtn.disabled = false;
         completeSaleBtn.textContent = 'Complete Sale';
@@ -230,7 +230,7 @@ async function completeSale(paymentMethod) {
 // ─── Receipt rendering ────────────────────────────────────────────────────────
 function renderReceipt(receipt) {
     const date = new Date(receipt.date);
-    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const formattedDate = date.toLocaleString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     document.getElementById('receiptContent').innerHTML = `
         <div class="receipt-header">
@@ -270,7 +270,7 @@ window.viewReceiptById = function(id) {
         renderReceipt(receipt);
         document.getElementById('receiptModal').classList.add('show');
     } else {
-        alert('Full receipt not available for this transaction.\nIt may have been completed in a previous session.');
+        showNotification('Recibo no disponible para esta venta (sesión anterior)', true);
     }
 };
 
@@ -293,7 +293,7 @@ function downloadLastReceiptPDF() {
         const receipt = JSON.parse(localStorage.getItem('lastReceipt'));
         if (!receipt) return;
         const date = new Date(receipt.date);
-        const fd   = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const fd   = date.toLocaleString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         let text = `INVENTORY SALES SYSTEM\n${'='.repeat(24)}\nReceipt #${receipt.receiptNumber}\nDate: ${fd}\nSeller: ${receipt.seller}\nPayment: ${receipt.paymentMethod}\n${'-'.repeat(24)}\n`;
         (receipt.items || []).forEach(i => {
             text += `${i.name}\n  ${i.sku} x${i.quantity} @ S/. ${i.price.toFixed(2)} = S/. ${(i.price * i.quantity).toFixed(2)}\n`;

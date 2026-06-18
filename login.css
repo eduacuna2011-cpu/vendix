@@ -1,18 +1,18 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-    --navy:    #060d2e;
-    --navy-2:  #0d1b4b;
-    --indigo:  #6366f1;
-    --indigo-d:#4f46e5;
-    --purple:  #8b5cf6;
-    --success: #10b981;
+    --navy:    #05100B;
+    --navy-2:  #0B1E13;
+    --indigo:  #00C864;
+    --indigo-d:#059669;
+    --purple:  #34D399;
+    --success: #00C864;
     --danger:  #ef4444;
-    --text-1:  #0f172a;
-    --text-2:  #475569;
-    --text-3:  #94a3b8;
-    --border:  #e2e8f0;
-    --bg:      #f8fafc;
+    --text-1:  #F0FDF4;
+    --text-2:  #A7C4B0;
+    --text-3:  #4B7A64;
+    --border:  rgba(0,200,100,0.15);
+    --bg:      #0B1E13;
 }
 
 body {
@@ -33,7 +33,7 @@ body::before {
     content: '';
     position: fixed; top: -30vh; left: 50%; transform: translateX(-50%);
     width: 900px; height: 900px;
-    background: radial-gradient(circle, rgba(99,102,241,.18) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(0,200,100,.12) 0%, transparent 65%);
     pointer-events: none;
 }
 
@@ -41,7 +41,7 @@ body::after {
     content: '';
     position: fixed; bottom: -20vh; right: -10vw;
     width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(139,92,246,.12) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(0,200,100,.06) 0%, transparent 65%);
     pointer-events: none;
 }
 
@@ -52,14 +52,14 @@ body::after {
     max-width: 980px;
     border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 32px 100px rgba(0,0,0,.55), 0 0 0 1px rgba(99,102,241,.2);
+    box-shadow: 0 32px 100px rgba(0,0,0,.55), 0 0 0 1px rgba(0,200,100,.15);
     position: relative; z-index: 1;
 }
 
 /* ── LEFT: FORM SIDE ── */
 .login-card {
     flex: 1;
-    background: #fff;
+    background: #0B1E13;
     padding: 52px 48px;
     display: flex;
     flex-direction: column;
@@ -79,9 +79,9 @@ body::after {
 
 .logo-icon {
     width: 52px; height: 52px; border-radius: 14px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #00C864, #059669);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 24px rgba(99,102,241,.4);
+    box-shadow: 0 8px 24px rgba(0,200,100,.4);
 }
 
 .login-header h1 {
@@ -146,8 +146,8 @@ body::after {
 
 .input-wrapper input:focus {
     border-color: var(--indigo);
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+    background: rgba(0,200,100,.04);
+    box-shadow: 0 0 0 3px rgba(0,200,100,.12);
 }
 
 .input-wrapper input::placeholder { color: var(--text-3); }
@@ -224,7 +224,7 @@ body::after {
 /* ── LOGIN BUTTON ── */
 .login-btn {
     width: 100%; padding: 15px;
-    background: linear-gradient(135deg, var(--indigo), var(--purple));
+    background: linear-gradient(135deg, #00C864, #059669);
     color: #fff; border: none; border-radius: 12px;
     font-size: 15px; font-weight: 800; font-family: inherit;
     cursor: pointer; transition: all .2s;
@@ -236,7 +236,7 @@ body::after {
 
 .login-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(99,102,241,.5);
+    box-shadow: 0 8px 28px rgba(0,200,100,.5);
 }
 
 .login-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
@@ -288,7 +288,7 @@ body::after {
     content: '';
     position: absolute; top: -200px; right: -100px;
     width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(99,102,241,.2) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(0,200,100,.15) 0%, transparent 65%);
     pointer-events: none;
 }
 
@@ -301,7 +301,7 @@ body::after {
 
 .info-brand-icon {
     width: 42px; height: 42px; border-radius: 11px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #00C864, #059669);
     display: flex; align-items: center; justify-content: center;
 }
 
@@ -317,7 +317,7 @@ body::after {
 }
 
 .info-content h2 span {
-    background: linear-gradient(135deg, #818cf8, #c084fc);
+    background: linear-gradient(135deg, #00C864, #34D399);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 
@@ -340,10 +340,10 @@ body::after {
 
 .feature-icon {
     width: 34px; height: 34px; border-radius: 9px;
-    background: rgba(99,102,241,.2);
-    border: 1px solid rgba(99,102,241,.3);
+    background: rgba(0,200,100,.15);
+    border: 1px solid rgba(0,200,100,.25);
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; color: #818cf8;
+    flex-shrink: 0; color: #00C864;
 }
 
 .info-divider {

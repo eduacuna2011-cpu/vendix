@@ -62,6 +62,27 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+// PATCH /api/users/:id/profile  — self-service name update (any authenticated user for their own account)
+router.patch('/:id/profile', async (req, res) => {
+    try {
+        // Only allow users to update their own profile
+        if (String(req.user.id) !== String(req.params.id) && req.user.role !== 'Super Admin') {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+        const { fullName } = req.body;
+        if (!fullName || !fullName.trim()) return res.status(400).json({ error: 'fullName required' });
+        const { rows: [u] } = await db.query(
+            'UPDATE users SET full_name = $1 WHERE id = $2 RETURNING id, full_name, username, role',
+            [fullName.trim(), req.params.id]
+        );
+        if (!u) return res.status(404).json({ error: 'Not found' });
+        res.json(u);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // GET /api/users/:id/profile  — business profile + stats for modal
 router.get('/:id/profile', async (req, res) => {
     try {

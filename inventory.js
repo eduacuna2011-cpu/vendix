@@ -96,6 +96,8 @@ productForm.addEventListener('submit', async (e) => {
         salePrice: parseFloat(document.getElementById('salePrice').value) || 0,
         image:     currentImageData
     };
+    const submitBtn = e.target.querySelector('[type=submit]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Guardando…'; }
     try {
         if (id) {
             await updateProduct(parseInt(id), productData);
@@ -104,7 +106,11 @@ productForm.addEventListener('submit', async (e) => {
         }
         closeModal();
         await Promise.all([loadProducts(), updateStats()]);
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) {
+        showNotification('Error: ' + err.message, true);
+    } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = id ? 'Actualizar' : 'Agregar producto'; }
+    }
 });
 
 function getStockBadge(stock) {
@@ -169,8 +175,9 @@ window.editProduct = function(id) {
 };
 
 window.deleteProductHandler = async function(id) {
-    if (!confirm('Delete this product?')) return;
-    // Optimistic: remove row immediately
+    const product = _productsCache.find(p => p.id === id);
+    const name = product ? `"${product.name}"` : 'este producto';
+    if (!confirm(`¿Eliminar ${name}? Esta acción no se puede deshacer.`)) return;
     const row = document.querySelector(`button[onclick="deleteProductHandler(${id})"]`)?.closest('tr');
     if (row) row.remove();
     try {
@@ -178,7 +185,7 @@ window.deleteProductHandler = async function(id) {
         await Promise.all([loadProducts(), updateStats()]);
     } catch (err) {
         await Promise.all([loadProducts(), updateStats()]);
-        alert('Error: ' + err.message);
+        showNotification('Error: ' + err.message, true);
     }
 };
 

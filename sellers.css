@@ -469,7 +469,7 @@
 }
 
 /* Stat Icon Colors */
-.stat-icon.total-sellers  { background: rgba(99,102,241,.12); color: #6366f1; }
+.stat-icon.total-sellers  { background: rgba(0,200,100,.12); color: #00C864; }
 .stat-icon.active-sellers { background: rgba(16,185,129,.12);  color: #10b981; }
 .stat-icon.total-sales    { background: rgba(245,158,11,.12);  color: #f59e0b; }
 .stat-icon.total-commissions { background: rgba(139,92,246,.12); color: #8b5cf6; }
@@ -642,7 +642,7 @@
 .sp-hero-avatar {
     width: 72px; height: 72px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #00C864, #059669);
     color: #fff;
     font-size: 26px; font-weight: 800;
     display: flex; align-items: center; justify-content: center;
@@ -695,7 +695,7 @@
     display: flex; align-items: center; justify-content: center;
 }
 
-.sp-kpi-icon.indigo  { background: rgba(99,102,241,.12); color: #6366f1; }
+.sp-kpi-icon.indigo  { background: rgba(0,200,100,.12); color: #00C864; }
 .sp-kpi-icon.emerald { background: rgba(16,185,129,.12);  color: #10b981; }
 .sp-kpi-icon.violet  { background: rgba(139,92,246,.12);  color: #8b5cf6; }
 .sp-kpi-icon.amber   { background: rgba(245,158,11,.12);  color: #f59e0b; }

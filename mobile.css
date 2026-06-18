@@ -265,7 +265,7 @@
     /* ── Settings ── */
     .settings-layout { flex-direction: column !important; }
     .settings-nav    { width: 100% !important; flex-direction: row !important; overflow-x: auto; gap: 0 !important; padding: 8px !important; }
-    .settings-nav-item { white-space: nowrap !important; padding: 8px 14px !important; border-radius: 8px !important; }
+    .settings-tab { white-space: nowrap !important; padding: 8px 14px !important; border-radius: 8px !important; }
     .settings-card { padding: 18px !important; }
 
     /* ── Breadcrumb compact ── */

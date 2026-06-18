@@ -159,13 +159,13 @@ function renderChart(tx) {
                 },
                 tooltip: {
                     callbacks: {
-                        label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}`
+                        label: ctx => ` ${ctx.dataset.label}: S/. ${ctx.parsed.y.toFixed(2)}`
                     }
                 }
             },
             scales: {
                 x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 12 } } },
-                y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 12 }, callback: v => '$' + v.toLocaleString() }, beginAtZero: true }
+                y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 12 }, callback: v => 'S/. ' + v.toLocaleString() }, beginAtZero: true }
             }
         }
     });
@@ -370,15 +370,17 @@ async function renderSellerDashboard(user) {
             empty.style.display = 'none';
             tbody.innerHTML = myTx.slice().reverse().slice(0, 20).map(t => {
                 const items   = t.items || [];
-                const product = items[0] ? items[0].product_name : '—';
-                const qty     = items[0] ? items[0].quantity : '—';
+                const product = items.length
+                    ? items.map(i => `${escapeHtml(i.product_name)} ×${i.quantity}`).join(', ')
+                    : '—';
+                const totalQty = items.reduce((s, i) => s + (i.quantity || 0), 0) || '—';
                 const comm    = (parseFloat(t.total || 0) * commissionRate / 100).toFixed(2);
                 return `<tr>
-                    <td>${new Date(t.date).toLocaleDateString()}</td>
+                    <td>${new Date(t.date).toLocaleDateString('es-PE', { timeZone: 'America/Lima' })}</td>
                     <td>${product}</td>
-                    <td>${qty}</td>
+                    <td>${totalQty}</td>
                     <td>${fmt(t.total)}</td>
-                    <td>$${comm}</td>
+                    <td>S/. ${comm}</td>
                 </tr>`;
             }).join('');
         }
@@ -421,6 +423,7 @@ async function updateDashboardStats() {
 
 const _dashUser = initPage({ requireStore: true });
 if (_dashUser) {
+    checkOnboarding();
     if (isSeller() && !isSuperAdmin() && !isBusinessAdmin()) {
         renderSellerDashboard(_dashUser);
     } else {

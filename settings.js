@@ -88,20 +88,27 @@ function loadUserData() {
     if (clearCard && isSuperAdmin()) clearCard.style.display = 'none';
 }
 
-// Profile form — update name/email/phone via API (future endpoint); for now just local display
+// Profile form — update name via real API
 document.getElementById('profileForm').addEventListener('submit', async e => {
     e.preventDefault();
     clearFieldErrors('fullNameError', 'emailError');
     const fullName = document.getElementById('fullName').value.trim();
-    const email    = document.getElementById('email') ? document.getElementById('email').value.trim() : '';
-    const phone    = document.getElementById('phone') ? document.getElementById('phone').value.trim() : '';
-    if (!fullName) { setFieldError('fullNameError', 'Full name is required.'); return; }
-    // Profile updates would call PUT /api/users/:id or /api/sellers/:id
-    // For now save to settings key-value store
+    if (!fullName) { setFieldError('fullNameError', 'El nombre es obligatorio.'); return; }
+
+    const btn = e.target.querySelector('[type=submit]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
     try {
-        await saveSettings({ profileName: fullName, profileEmail: email, profilePhone: phone });
-        showToast('Profile saved!');
+        const user = getCurrentUser();
+        const res  = await fetch(`/api/users/${user.sub || user.id}/profile`, {
+            method:  'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+            body:    JSON.stringify({ fullName })
+        });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.error || 'Error al guardar');
+        showToast('Perfil actualizado');
     } catch (err) { showToast('Error: ' + err.message, true); }
+    finally { if (btn) { btn.disabled = false; btn.textContent = 'Guardar cambios'; } }
 });
 
 // Password change via API
@@ -140,27 +147,29 @@ document.getElementById('passwordForm').addEventListener('submit', async e => {
     } catch (err) { showToast('Error: ' + err.message, true); }
 });
 
-// Username form — not supported after migration (usernames are immutable)
+// Username form — contact admin to change; show info message and hide the form
 const usernameForm = document.getElementById('usernameForm');
 if (usernameForm) {
-    usernameForm.addEventListener('submit', e => {
-        e.preventDefault();
-        showToast('Username changes require contacting a Super Admin.', true);
-    });
+    usernameForm.style.display = 'none';
+    const note = document.createElement('p');
+    note.style.cssText = 'color:var(--text-2);font-size:13px;margin:8px 0 0;';
+    note.textContent = 'Para cambiar tu usuario, contacta a un Super Administrador.';
+    usernameForm.parentNode.insertBefore(note, usernameForm.nextSibling);
 }
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 function setTheme(t) {
     localStorage.setItem('theme', t);
-    if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-    else              document.documentElement.removeAttribute('data-theme');
+    // :root IS the dark theme; [data-theme="light"] overrides to white
+    if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else               document.documentElement.removeAttribute('data-theme');
     document.getElementById('themeLight').classList.toggle('active', t === 'light');
     document.getElementById('themeDark').classList.toggle('active',  t === 'dark');
     saveSettings({ theme: t }).catch(() => {});
 }
 
 const accentMap = {
-    indigo:  { p: '#6366f1', dark: '#4f46e5', light: '#818cf8' },
+    indigo:  { p: '#00C864', dark: '#059669', light: '#34D399' },  // Verde (brand default)
     blue:    { p: '#3b82f6', dark: '#2563eb', light: '#60a5fa' },
     violet:  { p: '#8b5cf6', dark: '#7c3aed', light: '#a78bfa' },
     rose:    { p: '#f43f5e', dark: '#e11d48', light: '#fb7185' },
@@ -219,7 +228,7 @@ function confirmClearData() {
 }
 
 function applyStoredPreferences() {
-    const savedTheme  = localStorage.getItem('theme') || 'light';
+    const savedTheme  = localStorage.getItem('theme') || 'dark';
     document.getElementById('themeLight').classList.toggle('active', savedTheme === 'light');
     document.getElementById('themeDark').classList.toggle('active',  savedTheme === 'dark');
     const savedAccent = localStorage.getItem('accent') || 'indigo';

@@ -45,10 +45,10 @@ function validateForm() {
     clearErrors();
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
-    if (!username) { showError('Username is required', 'username'); ok = false; }
-    else if (username.length < 3) { showError('Username must be at least 3 characters', 'username'); ok = false; }
-    if (!password) { showError('Password is required', 'password'); ok = false; }
-    else if (password.length < 6) { showError('Password must be at least 6 characters', 'password'); ok = false; }
+    if (!username) { showError('El usuario es obligatorio', 'username'); ok = false; }
+    else if (username.length < 3) { showError('El usuario debe tener al menos 3 caracteres', 'username'); ok = false; }
+    if (!password) { showError('La contraseña es obligatoria', 'password'); ok = false; }
+    else if (password.length < 6) { showError('La contraseña debe tener al menos 6 caracteres', 'password'); ok = false; }
     return ok;
 }
 
@@ -73,7 +73,7 @@ loginForm.addEventListener('submit', async (e) => {
         const data = await res.json();
 
         if (!res.ok) {
-            showError(data.error || 'Invalid username or password');
+            showError(data.error || 'Usuario o contraseña incorrectos');
             return;
         }
 
@@ -85,7 +85,7 @@ loginForm.addEventListener('submit', async (e) => {
         const user = data.user;
         window.location.href = user.role === 'Super Admin' ? 'users.html' : 'index.html';
     } catch (err) {
-        showError('Connection error. Please try again.');
+        showError('Error de conexión. Intenta de nuevo.');
     } finally {
         loginBtn.disabled = false;
         loginBtn.classList.remove('loading');

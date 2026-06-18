@@ -118,7 +118,7 @@ async function showAdminPassword(id) {
         showQuickCredPopup(result.full_name || '', result.username, result.temporaryPassword,
             generateLoginLink(result.username, result.temporaryPassword));
     } catch {
-        alert('Could not reset password.');
+        showNotification('No se pudo restablecer la contraseña', true);
     }
 }
 
@@ -193,7 +193,7 @@ async function handleToggleStatus(id) {
         badge.textContent = wasActive ? 'Active' : 'Disabled';
         badge.className   = 'status-badge ' + (wasActive ? 'status-active' : 'status-disabled');
         if (btn) btn.classList.toggle('danger', wasActive);
-        alert('Error: ' + err.message);
+        showNotification('Error: ' + err.message, true);
     }
 }
 
@@ -226,7 +226,7 @@ async function viewBusinessProfile(id) {
             : data.sellers.map(s => `<tr><td>${escapeHtml(s.full_name)}</td><td>${escapeHtml(s.username)}</td><td>${escapeHtml(s.email||'—')}</td><td>${escapeHtml(s.phone||'—')}</td><td><span class="status-badge ${s.status==='Active'?'status-active':'status-disabled'}">${s.status}</span></td></tr>`).join('');
 
         statsModal.classList.add('show');
-    } catch (err) { alert('Error loading profile: ' + err.message); }
+    } catch (err) { showNotification('Error al cargar perfil', true); }
 }
 
 function hideStatsModal() { statsModal.classList.remove('show'); }
@@ -236,7 +236,7 @@ function copyAllCredentials() {
     const user = document.getElementById('credUsername').textContent;
     const pw   = document.getElementById('credPassword').textContent;
     navigator.clipboard.writeText(`Business: ${biz}\nUsername: ${user}\nPassword: ${pw}`)
-        .then(() => alert('Copied!')).catch(() => alert('Copy failed'));
+        .then(() => showNotification('Copiado')).catch(() => showNotification('No se pudo copiar', true));
 }
 
 // Event listeners
@@ -255,7 +255,7 @@ if (confirmDeleteBtn) {
             try {
                 await deleteAdminUser(deleteTargetId);
                 await Promise.all([loadAdminUsers(), loadStatistics()]);
-            } catch (err) { alert('Error deleting: ' + err.message); }
+            } catch (err) { showNotification('Error al eliminar: ' + err.message, true); }
         }
         hideDeleteModal();
     });
@@ -283,7 +283,7 @@ if (adminUserForm) {
             }
             hideAdminUserModal();
             await Promise.all([loadAdminUsers(), loadStatistics()]);
-        } catch (err) { alert('Error: ' + err.message); }
+        } catch (err) { showNotification('Error: ' + err.message, true); }
     });
 }
 
@@ -311,7 +311,7 @@ function renderTrialBadge(user) {
 async function sendCredsWhatsApp(id) {
     const user = _usersCache.find(u => u.id === id);
     if (!user) return;
-    if (!user.phone) { alert('Este usuario no tiene número de WhatsApp registrado.'); return; }
+    if (!user.phone) { showNotification('Este usuario no tiene número de WhatsApp registrado', true); return; }
     if (!confirm(`Esto generará una nueva contraseña para ${user.full_name} y abrirá WhatsApp. ¿Continuar?`)) return;
 
     // Open blank tab NOW (sync context) to avoid popup blocker
@@ -333,7 +333,7 @@ async function sendCredsWhatsApp(id) {
         tab.location.href = `https://wa.me/${number}?text=${msg}`;
     } catch (err) {
         tab.close();
-        alert('Error: ' + err.message);
+        showNotification('Error: ' + err.message, true);
     }
 }
 
@@ -342,7 +342,7 @@ async function handleMarkUserPaid(id) {
     try {
         await markUserPaid(id);
         await loadAdminUsers();
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { showNotification('Error: ' + err.message, true); }
 }
 
 async function handleExtendTrial(id) {
@@ -351,7 +351,7 @@ async function handleExtendTrial(id) {
     try {
         await extendUserTrial(id, parseInt(days));
         await loadAdminUsers();
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { showNotification('Error: ' + err.message, true); }
 }
 
 if (searchInput)  searchInput.addEventListener('input',  debounce(loadAdminUsers, 300));
@@ -477,7 +477,7 @@ async function handleMarkPaid(id) {
     } catch (err) {
         lead.paid = !lead.paid;
         renderLeads(_leadsCache);
-        alert('Error: ' + err.message);
+        showNotification('Error: ' + err.message, true);
     }
 }
 
@@ -521,7 +521,7 @@ async function handleCreateAccount(id) {
         loadAdminUsers();
     } catch (err) {
         if (btn) { btn.disabled = false; btn.textContent = 'Crear cuenta'; }
-        alert('Error: ' + err.message);
+        showNotification('Error: ' + err.message, true);
     }
 }
 

@@ -385,7 +385,7 @@
 .session-info { padding: 16px 24px; border-top: 1px solid var(--border-color); }
 
 /* ── Danger zone ── */
-.danger-card { border-color: #fecaca; }
+.danger-card { border-color: rgba(239,68,68,0.35); }
 
 .danger-row {
     display: flex;
@@ -393,7 +393,7 @@
     justify-content: space-between;
     padding: 20px 24px;
     gap: 20px;
-    border-bottom: 1px solid #fecaca;
+    border-bottom: 1px solid rgba(239,68,68,0.25);
 }
 
 .danger-row:last-child { border-bottom: none; }

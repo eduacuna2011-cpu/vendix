@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#00C864">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Vendix">
@@ -16,8 +16,8 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --primary:   #6366f1;
-            --primary-d: #4f46e5;
+            --primary:   #00C864;
+            --primary-d: #059669;
             --success:   #10b981;
             --danger:    #ef4444;
             --text-1:    #0f172a;
@@ -53,7 +53,7 @@
 
         .topbar-logo-icon {
             width: 32px; height: 32px; border-radius: 8px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #00C864, #059669);
             display: flex; align-items: center; justify-content: center;
         }
 
@@ -134,7 +134,7 @@
         }
 
         .plan-option:hover { border-color: var(--primary); }
-        .plan-option.selected { border-color: var(--primary); background: rgba(99,102,241,.04); }
+        .plan-option.selected { border-color: var(--primary); background: rgba(0,200,100,.12); }
 
         .plan-option input[type="radio"] { display: none; }
 
@@ -167,7 +167,7 @@
 
         .plan-badge {
             position: absolute; top: -8px; right: 12px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #00C864, #059669);
             color: #fff; font-size: 10px; font-weight: 700;
             padding: 2px 10px; border-radius: 10px; text-transform: uppercase;
         }
@@ -274,16 +274,16 @@
         /* ── PAY BUTTON ── */
         .btn-pay {
             width: 100%; padding: 15px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #00C864, #059669);
             color: #fff; border: none; border-radius: 12px;
             font-size: 15px; font-weight: 800; font-family: inherit;
             cursor: pointer; transition: all .2s;
-            box-shadow: 0 4px 16px rgba(99,102,241,.35);
+            box-shadow: 0 4px 16px rgba(0,200,100,.12);
             margin-top: 20px;
             display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
-        .btn-pay:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,.45); }
+        .btn-pay:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,200,100,.12); }
         .btn-pay:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
         .pay-note {

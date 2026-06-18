@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#00C864">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Vendix">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <script>
-        (function(){var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+        (function(){var t=localStorage.getItem('theme')||'dark';if(t==='light')document.documentElement.setAttribute('data-theme','light');})();
     </script>
     <title>Platform Dashboard — Vendix</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +29,7 @@
         <div class="sidebar-header">
             <div class="logo">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <rect width="32" height="32" rx="6" fill="#6366f1"/>
+                    <rect width="32" height="32" rx="6" fill="#00C864"/>
                     <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <span>Vendix</span>
@@ -88,10 +88,10 @@
             <a href="https://t.me/vendixadmin_bot" target="_blank" style="
                 display:flex;align-items:center;gap:16px;
                 background:linear-gradient(135deg,#0d1b4b,#152158);
-                border:1px solid rgba(99,102,241,.3);
+                border:1px solid rgba(0,200,100,.12);
                 border-radius:14px;padding:16px 22px;margin-bottom:20px;
                 text-decoration:none;transition:all .2s;
-            " onmouseover="this.style.borderColor='rgba(99,102,241,.6)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(99,102,241,.3)';this.style.transform=''">
+            " onmouseover="this.style.borderColor='rgba(0,200,100,.12)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(0,200,100,.12)';this.style.transform=''">
                 <div style="width:42px;height:42px;background:#229ED9;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <svg width="21" height="21" viewBox="0 0 24 24" fill="white"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
                 </div>
@@ -155,10 +155,10 @@
                         <p style="font-size:13px;color:var(--text-secondary);margin-top:3px;">Seguimiento de licencias vendidas y MRR de la plataforma.</p>
                     </div>
                     <span id="vendixSalesBadge" style="
-                        background:rgba(99,102,241,.1);color:#6366f1;
+                        background:rgba(0,200,100,.12);color:#00C864;
                         font-size:12px;font-weight:700;
                         padding:4px 14px;border-radius:20px;
-                        border:1px solid rgba(99,102,241,.2);
+                        border:1px solid rgba(0,200,100,.12);
                     ">Cargando...</span>
                 </div>
 
@@ -166,7 +166,7 @@
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;" id="vendixKpiRow">
                     <div class="plat-kpi-card" style="background:var(--surface);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;padding:18px;">
                         <div style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">MRR Activo</div>
-                        <div id="vMRR" style="font-size:24px;font-weight:900;color:#6366f1;">S/. 0</div>
+                        <div id="vMRR" style="font-size:24px;font-weight:900;color:#00C864;">S/. 0</div>
                         <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Ingresos mensuales</div>
                     </div>
                     <div class="plat-kpi-card" style="background:var(--surface);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;padding:18px;">
@@ -197,7 +197,7 @@
                                 <div style="font-size:13px;font-weight:600;">Plan Vendix</div>
                                 <div style="font-size:11px;color:var(--text-secondary);">S/. 15.99/mes</div>
                             </div>
-                            <span id="planVendix" style="background:rgba(99,102,241,.1);color:#6366f1;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;">0</span>
+                            <span id="planVendix" style="background:rgba(0,200,100,.12);color:#00C864;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;">0</span>
                         </div>
                         <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
                             <div style="display:flex;justify-content:space-between;font-size:13px;">
@@ -215,7 +215,7 @@
                         </div>
                         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-color,#e2e8f0);">
                             <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">MRR potencial si todos pagaran</div>
-                            <div id="planMRRPotencial" style="font-size:20px;font-weight:900;color:#6366f1;">S/. 0.00</div>
+                            <div id="planMRRPotencial" style="font-size:20px;font-weight:900;color:#00C864;">S/. 0.00</div>
                         </div>
                     </div>
 

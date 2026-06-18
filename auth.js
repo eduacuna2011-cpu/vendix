@@ -55,11 +55,36 @@ function isSeller() {
 function canAccessBusinessData() {
     const user = getCurrentUser();
     if (!user) return false;
-    
-    // Super Admin can access all business data
-    // Business Admin can access their own business data
-    // Seller can access their own business data
     return isSuperAdmin() || isBusinessAdmin() || isSeller();
+}
+
+// ─── Global toast notification (works on every page) ─────────────────────────
+function showNotification(msg, isError = false) {
+    const existing = document.getElementById('_globalToast');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.id = '_globalToast';
+    el.style.cssText = [
+        'position:fixed', 'bottom:24px', 'left:50%',
+        'transform:translateX(-50%) translateY(80px)',
+        'background:' + (isError ? '#dc2626' : '#00C864'),
+        'color:#fff', 'padding:12px 24px', 'border-radius:10px',
+        'font-size:14px', 'font-weight:600', 'z-index:99999',
+        'opacity:0', 'transition:all .3s cubic-bezier(.4,0,.2,1)',
+        'pointer-events:none', 'white-space:nowrap',
+        'box-shadow:0 4px 16px rgba(0,0,0,.3)'
+    ].join(';');
+    el.textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-50%) translateY(80px)';
+        setTimeout(() => el.remove(), 300);
+    }, 3200);
 }
 
 // Check if user can manage businesses (Super Admin only)
@@ -114,6 +139,30 @@ function requireAuth() {
         return false;
     }
     return true;
+}
+
+// Check onboarding — call on index.html after auth passes
+async function checkOnboarding() {
+    if (isSuperAdmin()) return;
+    const user = getCurrentUser();
+    if (!user) return;
+    const key = 'vendix_onboarded_' + (user.businessId || user.sub || '');
+    if (localStorage.getItem(key)) return;
+    // Check if business already has products (existing accounts skip onboarding)
+    try {
+        const data = await apiFetch('/products?limit=1');
+        const list = Array.isArray(data) ? data : (data.products || []);
+        if (list.length > 0) {
+            // Has products = existing account, mark done and skip
+            localStorage.setItem(key, '1');
+            return;
+        }
+        // No products = new account, send to onboarding
+        window.location.href = 'onboarding.html';
+    } catch {
+        // On error skip — never block existing users
+        localStorage.setItem(key, '1');
+    }
 }
 
 // Redirect if not authorized for specific role
@@ -215,14 +264,12 @@ function filterDataByBusinessId(data, businessId) {
 }
 
 // Check if user can access specific business data
-function canAccessBusinessData(businessId) {
+function canAccessSpecificBusiness(businessId) {
     const user = getCurrentUser();
     if (!user) return false;
-    
-    // Super Admin can access all business data
+
     if (isSuperAdmin()) return true;
-    
-    // Business Admin can access their own business data
+
     if (isBusinessAdmin()) {
         return getUserBusinessId() === businessId;
     }
@@ -346,16 +393,49 @@ function initSidebar() {
     });
 }
 
-// Wire logout on user profile click
+// User profile dropdown — shows settings link + logout option instead of raw confirm()
 function initUserProfileLogout() {
     const profile = document.querySelector('.user-profile');
     if (!profile) return;
     profile.style.cursor = 'pointer';
-    profile.title = 'Click to logout';
+    profile.title = 'Opciones de cuenta';
+
+    let dropdown = null;
+
+    function closeDropdown() {
+        if (dropdown) { dropdown.remove(); dropdown = null; }
+    }
+
     profile.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (confirm('Are you sure you want to logout?')) logout();
+        if (dropdown) { closeDropdown(); return; }
+
+        dropdown = document.createElement('div');
+        dropdown.style.cssText = [
+            'position:absolute', 'right:12px', 'top:56px',
+            'background:var(--surface)', 'border:1px solid var(--border)',
+            'border-radius:10px', 'box-shadow:0 8px 24px rgba(0,0,0,.3)',
+            'z-index:9999', 'min-width:180px', 'overflow:hidden',
+            'animation:fadeIn .15s ease'
+        ].join(';');
+        dropdown.innerHTML = `
+            <a href="settings.html" style="display:flex;align-items:center;gap:10px;padding:12px 16px;color:var(--text-1);text-decoration:none;font-size:14px;transition:background .15s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Configuración
+            </a>
+            <div style="height:1px;background:var(--border);margin:0 12px;"></div>
+            <button onclick="if(confirm('¿Cerrar sesión?'))logout()" style="display:flex;align-items:center;gap:10px;padding:12px 16px;color:#ef4444;font-size:14px;width:100%;background:none;border:none;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Cerrar sesión
+            </button>`;
+
+        // Position relative to navbar
+        const navbar = document.querySelector('.top-navbar') || document.body;
+        navbar.style.position = 'relative';
+        navbar.appendChild(dropdown);
+
+        setTimeout(() => document.addEventListener('click', closeDropdown, { once: true }), 0);
     });
 }
 
@@ -364,11 +444,11 @@ setTimeout(() => document.body.classList.add('page-ready'), 800);
 
 // Restore theme and accent preferences saved from Settings page
 function applyStoredTheme() {
-    const theme = localStorage.getItem('theme');
-    if (theme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
+    const theme = localStorage.getItem('theme') || 'dark'; // dark by default
+    if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
     } else {
-        document.documentElement.removeAttribute('data-theme');
+        document.documentElement.removeAttribute('data-theme'); // :root = dark green
     }
     // Trigger fade-in only after theme is applied — prevents white flash
     requestAnimationFrame(() => document.body.classList.add('page-ready'));

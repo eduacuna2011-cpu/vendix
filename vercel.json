@@ -1,6 +1,28 @@
 {
+  "alias": ["vendix-app.vercel.app"],
+  "headers": [
+    {
+      "source": "/(.*\\.html)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ],
   "redirects": [
-    { "source": "/", "destination": "/landing.html", "permanent": false }
+    { "source": "/", "destination": "/landing.html", "permanent": false },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "inventory-sales-dashboard-postgres.vercel.app" }],
+      "destination": "https://vendix-app.vercel.app/:path*",
+      "permanent": true
+    }
   ],
   "rewrites": [
     { "source": "/api/cron/(.*)", "destination": "/api/cron/$1.js" },

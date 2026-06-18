@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#00C864">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Vendix">
@@ -13,8 +13,8 @@
     <!-- Apply saved theme before render to avoid flash -->
     <script>
         (function() {
-            const t = localStorage.getItem('theme');
-            if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            const t = localStorage.getItem('theme') || 'dark';
+            if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
         })();
     </script>
     <link rel="stylesheet" href="styles.css">
@@ -29,7 +29,7 @@
         <div class="sidebar-header">
             <div class="logo">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <rect width="32" height="32" rx="6" fill="#6366f1"/>
+                    <rect width="32" height="32" rx="6" fill="#00C864"/>
                     <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <span>Vendix</span>
@@ -88,10 +88,10 @@
             </div>
             <div class="navbar-right">
                 <div class="user-profile">
-                    <div class="avatar" id="navAvatar">--</div>
+                    <div class="avatar" id="navAvatar"></div>
                     <div class="user-info">
-                        <span class="user-name" id="navName">—</span>
-                        <span class="user-role" id="navRole">—</span>
+                        <span class="user-name" id="navName"></span>
+                        <span class="user-role" id="navRole"></span>
                     </div>
                     <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
@@ -314,9 +314,9 @@
                         <div class="settings-card">
                             <h3 class="card-section-title">Accent Color</h3>
                             <div class="accent-options" id="accentOptions">
-                                <button class="accent-swatch active" data-color="indigo" style="background:#6366f1" title="Indigo (default)"></button>
-                                <button class="accent-swatch" data-color="blue"   style="background:#3b82f6" title="Blue"></button>
-                                <button class="accent-swatch" data-color="violet" style="background:#8b5cf6" title="Violet"></button>
+                                <button class="accent-swatch active" data-color="indigo" style="background:#00C864" title="Verde (predeterminado)"></button>
+                                <button class="accent-swatch" data-color="blue"   style="background:#3b82f6" title="Azul"></button>
+                                <button class="accent-swatch" data-color="violet" style="background:#8b5cf6" title="Violeta"></button>
                                 <button class="accent-swatch" data-color="rose"   style="background:#f43f5e" title="Rose"></button>
                                 <button class="accent-swatch" data-color="emerald" style="background:#10b981" title="Emerald"></button>
                                 <button class="accent-swatch" data-color="amber"  style="background:#f59e0b" title="Amber"></button>

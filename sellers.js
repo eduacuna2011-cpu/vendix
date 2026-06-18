@@ -76,8 +76,8 @@ function openDetailsModal(seller) {
             <h4>Performance</h4>
             <div class="performance-grid">
                 <div class="performance-card"><div class="performance-label">Total Orders</div><div class="performance-value">${orders}</div></div>
-                <div class="performance-card"><div class="performance-label">Total Sales</div><div class="performance-value">$${totalSales.toFixed(2)}</div></div>
-                <div class="performance-card"><div class="performance-label">Commission</div><div class="performance-value">$${commission.toFixed(2)}</div></div>
+                <div class="performance-card"><div class="performance-label">Total Sales</div><div class="performance-value">S/. ${totalSales.toFixed(2)}</div></div>
+                <div class="performance-card"><div class="performance-label">Commission</div><div class="performance-value">S/. ${commission.toFixed(2)}</div></div>
             </div>
         </div>`;
 
@@ -105,16 +105,16 @@ function copyToClipboard(elementId) {
     const el = document.getElementById(elementId);
     el.select();
     el.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(el.value).then(() => {
-        alert('Copied to clipboard!');
-    }).catch(() => alert('Failed to copy to clipboard'));
+    navigator.clipboard.writeText(el.value)
+        .then(() => showNotification('Copiado al portapapeles'))
+        .catch(() => showNotification('No se pudo copiar', true));
 }
 
 function copyAllCredentials(fullName, username, password) {
-    const text = `Full Name: ${fullName}\nUsername: ${username}\nPassword: ${password}`;
-    navigator.clipboard.writeText(text).then(() => {
-        alert('All credentials copied to clipboard!');
-    }).catch(() => alert('Failed to copy to clipboard'));
+    const text = `Nombre: ${fullName}\nUsuario: ${username}\nContraseña: ${password}`;
+    navigator.clipboard.writeText(text)
+        .then(() => showNotification('Credenciales copiadas'))
+        .catch(() => showNotification('No se pudo copiar', true));
 }
 
 function showCredentialsModal(fullName, username, password) {
@@ -285,10 +285,12 @@ sellerForm.addEventListener('submit', async (e) => {
         status:               document.getElementById('status').value
     };
 
+    const submitBtn = e.target.querySelector('[type=submit]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Guardando…'; }
     try {
         if (id) {
             await updateSeller(parseInt(id), data);
-            alert('Seller updated successfully!');
+            showNotification('Vendedor actualizado');
         } else {
             const result = await addSeller(data);
             showCredentialsModal(data.fullName, result.seller.username, result.temporaryPassword);
@@ -296,7 +298,9 @@ sellerForm.addEventListener('submit', async (e) => {
         closeModal();
         await Promise.all([loadSellers(), updateStats()]);
     } catch (err) {
-        alert('Error: ' + err.message);
+        showNotification('Error: ' + err.message, true);
+    } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = id ? 'Actualizar' : 'Agregar vendedor'; }
     }
 });
 
@@ -312,8 +316,9 @@ window.editSeller = function(id) {
 };
 
 window.deleteSellerHandler = async function(id) {
-    if (!confirm('Are you sure you want to delete this seller?')) return;
-    // Optimistic: remove row immediately
+    const seller = _sellersCache.find(s => s.id === id);
+    const name = seller ? seller.full_name : 'este vendedor';
+    if (!confirm(`¿Eliminar a "${name}"? Esta acción no se puede deshacer.`)) return;
     const row = document.querySelector(`button[onclick="deleteSellerHandler(${id})"]`)?.closest('tr');
     if (row) row.remove();
     try {
@@ -321,16 +326,18 @@ window.deleteSellerHandler = async function(id) {
         await Promise.all([loadSellers(), updateStats()]);
     } catch (err) {
         await Promise.all([loadSellers(), updateStats()]);
-        alert('Error: ' + err.message);
+        showNotification('Error: ' + err.message, true);
     }
 };
 
 window.handleResetPassword = async function(id) {
-    if (!confirm('Reset this seller\'s password? A new one will be generated.')) return;
+    const seller = _sellersCache.find(s => s.id === id);
+    const name = seller ? seller.full_name : 'este vendedor';
+    if (!confirm(`¿Restablecer la contraseña de "${name}"? Se generará una nueva.`)) return;
     try {
         const result = await resetSellerPassword(id);
         showCredentialsModal(result.full_name || '', result.username, result.temporaryPassword);
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { showNotification('Error: ' + err.message, true); }
 };
 
 // ── Access Denied ─────────────────────────────────────────────────
