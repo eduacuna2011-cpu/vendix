@@ -32,6 +32,9 @@ app.use('/api/tax',          trialCheck, require('./routes/tax'));
 const { publicRouter: receiptPublic } = require('./routes/transactions');
 app.use('/api/receipt', receiptPublic);
 
+// ─── Payments (Culqi) — sin auth ni trial check, es la página pública de pago ─
+app.use('/api/payments', require('./routes/payments'));
+
 // ─── Telegram bot ─────────────────────────────────────────────────────────────
 app.use('/api/telegram', require('./routes/telegram'));
 
