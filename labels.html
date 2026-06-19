@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){var t=localStorage.getItem('theme')||'dark';if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+    <title>Etiquetas — Vendix</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mobile.css">
+    <link rel="stylesheet" href="labels.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="6" fill="#00C864"/>
+                    <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Vendix</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav-list" id="sidebarNav"></ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="top-navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <h1 class="page-title">Etiquetas</h1>
+            </div>
+            <div class="navbar-right">
+                <div class="user-profile" id="userProfileBtn">
+                    <div class="avatar"><span id="userAvatar">JD</span></div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Usuario</span>
+                        <span class="user-role" id="userRole">Rol</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="labels-main">
+
+            <!-- Stepper -->
+            <div class="lbl-stepper">
+                <div class="lbl-step active" id="step1Indicator">
+                    <div class="lbl-step-dot">1</div>
+                    <span>Seleccionar productos</span>
+                </div>
+                <div class="lbl-step-line"></div>
+                <div class="lbl-step" id="step2Indicator">
+                    <div class="lbl-step-dot">2</div>
+                    <span>Vista previa e impresión</span>
+                </div>
+            </div>
+
+            <!-- ── PASO 1 ─────────────────────────────────────────────────── -->
+            <div id="stepSelection">
+
+                <!-- Intro hint -->
+                <div class="lbl-hint">
+                    <div class="lbl-hint-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="2" height="16"/><rect x="6" y="4" width="1" height="16"/><rect x="9" y="4" width="2" height="16"/><rect x="13" y="4" width="1" height="16"/><rect x="16" y="4" width="2" height="16"/><rect x="20" y="4" width="2" height="16"/></svg>
+                    </div>
+                    <div>
+                        <strong>Selecciona los productos</strong> que quieres imprimir y ajusta la cantidad de etiquetas por cada uno.
+                        Solo se muestran productos con código de barras asignado.
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="lbl-toolbar">
+                    <div class="lbl-search-box">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input type="text" id="labelsSearch" placeholder="Buscar por nombre, SKU o código…">
+                    </div>
+                    <div class="lbl-toolbar-right">
+                        <button class="lbl-btn lbl-btn-ghost" id="selectAllBtn">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            Seleccionar todo
+                        </button>
+                        <button class="lbl-btn lbl-btn-ghost" id="clearSelBtn" style="display:none">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            Limpiar selección
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="lbl-card">
+                    <table class="lbl-table">
+                        <thead>
+                            <tr>
+                                <th class="col-check">
+                                    <input type="checkbox" id="checkAll" class="lbl-check">
+                                </th>
+                                <th>Producto</th>
+                                <th>SKU</th>
+                                <th>Código de barras</th>
+                                <th>Precio venta</th>
+                                <th class="col-qty">Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody id="labelsTableBody">
+                            <tr>
+                                <td colspan="6" class="lbl-loading">
+                                    <div class="lbl-spinner"></div>
+                                    Cargando productos…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="lbl-empty" id="emptyLabels" style="display:none">
+                        <div class="lbl-empty-icon">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
+                                <rect x="2" y="4" width="2" height="16"/><rect x="6" y="4" width="1" height="16"/><rect x="9" y="4" width="2" height="16"/><rect x="13" y="4" width="1" height="16"/><rect x="16" y="4" width="2" height="16"/><rect x="20" y="4" width="2" height="16"/>
+                            </svg>
+                        </div>
+                        <h3>Sin productos con código de barras</h3>
+                        <p>Ve a <a href="inventory.html">Inventario</a> y asigna o genera un código de barras a tus productos.</p>
+                    </div>
+                </div>
+
+                <!-- Sticky bottom bar -->
+                <div class="lbl-bottom-bar" id="bottomBar" style="display:none">
+                    <div class="lbl-bottom-info">
+                        <div class="lbl-bottom-counts">
+                            <span class="lbl-count-pill" id="selCountText">0 productos</span>
+                            <span class="lbl-dot">·</span>
+                            <span id="selLabelText" style="color:var(--text-2)">0 etiquetas</span>
+                        </div>
+                        <span class="lbl-bottom-hint">Todo listo para continuar</span>
+                    </div>
+                    <button class="lbl-btn lbl-btn-primary lbl-btn-lg" id="previewBtn">
+                        Ver vista previa
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── PASO 2 ─────────────────────────────────────────────────── -->
+            <div id="stepPreview" style="display:none">
+
+                <div class="lbl-preview-layout">
+
+                    <!-- Panel izquierdo: opciones -->
+                    <aside class="lbl-options-panel">
+                        <div class="lbl-panel-section">
+                            <p class="lbl-panel-label">Tamaño de etiqueta</p>
+                            <div class="lbl-size-group">
+                                <label class="lbl-size-opt">
+                                    <input type="radio" name="labelSize" value="sm" class="lbl-size-radio">
+                                    <div class="lbl-size-card">
+                                        <div class="lbl-size-thumb lbl-size-thumb-sm"></div>
+                                        <span>Pequeño</span>
+                                        <small>3 × 2 cm</small>
+                                    </div>
+                                </label>
+                                <label class="lbl-size-opt">
+                                    <input type="radio" name="labelSize" value="md" class="lbl-size-radio" checked>
+                                    <div class="lbl-size-card">
+                                        <div class="lbl-size-thumb lbl-size-thumb-md"></div>
+                                        <span>Mediano</span>
+                                        <small>5 × 3 cm</small>
+                                    </div>
+                                </label>
+                                <label class="lbl-size-opt">
+                                    <input type="radio" name="labelSize" value="lg" class="lbl-size-radio">
+                                    <div class="lbl-size-card">
+                                        <div class="lbl-size-thumb lbl-size-thumb-lg"></div>
+                                        <span>Grande</span>
+                                        <small>8 × 4 cm</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="lbl-panel-section">
+                            <p class="lbl-panel-label">Mostrar en etiqueta</p>
+                            <div class="lbl-toggle-list">
+                                <label class="lbl-toggle-row">
+                                    <span>Precio</span>
+                                    <div class="lbl-switch">
+                                        <input type="checkbox" id="showPrice" checked>
+                                        <span class="lbl-switch-thumb"></span>
+                                    </div>
+                                </label>
+                                <label class="lbl-toggle-row">
+                                    <span>SKU</span>
+                                    <div class="lbl-switch">
+                                        <input type="checkbox" id="showSku">
+                                        <span class="lbl-switch-thumb"></span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="lbl-panel-section lbl-summary-box">
+                            <p class="lbl-panel-label">Resumen</p>
+                            <p id="previewCountText" class="lbl-summary-text"></p>
+                        </div>
+
+                        <div class="lbl-panel-actions">
+                            <button class="lbl-btn lbl-btn-ghost lbl-btn-full" id="backBtn">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                                Volver
+                            </button>
+                            <button class="lbl-btn lbl-btn-ghost lbl-btn-full" id="printBtn">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                Imprimir
+                            </button>
+                            <button class="lbl-btn lbl-btn-primary lbl-btn-full" id="pdfBtn">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                                Guardar PDF
+                            </button>
+                        </div>
+                    </aside>
+
+                    <!-- Grid de etiquetas -->
+                    <div class="lbl-preview-area">
+                        <div class="lbl-preview-grid" id="labelsPreviewGrid"></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<div id="printArea" style="display:none;"></div>
+<div id="notificationContainer" class="notification-container"></div>
+
+<script src="api-client.js" defer></script>
+<script src="auth.js" defer></script>
+<script src="sidebar.js" defer></script>
+<script src="labels.js" defer></script>
+</body>
+</html>

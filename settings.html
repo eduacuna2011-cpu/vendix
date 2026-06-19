@@ -1,26 +1,29 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#00C864">
+    <meta name="theme-color" content="#00d46a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Vendix">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <title>Settings - Inventory & Sales Dashboard</title>
-    <!-- Apply saved theme before render to avoid flash -->
+    <title>Configuracion - Vendix</title>
     <script>
         (function() {
-            const t = localStorage.getItem('theme') || 'dark';
+            var t = localStorage.getItem('theme') || 'dark';
             if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
         })();
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="mobile.css">
     <link rel="stylesheet" href="settings.css">
-    <link rel="stylesheet" href="animations.css"></head>
+    <link rel="stylesheet" href="animations.css">
+</head>
 <body>
 <div class="dashboard-container">
 
@@ -29,8 +32,8 @@
         <div class="sidebar-header">
             <div class="logo">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <rect width="32" height="32" rx="6" fill="#00C864"/>
-                    <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect width="32" height="32" rx="6" fill="#00d46a"/>
+                    <path d="M8 16L14 22L24 10" stroke="#03120a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <span>Vendix</span>
             </div>
@@ -46,31 +49,31 @@
                 <li class="nav-item">
                     <a href="inventory.html" class="nav-link">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
-                        <span>Inventory</span>
+                        <span>Inventario</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="sales.html" class="nav-link">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                        <span>Sales</span>
+                        <span>Ventas</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="sellers.html" class="nav-link">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <span>Sellers</span>
+                        <span>Vendedores</span>
                     </a>
                 </li>
                 <li class="nav-item superadmin-only" style="display:none;">
                     <a href="users.html" class="nav-link">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <span>Users</span>
+                        <span>Usuarios</span>
                     </a>
                 </li>
                 <li class="nav-item active">
                     <a href="settings.html" class="nav-link">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                        <span>Settings</span>
+                        <span>Configuracion</span>
                     </a>
                 </li>
             </ul>
@@ -84,7 +87,7 @@
                 <button class="menu-toggle" id="menuToggle">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
-                <h1 class="page-title-nav">Settings</h1>
+                <h1 class="page-title-nav">Configuracion</h1>
             </div>
             <div class="navbar-right">
                 <div class="user-profile">
@@ -100,329 +103,401 @@
 
         <main class="settings-content">
             <div class="settings-header">
-                <h1>Settings</h1>
-                <p class="page-subtitle">Manage your account, security and preferences.</p>
+                <h1>Configuracion</h1>
+                <p>Administra tu cuenta, seguridad y preferencias del sistema.</p>
             </div>
 
-            <!-- Toast notification -->
+            <!-- Toasts -->
             <div class="toast" id="toast">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                <span id="toastMsg">Saved successfully!</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span id="toastMsg">Guardado correctamente</span>
             </div>
             <div class="toast toast-error" id="toastError">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span id="toastErrorMsg">Something went wrong.</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="toastErrorMsg">Ocurrio un error.</span>
             </div>
 
             <div class="settings-layout">
 
-                <!-- LEFT: nav tabs -->
-                <nav class="settings-nav">
+                <!-- LEFT: navegacion por tabs -->
+                <nav class="settings-nav" aria-label="Seccion de configuracion">
+                    <span class="settings-nav-section">Cuenta</span>
                     <button class="settings-tab active" data-tab="profile">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        Profile
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Perfil
                     </button>
                     <button class="settings-tab" data-tab="security">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        Security
-                    </button>
-                    <button class="settings-tab" data-tab="appearance">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                        Appearance
-                    </button>
-                    <button class="settings-tab admin-only" data-tab="ventas" style="display:none;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                        Ventas
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Seguridad
                     </button>
                     <button class="settings-tab" data-tab="account">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        Account Info
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        Mi Cuenta
+                    </button>
+                    <span class="settings-nav-section">Sistema</span>
+                    <button class="settings-tab" data-tab="appearance">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        Apariencia
+                    </button>
+                    <button class="settings-tab admin-only" data-tab="ventas" style="display:none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Impuestos
                     </button>
                     <div class="settings-nav-divider"></div>
                     <button class="settings-tab settings-tab-danger" data-tab="danger">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        Danger Zone
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Zona de Peligro
                     </button>
                 </nav>
 
-                <!-- RIGHT: panels -->
+                <!-- RIGHT: paneles -->
                 <div class="settings-panels">
 
-                    <!-- ── PROFILE ── -->
+                    <!-- PERFIL -->
                     <section class="settings-panel active" id="panel-profile">
                         <div class="panel-header">
-                            <h2>Profile Information</h2>
-                            <p>Update your personal details.</p>
+                            <h2>Perfil</h2>
+                            <p>Actualiza tu nombre y correo electronico.</p>
                         </div>
-
-                        <!-- Avatar card -->
-                        <div class="avatar-card">
-                            <div class="avatar-large" id="bigAvatar">--</div>
-                            <div>
-                                <div class="avatar-name" id="bigName">—</div>
-                                <div class="avatar-role" id="bigRole">—</div>
-                            </div>
-                        </div>
-
-                        <form class="settings-form" id="profileForm">
-                            <div class="form-row-2">
-                                <div class="form-group">
-                                    <label for="fullName">Full Name</label>
-                                    <input type="text" id="fullName" class="form-control" placeholder="Your full name" required>
-                                    <span class="field-error" id="fullNameError"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="email">Email Address</label>
-                                    <input type="email" id="email" class="form-control" placeholder="you@example.com">
-                                    <span class="field-error" id="emailError"></span>
+                        <div class="settings-card">
+                            <div class="avatar-card">
+                                <div class="avatar-large" id="bigAvatar">--</div>
+                                <div>
+                                    <div class="avatar-name" id="bigName">Cargando...</div>
+                                    <div class="avatar-role" id="bigRole">—</div>
                                 </div>
                             </div>
-                            <div class="form-group" style="max-width:320px;">
-                                <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone" class="form-control" placeholder="+1 (555) 000-0000">
+                            <div class="settings-card-body">
+                                <form class="settings-form" id="profileForm">
+                                    <div class="form-row-2">
+                                        <div class="form-group">
+                                            <label for="fullName">Nombre completo</label>
+                                            <input type="text" id="fullName" class="form-control" placeholder="Tu nombre" autocomplete="name" required>
+                                            <span class="field-error" id="fullNameError"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Correo electronico</label>
+                                            <input type="email" id="email" class="form-control" placeholder="tu@ejemplo.com" autocomplete="email">
+                                            <span class="field-error" id="emailError"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            Guardar cambios
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                                    Save Changes
-                                </button>
-                            </div>
-                        </form>
+                        </div>
                     </section>
 
-                    <!-- ── SECURITY ── -->
+                    <!-- SEGURIDAD -->
                     <section class="settings-panel" id="panel-security">
                         <div class="panel-header">
-                            <h2>Security</h2>
-                            <p>Change your login username and password.</p>
+                            <h2>Seguridad</h2>
+                            <p>Cambia tu usuario y contrasena de acceso.</p>
                         </div>
 
-                        <!-- Change username -->
+                        <!-- Cambiar usuario -->
                         <div class="settings-card">
-                            <h3 class="card-section-title">Change Username</h3>
-                            <form class="settings-form" id="usernameForm">
-                                <div class="form-group" style="max-width:380px;">
-                                    <label for="currentUsernameDisplay">Current Username</label>
-                                    <input type="text" id="currentUsernameDisplay" class="form-control" disabled>
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                 </div>
-                                <div class="form-group" style="max-width:380px;">
-                                    <label for="newUsername">New Username</label>
-                                    <input type="text" id="newUsername" class="form-control" placeholder="Enter new username" autocomplete="username">
-                                    <span class="field-error" id="newUsernameError"></span>
+                                <div class="settings-card-title">
+                                    <h3>Cambiar usuario</h3>
+                                    <p>Solo letras, numeros y guion bajo. Minimo 3 caracteres.</p>
                                 </div>
-                                <div class="form-group" style="max-width:380px;">
-                                    <label for="usernameConfirmPassword">Current Password (to confirm)</label>
-                                    <div class="input-pw-wrap">
-                                        <input type="password" id="usernameConfirmPassword" class="form-control" placeholder="Enter current password" autocomplete="current-password">
-                                        <button type="button" class="pw-toggle" data-target="usernameConfirmPassword">
-                                            <svg class="eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                            <svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                                        </button>
-                                    </div>
-                                    <span class="field-error" id="usernameConfirmError"></span>
-                                </div>
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">Update Username</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Change password -->
-                        <div class="settings-card">
-                            <h3 class="card-section-title">Change Password</h3>
-                            <form class="settings-form" id="passwordForm">
-                                <div class="form-group" style="max-width:380px;">
-                                    <label for="currentPassword">Current Password</label>
-                                    <div class="input-pw-wrap">
-                                        <input type="password" id="currentPassword" class="form-control" placeholder="Enter current password" autocomplete="current-password">
-                                        <button type="button" class="pw-toggle" data-target="currentPassword">
-                                            <svg class="eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                            <svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                                        </button>
-                                    </div>
-                                    <span class="field-error" id="currentPasswordError"></span>
-                                </div>
-                                <div class="form-group" style="max-width:380px;">
-                                    <label for="newPassword">New Password</label>
-                                    <div class="input-pw-wrap">
-                                        <input type="password" id="newPassword" class="form-control" placeholder="Min. 8 characters" autocomplete="new-password">
-                                        <button type="button" class="pw-toggle" data-target="newPassword">
-                                            <svg class="eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                            <svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                                        </button>
-                                    </div>
-                                    <!-- Strength meter -->
-                                    <div class="strength-meter" id="strengthMeter">
-                                        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
-                                        <span class="strength-label" id="strengthLabel"></span>
-                                    </div>
-                                    <span class="field-error" id="newPasswordError"></span>
-                                </div>
-                                <div class="form-group" style="max-width:380px;">
-                                    <label for="confirmPassword">Confirm New Password</label>
-                                    <div class="input-pw-wrap">
-                                        <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat new password" autocomplete="new-password">
-                                        <button type="button" class="pw-toggle" data-target="confirmPassword">
-                                            <svg class="eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                            <svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                                        </button>
-                                    </div>
-                                    <span class="field-error" id="confirmPasswordError"></span>
-                                </div>
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">Update Password</button>
-                                </div>
-                            </form>
-                        </div>
-                    </section>
-
-                    <!-- ── APPEARANCE ── -->
-                    <section class="settings-panel" id="panel-appearance">
-                        <div class="panel-header">
-                            <h2>Appearance</h2>
-                            <p>Customize how the dashboard looks for you.</p>
-                        </div>
-
-                        <div class="settings-card">
-                            <h3 class="card-section-title">Theme</h3>
-                            <div class="theme-options">
-                                <button class="theme-option" id="themeLight" onclick="setTheme('light')">
-                                    <div class="theme-preview theme-preview-light">
-                                        <div class="tp-sidebar"></div>
-                                        <div class="tp-content">
-                                            <div class="tp-bar"></div>
-                                            <div class="tp-card"></div>
-                                            <div class="tp-card"></div>
-                                        </div>
-                                    </div>
-                                    <span>Light</span>
-                                </button>
-                                <button class="theme-option" id="themeDark" onclick="setTheme('dark')">
-                                    <div class="theme-preview theme-preview-dark">
-                                        <div class="tp-sidebar"></div>
-                                        <div class="tp-content">
-                                            <div class="tp-bar"></div>
-                                            <div class="tp-card"></div>
-                                            <div class="tp-card"></div>
-                                        </div>
-                                    </div>
-                                    <span>Dark</span>
-                                </button>
                             </div>
-                        </div>
-
-                        <div class="settings-card">
-                            <h3 class="card-section-title">Accent Color</h3>
-                            <div class="accent-options" id="accentOptions">
-                                <button class="accent-swatch active" data-color="indigo" style="background:#00C864" title="Verde (predeterminado)"></button>
-                                <button class="accent-swatch" data-color="blue"   style="background:#3b82f6" title="Azul"></button>
-                                <button class="accent-swatch" data-color="violet" style="background:#8b5cf6" title="Violeta"></button>
-                                <button class="accent-swatch" data-color="rose"   style="background:#f43f5e" title="Rose"></button>
-                                <button class="accent-swatch" data-color="emerald" style="background:#10b981" title="Emerald"></button>
-                                <button class="accent-swatch" data-color="amber"  style="background:#f59e0b" title="Amber"></button>
-                            </div>
-                            <p class="hint-text">Changes apply instantly and persist across pages.</p>
-                        </div>
-
-                        <div class="settings-card">
-                            <h3 class="card-section-title">Sidebar</h3>
-                            <label class="toggle-row">
-                                <span>
-                                    <strong>Compact sidebar</strong>
-                                    <span class="hint-text">Show only icons, hide labels</span>
-                                </span>
-                                <div class="toggle-switch" id="compactToggle" onclick="toggleCompact()">
-                                    <div class="toggle-knob"></div>
-                                </div>
-                            </label>
-                        </div>
-                    </section>
-
-                    <!-- ── VENTAS / IGV ── -->
-                    <section class="settings-panel" id="panel-ventas">
-                        <div class="panel-header">
-                            <h2>Configuración de Ventas</h2>
-                            <p>Ajusta los impuestos que se aplican en cada venta.</p>
-                        </div>
-
-                        <div class="settings-card">
-                            <h3 class="card-section-title">IGV — Impuesto General a las Ventas</h3>
-
-                            <label class="toggle-row">
-                                <span>
-                                    <strong>Cobrar IGV en ventas</strong>
-                                    <span class="hint-text">Se añade automáticamente al subtotal en el punto de venta</span>
-                                </span>
-                                <div class="toggle-switch" id="igvToggle" onclick="toggleIgv()">
-                                    <div class="toggle-knob"></div>
-                                </div>
-                            </label>
-
-                            <div id="igvRateRow" style="display:none; margin-top:24px; padding-top:20px; border-top:1px solid var(--border);">
-                                <div class="form-row-2" style="max-width:340px;">
+                            <div class="settings-card-body">
+                                <form class="settings-form" id="usernameForm">
                                     <div class="form-group">
-                                        <label for="igvRate">Tasa (%)</label>
-                                        <input type="number" id="igvRate" class="form-control" value="18" min="0" max="100" step="0.01" placeholder="18">
-                                        <span class="hint-text">Perú: 18%</span>
+                                        <label>Usuario actual</label>
+                                        <input type="text" id="currentUsernameDisplay" class="form-control" disabled>
                                     </div>
+                                    <div class="form-row-2">
+                                        <div class="form-group">
+                                            <label for="newUsername">Nuevo usuario</label>
+                                            <input type="text" id="newUsername" class="form-control" placeholder="nuevo_usuario" autocomplete="username">
+                                            <span class="field-error" id="newUsernameError"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="usernameConfirmPassword">Contrasena actual</label>
+                                            <div class="input-pw-wrap">
+                                                <input type="password" id="usernameConfirmPassword" class="form-control" placeholder="Confirma tu contrasena" autocomplete="current-password">
+                                                <button type="button" class="pw-toggle" data-target="usernameConfirmPassword" tabindex="-1">
+                                                    <svg class="eye-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                    <svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                                </button>
+                                            </div>
+                                            <span class="field-error" id="usernameConfirmError"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            Cambiar usuario
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Cambiar contrasena -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                                 </div>
-                                <div class="form-actions" style="margin-top:20px;">
-                                    <button type="button" class="btn btn-primary" id="igvSaveBtn" onclick="saveIgvSettings()">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                                        Guardar tasa
+                                <div class="settings-card-title">
+                                    <h3>Cambiar contrasena</h3>
+                                    <p>Minimo 8 caracteres. Se cerrara sesion al cambiar.</p>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <form class="settings-form" id="passwordForm">
+                                    <div class="form-group">
+                                        <label for="currentPassword">Contrasena actual</label>
+                                        <div class="input-pw-wrap">
+                                            <input type="password" id="currentPassword" class="form-control" placeholder="Ingresa tu contrasena actual" autocomplete="current-password">
+                                            <button type="button" class="pw-toggle" data-target="currentPassword" tabindex="-1">
+                                                <svg class="eye-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                <svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                            </button>
+                                        </div>
+                                        <span class="field-error" id="currentPasswordError"></span>
+                                    </div>
+                                    <div class="form-row-2">
+                                        <div class="form-group">
+                                            <label for="newPassword">Nueva contrasena</label>
+                                            <div class="input-pw-wrap">
+                                                <input type="password" id="newPassword" class="form-control" placeholder="Min. 8 caracteres" autocomplete="new-password">
+                                                <button type="button" class="pw-toggle" data-target="newPassword" tabindex="-1">
+                                                    <svg class="eye-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                    <svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                                </button>
+                                            </div>
+                                            <div class="strength-meter" id="strengthMeter">
+                                                <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                                                <span class="strength-label" id="strengthLabel"></span>
+                                            </div>
+                                            <span class="field-error" id="newPasswordError"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="confirmPassword">Confirmar nueva contrasena</label>
+                                            <div class="input-pw-wrap">
+                                                <input type="password" id="confirmPassword" class="form-control" placeholder="Repite la contrasena" autocomplete="new-password">
+                                                <button type="button" class="pw-toggle" data-target="confirmPassword" tabindex="-1">
+                                                    <svg class="eye-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                    <svg class="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                                </button>
+                                            </div>
+                                            <span class="field-error" id="confirmPasswordError"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            Cambiar contrasena
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- MI CUENTA -->
+                    <section class="settings-panel" id="panel-account">
+                        <div class="panel-header">
+                            <h2>Mi Cuenta</h2>
+                            <p>Informacion de solo lectura sobre tu cuenta.</p>
+                        </div>
+                        <div class="settings-card">
+                            <div class="info-grid" id="accountInfoGrid"></div>
+                        </div>
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                </div>
+                                <div class="settings-card-title">
+                                    <h3>Sesion activa</h3>
+                                    <p>Tu sesion actual en este dispositivo.</p>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <div class="info-grid" id="sessionInfo"></div>
+                                <div class="form-actions" style="margin-top:18px;">
+                                    <button class="btn btn-secondary" onclick="logout()">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                        Cerrar sesion
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    <!-- ── ACCOUNT INFO ── -->
-                    <section class="settings-panel" id="panel-account">
+                    <!-- APARIENCIA -->
+                    <section class="settings-panel" id="panel-appearance">
                         <div class="panel-header">
-                            <h2>Account Information</h2>
-                            <p>Read-only details about your account.</p>
+                            <h2>Apariencia</h2>
+                            <p>Personaliza como se ve el dashboard.</p>
                         </div>
                         <div class="settings-card">
-                            <div class="info-grid" id="accountInfoGrid">
-                                <!-- Filled by JS -->
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                                </div>
+                                <div class="settings-card-title">
+                                    <h3>Tema</h3>
+                                    <p>Claro u oscuro. Se guarda automaticamente.</p>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <div class="theme-options">
+                                    <button class="theme-option" id="themeLight" onclick="setTheme('light')">
+                                        <div class="theme-preview theme-preview-light">
+                                            <div class="tp-sidebar"></div>
+                                            <div class="tp-content">
+                                                <div class="tp-bar"></div>
+                                                <div class="tp-card"></div>
+                                                <div class="tp-card"></div>
+                                            </div>
+                                        </div>
+                                        <span>Claro</span>
+                                    </button>
+                                    <button class="theme-option" id="themeDark" onclick="setTheme('dark')">
+                                        <div class="theme-preview theme-preview-dark">
+                                            <div class="tp-sidebar"></div>
+                                            <div class="tp-content">
+                                                <div class="tp-bar"></div>
+                                                <div class="tp-card"></div>
+                                                <div class="tp-card"></div>
+                                            </div>
+                                        </div>
+                                        <span>Oscuro</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="settings-card">
-                            <h3 class="card-section-title">Active Session</h3>
-                            <div class="session-info" id="sessionInfo">
-                                <!-- Filled by JS -->
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                                </div>
+                                <div class="settings-card-title">
+                                    <h3>Color de acento</h3>
+                                    <p>Se aplica en todo el sistema al instante.</p>
+                                </div>
                             </div>
-                            <div class="form-actions" style="margin-top:20px;">
-                                <button class="btn btn-secondary" onclick="logout()">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                                    Log Out
-                                </button>
+                            <div class="settings-card-body">
+                                <div class="accent-options" id="accentOptions">
+                                    <button class="accent-swatch active" data-color="indigo"  style="background:#00d46a" title="Verde (predeterminado)"></button>
+                                    <button class="accent-swatch"        data-color="blue"    style="background:#3b82f6" title="Azul"></button>
+                                    <button class="accent-swatch"        data-color="violet"  style="background:#8b5cf6" title="Violeta"></button>
+                                    <button class="accent-swatch"        data-color="rose"    style="background:#f43f5e" title="Rosa"></button>
+                                    <button class="accent-swatch"        data-color="emerald" style="background:#10b981" title="Esmeralda"></button>
+                                    <button class="accent-swatch"        data-color="amber"   style="background:#f59e0b" title="Ambar"></button>
+                                </div>
+                                <p class="hint-text" style="margin-top:10px;">Persiste en todas las paginas del dashboard.</p>
+                            </div>
+                        </div>
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon" style="background:rgba(59,130,246,.1);color:#3b82f6;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                                </div>
+                                <div class="settings-card-title">
+                                    <h3>Barra lateral</h3>
+                                    <p>Modo compacto para mas espacio en pantalla.</p>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <label class="toggle-row" style="cursor:pointer;" onclick="toggleCompact()">
+                                    <span>
+                                        <strong>Barra lateral compacta</strong>
+                                        <span class="hint-text">Muestra solo iconos, oculta etiquetas</span>
+                                    </span>
+                                    <div class="toggle-switch" id="compactToggle">
+                                        <div class="toggle-knob"></div>
+                                    </div>
+                                </label>
                             </div>
                         </div>
                     </section>
 
-                    <!-- ── DANGER ZONE ── -->
-                    <section class="settings-panel" id="panel-danger">
+                    <!-- IMPUESTOS / IGV -->
+                    <section class="settings-panel" id="panel-ventas">
                         <div class="panel-header">
-                            <h2>Danger Zone</h2>
-                            <p>These actions are irreversible. Proceed with caution.</p>
+                            <h2>Impuestos y Ventas</h2>
+                            <p>Configura los impuestos que aplican en cada venta.</p>
                         </div>
-                        <div class="settings-card danger-card">
-                            <div class="danger-row">
-                                <div>
-                                    <strong>Log out from all devices</strong>
-                                    <p class="hint-text">Clears your session from localStorage and sessionStorage and redirects to login.</p>
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                                 </div>
-                                <button class="btn btn-danger" onclick="logoutAll()">Log Out Everywhere</button>
+                                <div class="settings-card-title">
+                                    <h3>IGV — Impuesto General a las Ventas</h3>
+                                    <p>Peru: 18% por defecto. Se suma al subtotal en caja.</p>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <label class="toggle-row" style="cursor:pointer;" onclick="toggleIgv()">
+                                    <span>
+                                        <strong>Cobrar IGV en ventas</strong>
+                                        <span class="hint-text">Se anade automaticamente al subtotal</span>
+                                    </span>
+                                    <div class="toggle-switch" id="igvToggle">
+                                        <div class="toggle-knob"></div>
+                                    </div>
+                                </label>
+                                <div id="igvRateRow" style="display:none; margin-top:20px; padding-top:18px; border-top:1px solid var(--border);">
+                                    <div class="form-row-2" style="max-width:280px;">
+                                        <div class="form-group">
+                                            <label for="igvRate">Tasa (%)</label>
+                                            <input type="number" id="igvRate" class="form-control" value="18" min="0" max="100" step="0.01" placeholder="18">
+                                            <span class="hint-text">Peru: 18%</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions" style="margin-top:16px;">
+                                        <button type="button" class="btn btn-primary" id="igvSaveBtn" onclick="saveIgvSettings()">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            Guardar tasa
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="settings-card danger-card" id="clearDataCard">
-                            <div class="danger-row">
-                                <div>
-                                    <strong>Clear all my business data</strong>
-                                    <p class="hint-text">Permanently deletes all products, transactions, and sellers from your business. This cannot be undone.</p>
+                    </section>
+
+                    <!-- ZONA DE PELIGRO -->
+                    <section class="settings-panel" id="panel-danger">
+                        <div class="panel-header">
+                            <h2>Zona de Peligro</h2>
+                            <p>Estas acciones son irreversibles. Procede con cuidado.</p>
+                        </div>
+                        <div class="settings-card danger-card">
+                            <div class="danger-item">
+                                <div class="danger-item-info">
+                                    <strong>Cerrar sesion en todos los dispositivos</strong>
+                                    <p>Elimina tu sesion de este y todos los dispositivos. Tendras que iniciar sesion de nuevo.</p>
                                 </div>
-                                <button class="btn btn-danger" onclick="confirmClearData()">Clear Data</button>
+                                <button class="btn btn-danger btn-sm" onclick="logoutAll()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                    Cerrar todo
+                                </button>
+                            </div>
+                            <div class="danger-item" id="clearDataCard">
+                                <div class="danger-item-info">
+                                    <strong>Eliminar todos los datos del negocio</strong>
+                                    <p>Borra permanentemente todos los productos, transacciones y vendedores. No se puede deshacer.</p>
+                                </div>
+                                <button class="btn btn-danger btn-sm" onclick="confirmClearData()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                    Eliminar datos
+                                </button>
                             </div>
                         </div>
                     </section>
@@ -433,25 +508,25 @@
     </div>
 </div>
 
-<!-- Confirm modal -->
+<!-- Modal de confirmacion -->
 <div class="modal" id="confirmModal">
-    <div class="modal-content" style="max-width:420px;">
+    <div class="modal-content">
         <div class="modal-header">
-            <h2 id="confirmTitle">Are you sure?</h2>
+            <h2 id="confirmTitle">Confirmar accion</h2>
             <button class="modal-close" onclick="closeConfirmModal()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
         <div class="modal-body">
             <p id="confirmMessage"></p>
-            <div class="form-group" style="margin-top:16px;">
-                <label for="confirmInput">Type <strong id="confirmWord"></strong> to confirm:</label>
-                <input type="text" id="confirmInput" class="form-control" placeholder="">
+            <div class="form-group" style="margin-top:6px;">
+                <label for="confirmInput">Escribe <span class="confirm-word"><strong id="confirmWord"></strong></span> para confirmar:</label>
+                <input type="text" id="confirmInput" class="form-control" placeholder="" style="margin-top:8px;">
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancel</button>
-            <button class="btn btn-danger" id="confirmActionBtn" disabled onclick="executeConfirmAction()">Confirm</button>
+            <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancelar</button>
+            <button class="btn btn-danger" id="confirmActionBtn" disabled onclick="executeConfirmAction()">Confirmar</button>
         </div>
     </div>
 </div>
@@ -463,6 +538,3 @@
 <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>
 </html>
-
-
-

@@ -373,10 +373,13 @@ function logout() {
 }
 
 // Wire up sidebar toggle + outside-click close (mobile)
+let _sidebarInited = false;
 function initSidebar() {
+    if (_sidebarInited) return; // idempotent — safe to call from every page
     const toggle  = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
     if (!toggle || !sidebar) return;
+    _sidebarInited = true;
 
     toggle.addEventListener('click', () => sidebar.classList.toggle('active'));
 
@@ -394,9 +397,12 @@ function initSidebar() {
 }
 
 // User profile dropdown — shows settings link + logout option instead of raw confirm()
+let _profileLogoutInited = false;
 function initUserProfileLogout() {
+    if (_profileLogoutInited) return; // idempotent
     const profile = document.querySelector('.user-profile');
     if (!profile) return;
+    _profileLogoutInited = true;
     profile.style.cursor = 'pointer';
     profile.title = 'Opciones de cuenta';
 
@@ -419,8 +425,9 @@ function initUserProfileLogout() {
             'z-index:9999', 'min-width:180px', 'overflow:hidden',
             'animation:fadeIn .15s ease'
         ].join(';');
+        const settingsPage = isSuperAdmin() ? 'settings-sa.html' : 'settings.html';
         dropdown.innerHTML = `
-            <a href="settings.html" style="display:flex;align-items:center;gap:10px;padding:12px 16px;color:var(--text-1);text-decoration:none;font-size:14px;transition:background .15s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
+            <a href="${settingsPage}" style="display:flex;align-items:center;gap:10px;padding:12px 16px;color:var(--text-1);text-decoration:none;font-size:14px;transition:background .15s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                 Configuración
             </a>
@@ -521,6 +528,49 @@ function maybeShowWelcomeModal() {
     el.addEventListener('click', e => { if (e.target === el) el.remove(); });
 }
 
+// Pull user settings from DB and re-apply — runs in background, no await needed.
+// This keeps theme/accent in sync across devices and after localStorage clears.
+async function syncUserSettings() {
+    if (typeof apiFetch === 'undefined') return;
+    try {
+        const s = await apiFetch('/settings');
+        if (!s || typeof s !== 'object') return;
+
+        // Persist to localStorage so fast-path reads on next load work offline
+        if (s.theme)         localStorage.setItem('theme', s.theme);
+        if (s.accent)        localStorage.setItem('accent', s.accent);
+        if (s.compactSidebar !== undefined) localStorage.setItem('compactSidebar', s.compactSidebar);
+
+        // Re-apply theme (in case DB differs from localStorage)
+        if (s.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        else if (s.theme === 'dark') document.documentElement.removeAttribute('data-theme');
+
+        // Re-apply accent color
+        const accentMap = {
+            indigo:  { p: '#00C864', dark: '#059669', light: '#34D399' },
+            blue:    { p: '#3b82f6', dark: '#2563eb', light: '#60a5fa' },
+            violet:  { p: '#8b5cf6', dark: '#7c3aed', light: '#a78bfa' },
+            rose:    { p: '#f43f5e', dark: '#e11d48', light: '#fb7185' },
+            emerald: { p: '#10b981', dark: '#059669', light: '#34d399' },
+            amber:   { p: '#f59e0b', dark: '#d97706', light: '#fbbf24' },
+        };
+        if (s.accent && accentMap[s.accent]) {
+            const c = accentMap[s.accent];
+            const r = document.documentElement.style;
+            r.setProperty('--primary',       c.p);
+            r.setProperty('--primary-dark',  c.dark);
+            r.setProperty('--primary-light', c.light);
+            r.setProperty('--primary-color', c.p);
+        }
+
+        // Re-apply compact sidebar
+        if (s.compactSidebar === '1') {
+            const sb = document.getElementById('sidebar');
+            if (sb) sb.classList.add('compact');
+        }
+    } catch { /* offline — localStorage values remain active */ }
+}
+
 // One-call page bootstrap (auth check + profile + sidebar + role UI)
 function initPage(options = {}) {
     const { requireStore = false } = options;
@@ -532,11 +582,16 @@ function initPage(options = {}) {
     // Block access to pages based on role (e.g. seller can't open users.html)
     checkPageAccess();
     const user = getCurrentUser();
-    applyStoredTheme();
+    // In SPA mode the shell already applied theme and wired sidebar/profile — skip.
+    if (!window.__SPA) {
+        applyStoredTheme();
+        initSidebar();
+        initUserProfileLogout();
+    }
     updateUserProfile(user);
     applyRoleBasedUI();
-    initSidebar();
-    initUserProfileLogout();
-    maybeShowWelcomeModal();
+    if (!window.__SPA) maybeShowWelcomeModal();
+    // Sync settings from DB in background — keeps theme/accent consistent across devices
+    syncUserSettings();
     return user;
 }

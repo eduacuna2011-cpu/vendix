@@ -375,6 +375,73 @@ function toggleSaleItems(id) {
 function debounce(fn, ms) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
 if (productSearch) productSearch.addEventListener('input', debounce(e => loadProducts(e.target.value), 280));
 
+// ─── Barcode scanner detection ────────────────────────────────────────────────
+// USB readers act like a keyboard: type chars fast (< 50ms apart) then Enter.
+let _bcLastKey  = 0;
+let _bcFastCount = 0;
+let _bcDebounceTimer = null;
+
+if (productSearch) {
+    productSearch.addEventListener('keydown', async function (e) {
+        const now = Date.now();
+        const gap = now - _bcLastKey;
+        _bcLastKey = now;
+
+        if (e.key !== 'Enter') {
+            // Reset if user paused (slow typing) — bug-fix #5
+            if (gap > 100) _bcFastCount = 0;
+            if (gap < 50)  _bcFastCount++;
+            return;
+        }
+
+        // Enter pressed
+        e.preventDefault();
+        // Cancel any pending debounced search — bug-fix #4
+        clearTimeout(_bcDebounceTimer);
+
+        const code = this.value.trim();
+        if (!code) return;
+
+        const isScanner = _bcFastCount >= 3;
+        _bcFastCount = 0;
+
+        if (isScanner) {
+            this.value = '';
+            try {
+                const product = await getProductByBarcode(code);
+                // Bug-fix #2: check stock before adding, with clear feedback
+                if (product.stock === 0) {
+                    showNotification(`"${product.name}" está sin stock`, true);
+                    return;
+                }
+                if (!allProducts.find(p => p.id === product.id)) {
+                    allProducts.push(product);
+                }
+                addToCart(product.id);
+                showNotification(`✓ ${product.name} agregado al carrito`);
+                loadProducts(''); // refrescar grilla con todos los productos
+            } catch (err) {
+                // Bug-fix #1: catch any error from the barcode endpoint as "not found"
+                showNotification(`No se encontró ningún producto con código "${code}"`, true);
+            }
+            return;
+        }
+
+        // Manual Enter → filter products normally
+        loadProducts(code);
+    });
+
+    productSearch.addEventListener('focus', () => { _bcFastCount = 0; _bcLastKey = 0; });
+
+    // Wrap debounce to store timer ref so keydown can cancel it
+    productSearch.removeEventListener('input', productSearch._inputHandler);
+    productSearch._inputHandler = function(e) {
+        clearTimeout(_bcDebounceTimer);
+        _bcDebounceTimer = setTimeout(() => loadProducts(e.target.value), 280);
+    };
+    productSearch.addEventListener('input', productSearch._inputHandler);
+}
+
 // ─── Init — load products and recent sales in parallel ────────────────────────
 const _salesUser = initPage({ requireStore: true });
 if (_salesUser) {

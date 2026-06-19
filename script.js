@@ -108,7 +108,8 @@ function renderChart(tx) {
     const months = parseInt(document.getElementById('chartPeriod')?.value || '6');
     const { labels, revenue, profit } = buildChartData(tx, months);
 
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    // :root IS dark; only light mode sets data-theme="light"
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
     const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
     const textColor = isDark ? '#94a3b8' : '#64748b';
 
@@ -123,20 +124,20 @@ function renderChart(tx) {
             datasets: [
                 {
                     type: 'bar',
-                    label: 'Revenue',
+                    label: 'Ingresos',
                     data: revenue,
-                    backgroundColor: 'rgba(99,102,241,0.18)',
-                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(0,200,100,0.15)',
+                    borderColor: '#00C864',
                     borderWidth: 2,
                     borderRadius: 6,
                     yAxisID: 'y',
                 },
                 {
                     type: 'line',
-                    label: 'Profit',
+                    label: 'Ganancia',
                     data: profit,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16,185,129,0.08)',
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.08)',
                     borderWidth: 2.5,
                     pointBackgroundColor: '#10b981',
                     pointRadius: 4,
@@ -315,13 +316,141 @@ function exportCSV() {
     URL.revokeObjectURL(url);
 }
 
+// ── Export completo a Excel (SheetJS) ─────────────────────────────────────────
+async function exportAllData() {
+    const btn = document.getElementById('exportBtn');
+    const origHTML = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Generando…'; }
+
+    try {
+        if (typeof XLSX === 'undefined') throw new Error('SheetJS no cargado');
+
+        const [products, allTx, sellers] = await Promise.all([
+            getProducts(),
+            getTransactions(9999),
+            getSellers()
+        ]);
+
+        const wb = XLSX.utils.book_new();
+
+        // ── Resumen ───────────────────────────────────────────────────────
+        const totalRevenue = allTx.reduce((s, t) => s + parseFloat(t.total || 0), 0);
+        const totalProfit  = allTx.reduce((s, t) => s + parseFloat(t.profit || 0), 0);
+        const today = new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima', year: 'numeric', month: 'long', day: 'numeric' });
+        const wsResumen = XLSX.utils.aoa_to_sheet([
+            ['VENDIX — Reporte Completo'],
+            ['Fecha de exportación', today],
+            [],
+            ['MÉTRICA',                'VALOR'],
+            ['Total de productos',      products.length],
+            ['Total de ventas',         allTx.length],
+            ['Ingresos totales',        totalRevenue],
+            ['Ganancia total',          totalProfit],
+            ['Margen promedio (%)',      totalRevenue ? +((totalProfit / totalRevenue) * 100).toFixed(1) : 0],
+            ['Total vendedores',        sellers.length],
+        ]);
+        XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
+
+        // ── Inventario ────────────────────────────────────────────────────
+        const invHeader = ['SKU', 'Nombre', 'Categoría', 'Stock', 'Precio de Venta (S/.)', 'Costo (S/.)', 'Valor en Inventario (S/.)', 'Estado'];
+        const invRows   = (products || []).map(p => {
+            const stock = parseInt(p.stock || 0);
+            const cost  = parseFloat(p.cost || 0);
+            const estado = stock === 0 ? 'Sin stock' : stock <= 2 ? 'Crítico' : stock <= 5 ? 'Bajo' : 'OK';
+            return [
+                p.sku || '—',
+                p.name || '—',
+                p.category || '—',
+                stock,
+                parseFloat(p.price || 0),
+                cost,
+                +(stock * cost).toFixed(2),
+                estado
+            ];
+        });
+        const wsInv = XLSX.utils.aoa_to_sheet([invHeader, ...invRows]);
+        XLSX.utils.book_append_sheet(wb, wsInv, 'Inventario');
+
+        // ── Ventas (resumen por venta) ────────────────────────────────────
+        const salesHeader = ['ID', 'Fecha', 'Hora', 'Vendedor', 'Método de Pago', 'Total (S/.)', 'Ganancia (S/.)', 'Margen (%)'];
+        const salesRows   = (allTx || []).map(t => {
+            const d      = new Date(t.date);
+            const total  = parseFloat(t.total || 0);
+            const profit = parseFloat(t.profit || 0);
+            return [
+                t.id,
+                d.toLocaleDateString('es-PE', { timeZone: 'America/Lima' }),
+                d.toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }),
+                t.seller_name || '—',
+                t.payment_method || 'Efectivo',
+                total,
+                profit,
+                total ? +((profit / total) * 100).toFixed(1) : 0
+            ];
+        });
+        const wsVentas = XLSX.utils.aoa_to_sheet([salesHeader, ...salesRows]);
+        XLSX.utils.book_append_sheet(wb, wsVentas, 'Ventas');
+
+        // ── Detalle de Ventas (producto por producto) ─────────────────────
+        // Build SKU lookup from products
+        const skuMap = {};
+        (products || []).forEach(p => { if (p.name) skuMap[p.name.toLowerCase()] = p.sku || '—'; });
+
+        const detailHeader = ['Venta ID', 'Fecha', 'Vendedor', 'SKU', 'Producto', 'Cantidad', 'Precio Unit. (S/.)', 'Subtotal (S/.)'];
+        const detailRows   = [];
+        for (const t of (allTx || [])) {
+            const fecha = new Date(t.date).toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+            for (const item of (t.items || [])) {
+                const sku      = item.sku || skuMap[(item.product_name || '').toLowerCase()] || '—';
+                const unitPrice = parseFloat(item.unit_price || item.price || 0);
+                detailRows.push([
+                    t.id,
+                    fecha,
+                    t.seller_name || '—',
+                    sku,
+                    item.product_name || '—',
+                    item.quantity || 0,
+                    unitPrice,
+                    +((item.quantity || 0) * unitPrice).toFixed(2)
+                ]);
+            }
+        }
+        const wsDetail = XLSX.utils.aoa_to_sheet([detailHeader, ...detailRows]);
+        XLSX.utils.book_append_sheet(wb, wsDetail, 'Detalle Ventas');
+
+        // ── Vendedores ────────────────────────────────────────────────────
+        const selHeader = ['Nombre', 'Usuario', 'Email', 'Teléfono', 'Comisión (%)', 'Estado'];
+        const selRows   = (sellers || []).map(s => [
+            s.full_name || '—',
+            s.username  || '—',
+            s.email     || '—',
+            s.phone     || '—',
+            parseFloat(s.commission_percentage || 0),
+            s.status    || 'activo'
+        ]);
+        const wsSellers = XLSX.utils.aoa_to_sheet([selHeader, ...selRows]);
+        XLSX.utils.book_append_sheet(wb, wsSellers, 'Vendedores');
+
+        // ── Descargar ────────────────────────────────────────────────────
+        const fecha = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `vendix-${fecha}.xlsx`);
+        showNotification('Archivo descargado correctamente');
+
+    } catch (err) {
+        console.error('Export error:', err);
+        showNotification('Error al exportar: ' + err.message, true);
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = origHTML; }
+    }
+}
+
 // ── Low Stock ─────────────────────────────────────────────────────────────────
 
 function renderLowStock(products) {
     const low = (products || []).filter(p => parseInt(p.stock) < 5).sort((a, b) => a.stock - b.stock).slice(0, 8);
     const el  = document.getElementById('lowStockList');
 
-    if (!low.length) { el.innerHTML = '<div class="dash-empty">✅ All products well stocked</div>'; return; }
+    if (!low.length) { el.innerHTML = '<div class="dash-empty">✅ Todo el inventario en buen estado</div>'; return; }
 
     el.innerHTML = low.map(p => {
         const stock = parseInt(p.stock);
@@ -397,7 +526,13 @@ async function updateDashboardStats() {
         const welcomeEl = document.getElementById('adminWelcome');
         const dateEl    = document.getElementById('adminDate');
         if (welcomeEl) welcomeEl.textContent = `Welcome back, ${user?.fullName?.split(' ')[0] || 'Admin'} 👋`;
-        if (dateEl)    dateEl.textContent    = now.toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        if (dateEl)    dateEl.textContent    = now.toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Lima' });
+
+        // Show skeleton shimmer in KPI values while loading — prevents flash of "—" or "0"
+        document.querySelectorAll('.kpi-value').forEach(el => {
+            el.dataset.orig = el.textContent;
+            el.innerHTML = '<span class="skeleton-line" style="width:80px;height:20px;display:inline-block;border-radius:4px;"></span>';
+        });
 
         const [tx, products, sellers] = await Promise.all([
             getTransactions(500),

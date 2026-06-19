@@ -15,14 +15,15 @@
     <title>Inventory & Sales Management Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"></noscript>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="mobile.css">
     <link rel="stylesheet" href="sellers.css">
     <link rel="stylesheet" href="animations.css">
     <link rel="stylesheet" href="dashboard.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script></head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script></head>
 <body>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
@@ -54,13 +55,14 @@
                             <line x1="3" y1="18" x2="21" y2="18"/>
                         </svg>
                     </button>
-                    <div class="search-bar">
+                    <div class="search-bar spa-search">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
                             <path d="m21 21-4.35-4.35"/>
                         </svg>
                         <input type="text" placeholder="Search products, orders, customers...">
                     </div>
+                    <h1 class="spa-page-title" style="display:none;font-size:18px;font-weight:700;color:var(--text-1);margin:0;"></h1>
                 </div>
                 
                 <div class="navbar-right">
@@ -84,7 +86,8 @@
                 </div>
             </header>
 
-            <!-- Dashboard Content -->
+            <!-- SPA Content Area -->
+            <div id="spaContent" class="spa-content">
             <main class="dashboard-content">
 
                 <!-- ── SELLER PROFILE VIEW (shown when user is a Seller) ── -->
@@ -199,6 +202,10 @@
                             <h1 id="adminWelcome">Dashboard</h1>
                             <p class="page-subtitle" id="adminDate"></p>
                         </div>
+                        <button id="exportBtn" onclick="exportAllData()" class="btn btn-secondary" style="display:flex;align-items:center;gap:8px;white-space:nowrap;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Descargar información
+                        </button>
                     </div>
 
                     <!-- KPI Cards -->
@@ -345,6 +352,7 @@
 
                 </div><!-- end adminDashboard -->
             </main>
+            </div><!-- end spaContent -->
         </div>
     </div>
 
@@ -352,6 +360,7 @@
     <script src="auth.js" defer></script>
     <script src="sidebar.js" defer></script>
     <script src="script.js" defer></script>
+    <script src="router.js" defer></script>
 <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>
 </html>

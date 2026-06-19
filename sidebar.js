@@ -11,6 +11,7 @@ const menuItems = [
     { name: "Inventory", icon: "inventory", roles: ["admin", "seller"], href: "inventory.html" },
     { name: "Sales",     icon: "sales",     roles: ["admin", "seller"], href: "sales.html" },
     { name: "Sellers",   icon: "sellers",   roles: ["admin"],           href: "sellers.html" },
+    { name: "Etiquetas", icon: "labels",    roles: ["admin"],           href: "labels.html" },
     { name: "Settings",  icon: "settings",  roles: ["admin", "seller"], href: "settings.html" },
 ];
 
@@ -55,6 +56,9 @@ const icons = {
     platform: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="2" y="3" width="20" height="14" rx="2"/>
         <path d="M8 21h8M12 17v4"/>
+    </svg>`,
+    labels: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="4" width="2" height="16"/><rect x="6" y="4" width="1" height="16"/><rect x="9" y="4" width="2" height="16"/><rect x="13" y="4" width="1" height="16"/><rect x="16" y="4" width="2" height="16"/><rect x="20" y="4" width="2" height="16"/>
     </svg>`
 };
 

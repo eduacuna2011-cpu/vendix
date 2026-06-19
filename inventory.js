@@ -43,6 +43,29 @@ removeImageBtn.addEventListener('click', () => {
     removeImageBtn.style.display = 'none';
 });
 
+// "Generar Código" — genera localmente, sin llamada al servidor (instantáneo)
+function _localBarcode() {
+    const user = getCurrentUser();
+    const bizId = (user && user.businessId) ? user.businessId : 0;
+    const prefix = String(bizId).padStart(4, '0');
+    const rand   = Math.floor(Math.random() * 9999999).toString().padStart(7, '0');
+    return `2${prefix}${rand}`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const genBtn = document.getElementById('generateBarcodeBtn');
+    if (!genBtn) return;
+    genBtn.addEventListener('click', () => {
+        const field = document.getElementById('barcode');
+        if (field.value.trim()) {
+            showNotification('Ya hay un código. Bórralo primero para generar uno nuevo.', true);
+            return;
+        }
+        field.value = _localBarcode();
+        field.focus();
+    });
+});
+
 function openModal(mode, product = null) {
     productModal.classList.add('show');
     if (mode === 'add') {
@@ -63,6 +86,7 @@ function openModal(mode, product = null) {
         document.getElementById('stock').value        = product.stock ?? 0;
         document.getElementById('costPrice').value    = product.cost_price ?? 0;
         document.getElementById('salePrice').value    = product.sale_price ?? 0;
+        document.getElementById('barcode').value      = product.barcode || '';
         if (product.image) {
             currentImageData = product.image;
             imagePreview.innerHTML = `<img src="${product.image}" alt="Product image">`;
@@ -94,7 +118,8 @@ productForm.addEventListener('submit', async (e) => {
         stock:     parseInt(document.getElementById('stock').value) || 0,
         costPrice: parseFloat(document.getElementById('costPrice').value) || 0,
         salePrice: parseFloat(document.getElementById('salePrice').value) || 0,
-        image:     currentImageData
+        image:     currentImageData,
+        barcode:   document.getElementById('barcode').value.trim() || null
     };
     const submitBtn = e.target.querySelector('[type=submit]');
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Guardando…'; }
@@ -114,8 +139,8 @@ productForm.addEventListener('submit', async (e) => {
 });
 
 function getStockBadge(stock) {
-    if (stock === 0)  return '<span class="stock-badge out-of-stock">Out of Stock</span>';
-    if (stock < 5)    return `<span class="stock-badge low-stock">${stock} (Low)</span>`;
+    if (stock === 0)  return '<span class="stock-badge out-of-stock">Sin stock</span>';
+    if (stock < 5)    return `<span class="stock-badge low-stock">${stock} (Bajo)</span>`;
     return `<span class="stock-badge in-stock">${stock}</span>`;
 }
 
@@ -150,11 +175,16 @@ async function loadProducts() {
                 <td>${escapeHtml(p.category || '—')}</td>
                 <td>${escapeHtml(p.color || '—')}</td>
                 <td>${escapeHtml(p.size || '—')}</td>
+                <td>
+                    ${p.barcode
+                        ? `<span style="font-family:monospace;font-size:12px;color:var(--text-2)">${escapeHtml(p.barcode)}</span>`
+                        : '<span style="color:var(--text-3);font-size:12px;">—</span>'}
+                </td>
                 <td>S/. ${parseFloat(p.cost_price || 0).toFixed(2)}</td>
                 <td>S/. ${parseFloat(p.sale_price || 0).toFixed(2)}</td>
                 <td>${getStockBadge(p.stock)}</td>
                 <td>
-                    ${isUserSeller ? '<span class="read-only">Read-only</span>' : `
+                    ${isUserSeller ? '<span class="read-only">Solo lectura</span>' : `
                     <div class="action-buttons">
                         <button class="btn-icon edit" onclick="editProduct(${p.id})">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -210,7 +240,66 @@ async function populateFilters() {
 
 function debounce(fn, ms) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
 
-searchInput.addEventListener('input',   debounce(loadProducts, 300));
+// ─── Barcode scanner detection (same timing logic as sales.js) ────────────────
+let _invBcLastKey   = 0;
+let _invBcFastCount = 0;
+let _invBcDebounce  = null;
+
+searchInput.addEventListener('keydown', async function(e) {
+    const now = Date.now();
+    const gap = now - _invBcLastKey;
+    _invBcLastKey = now;
+
+    if (e.key !== 'Enter') {
+        if (gap > 100) _invBcFastCount = 0;
+        if (gap < 50)  _invBcFastCount++;
+        return;
+    }
+
+    e.preventDefault();
+    clearTimeout(_invBcDebounce);
+    const code = this.value.trim();
+    if (!code) return;
+
+    const isScanner = _invBcFastCount >= 3;
+    _invBcFastCount = 0;
+
+    if (isScanner) {
+        this.value = '';
+        try {
+            const product = await getProductByBarcode(code);
+            // Load/refresh list then open edit modal
+            await loadProducts();
+            const found = _productsCache.find(p => p.id === product.id);
+            if (found) {
+                // Highlight the row briefly
+                const row = productsTableBody.querySelector(`button[onclick="editProduct(${product.id})"]`)?.closest('tr');
+                if (row) {
+                    row.style.transition = 'background 0.3s';
+                    row.style.background = 'rgba(0,212,106,0.12)';
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => { row.style.background = ''; }, 1500);
+                }
+                openModal('edit', found);
+                showNotification(`Producto encontrado: ${product.name}`);
+            }
+        } catch {
+            showNotification(`No se encontró ningún producto con código "${code}"`, true);
+        }
+        return;
+    }
+
+    loadProducts();
+});
+
+searchInput.addEventListener('focus', () => { _invBcFastCount = 0; _invBcLastKey = 0; });
+
+// Wrap debounce to allow keydown cancel
+searchInput.addEventListener('input', function() {
+    clearTimeout(_invBcDebounce);
+    _invBcDebounce = setTimeout(() => loadProducts(), 300);
+});
+
 categoryFilter.addEventListener('change', loadProducts);
 colorFilter.addEventListener('change',    loadProducts);
 sizeFilter.addEventListener('change',     loadProducts);

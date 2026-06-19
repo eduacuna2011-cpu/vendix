@@ -151,6 +151,14 @@ async function getProductFilters() {
     return apiFetch('/products/filters');
 }
 
+async function getProductByBarcode(code) {
+    return apiFetch(`/products/barcode/${encodeURIComponent(code)}`);
+}
+
+async function generateBarcode() {
+    return apiFetch('/products/generate-barcode');
+}
+
 // ─── Sellers ──────────────────────────────────────────────────────────────────
 async function getSellers(filters = {}) {
     const params = new URLSearchParams(filters).toString();

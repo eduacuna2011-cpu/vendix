@@ -49,7 +49,7 @@ body.page-ready {
 
 .btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99,102,241,0.25);
+    box-shadow: 0 4px 12px rgba(0,200,100,0.25);
 }
 
 .btn:active {
@@ -251,4 +251,75 @@ input:focus, select:focus, textarea:focus {
 .icon-btn, .copy-btn, .plat-kpi, .settings-tab, .sa-tab,
 input, select, textarea, .toast, .sa-panel {
     transition-property: all;
+}
+
+/* ─── SPA page transitions ─────────────────────────────────────── */
+/* Pure opacity fade — no translateY which can cause repaints/flashes */
+.spa-content {
+    will-change: opacity;
+}
+
+.spa-content.spa-exit {
+    opacity: 0;
+    transition: opacity 0.14s ease;
+    pointer-events: none;
+}
+
+.spa-content.spa-enter {
+    opacity: 0;
+}
+
+.spa-content.spa-entered {
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+/* ─── SPA loading skeleton ─────────────────────────────────────── */
+.spa-skeleton {
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeIn .15s ease;
+}
+
+.sk-header {
+    height: 32px;
+    width: 220px;
+    border-radius: 8px;
+    background: var(--border);
+    animation: shimmer 1.3s infinite;
+    background-size: 200% 100%;
+    background-image: linear-gradient(90deg, var(--border) 25%, var(--surface-2,var(--surface)) 50%, var(--border) 75%);
+    margin-bottom: 8px;
+}
+
+.sk-row {
+    height: 14px;
+    border-radius: 4px;
+    background-image: linear-gradient(90deg, var(--border) 25%, var(--surface-2,var(--surface)) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.3s infinite;
+}
+
+.sk-row--short { width: 60%; }
+
+.sk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 8px 0;
+}
+
+.sk-card {
+    height: 110px;
+    border-radius: 12px;
+    background-image: linear-gradient(90deg, var(--border) 25%, var(--surface-2,var(--surface)) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.3s infinite;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }

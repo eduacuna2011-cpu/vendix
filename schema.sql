@@ -102,8 +102,11 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX IF NOT EXISTS idx_users_username      ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_business_id   ON users(business_id);
 CREATE INDEX IF NOT EXISTS idx_users_role          ON users(role);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS barcode VARCHAR(100);
+
 CREATE INDEX IF NOT EXISTS idx_products_business   ON products(business_id);
 CREATE INDEX IF NOT EXISTS idx_products_sku        ON products(sku);
+CREATE INDEX IF NOT EXISTS idx_products_barcode    ON products(barcode);
 CREATE INDEX IF NOT EXISTS idx_transactions_biz    ON transactions(business_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_seller ON transactions(seller_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_date   ON transactions(date DESC);
