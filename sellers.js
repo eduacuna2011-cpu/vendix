@@ -273,7 +273,7 @@ async function updateStats() {
 }
 
 // ── Form Submit ───────────────────────────────────────────────────
-sellerForm.addEventListener('submit', async (e) => {
+sellerForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const id   = document.getElementById('sellerId').value;
     const data = {
