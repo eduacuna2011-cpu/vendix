@@ -16,8 +16,8 @@
     'labels.html':       { css: ['labels.css'],       js: 'labels.js',      title: 'Etiquetas' },
     'settings.html':     { css: ['settings.css'],     js: 'settings.js',    title: 'Configuración' },
     'users.html':        { css: ['users.css'],         js: 'users.js',       title: 'Usuarios' },
-    'platform-sa.html':  { css: ['platform-sa.css'],  js: ['platform-sa.js', 'vendix-sales.js'], title: 'Platform Admin' },
-    'settings-sa.html':  { css: ['settings-sa.css'],  js: 'settings-sa.js', title: 'SA Settings' },
+    'platform-sa.html':  { css: [], js: ['platform-sa.js', 'vendix-sales.js'], title: 'Platform Admin' },
+    'settings-sa.html':  { css: [], js: 'settings-sa.js', title: 'SA Settings' },
     'customer-details.html': { css: [], js: '', title: 'Detalle de Cliente' },
   };
 
