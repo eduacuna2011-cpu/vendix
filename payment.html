@@ -43,7 +43,7 @@
         <div class="sub">Licencia mensual</div>
         <div class="amount"><span>S/.</span> 15.99</div>
         <div class="period">por mes</div>
-        <button id="payBtn" onclick="pagar()">Pagar con tarjeta</button>
+        <button id="payBtn" onclick="pagar()">Abrir pago</button>
         <div class="status" id="status"></div>
         <div class="secure">🔒 Pago seguro procesado por Culqi</div>
     </div>
@@ -106,9 +106,12 @@ function initCulqi(pk) {
             setStatus('❌ ' + (culqi.error.user_message || 'Error en el pago'));
         }
     };
+
+    // Abrir el modal automáticamente al cargar la página
+    culqi.open();
 }
 
-// 4. Abrir modal
+// Reabrir modal si el usuario lo cierra
 function pagar() {
     if (!culqi) { setStatus('Cargando, intenta de nuevo…'); return; }
     culqi.open();
