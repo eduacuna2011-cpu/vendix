@@ -16,7 +16,7 @@
     'labels.html':       { css: ['labels.css'],       js: 'labels.js',      title: 'Etiquetas' },
     'settings.html':     { css: ['settings.css'],     js: 'settings.js',    title: 'Configuración' },
     'users.html':        { css: ['users.css'],         js: 'users.js',       title: 'Usuarios' },
-    'platform-sa.html':  { css: ['platform-sa.css'],  js: 'platform-sa.js', title: 'Platform Admin' },
+    'platform-sa.html':  { css: ['platform-sa.css'],  js: ['platform-sa.js', 'vendix-sales.js'], title: 'Platform Admin' },
     'settings-sa.html':  { css: ['settings-sa.css'],  js: 'settings-sa.js', title: 'SA Settings' },
     'customer-details.html': { css: [], js: '', title: 'Detalle de Cliente' },
   };
@@ -27,7 +27,7 @@
   const _loadedCss = new Set(['styles.css', 'mobile.css', 'animations.css',
                                'sellers.css', 'dashboard.css']);
 
-  let _currentPage = 'index.html';
+  let _currentPage = getPageName(location.pathname) || 'index.html';
   let _navigating  = false;
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -141,19 +141,20 @@
     var mc = document.querySelector('.main-content');
     if (mc) mc.scrollTo({ top: 0 });
 
-    // ── Step 10: Execute page script ──────────────────────────────────────
-    var old = document.getElementById('_spaScript');
-    if (old) old.remove();
-    if (route.js) {
+    // ── Step 10: Execute page script(s) ───────────────────────────────────
+    // route.js puede ser un string o un array (varios scripts por página).
+    document.querySelectorAll('._spaScript').forEach(function (s) { s.remove(); });
+    var jsFiles = !route.js ? [] : (Array.isArray(route.js) ? route.js : [route.js]);
+    for (var i = 0; i < jsFiles.length; i++) {
       try {
-        var code = await fetch(route.js + '?_v=' + Date.now()).then(function (r) { return r.text(); });
+        var code = await fetch(jsFiles[i] + '?_v=' + Date.now()).then(function (r) { return r.text(); });
         var script = document.createElement('script');
-        script.id  = '_spaScript';
+        script.className = '_spaScript';
         // IIFE gives each page a clean scope — avoids "already declared" errors
         script.textContent = ';(async function(){\n' + code + '\n})().catch(console.error);';
         document.body.appendChild(script);
       } catch (err) {
-        console.error('[Router] script load failed:', pageName, err);
+        console.error('[Router] script load failed:', jsFiles[i], err);
       }
     }
 
@@ -199,7 +200,7 @@
   }, { passive: true });
 
   // Seed initial history entry so back button works from shell
-  history.replaceState({ pageName: 'index.html' }, '', location.href);
+  history.replaceState({ pageName: _currentPage }, '', location.href);
 
   // Public API
   window.spaNavigate = spaNavigate;

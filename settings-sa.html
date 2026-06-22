@@ -76,6 +76,7 @@
         </header>
 
         <!-- Page Content -->
+        <div id="spaContent" class="spa-content">
         <main class="sa-settings-page">
 
             <!-- Hero Header -->
@@ -327,12 +328,9 @@
                 </section>
 
             </div><!-- /panels -->
-        </main>
-    </div>
-</div>
 
-<!-- Confirm Modal -->
-<div class="modal" id="confirmModal">
+            <!-- Confirm Modal -->
+            <div class="modal" id="confirmModal">
     <div class="sa-confirm-modal">
         <div class="sa-confirm-icon" id="confirmIcon">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -353,11 +351,16 @@
 <!-- Toast -->
 <div class="sa-toast" id="toast"><span id="toastMsg"></span></div>
 <div class="sa-toast sa-toast-error" id="toastError"><span id="toastErrorMsg"></span></div>
+        </main>
+        </div><!-- end spaContent -->
+    </div>
+</div>
 
 <script src="api-client.js" defer></script>
 <script src="auth.js" defer></script>
 <script src="sidebar.js" defer></script>
 <script src="settings-sa.js" defer></script>
+<script src="router.js" defer></script>
 <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>
 </html>
