@@ -3,6 +3,29 @@ const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const db     = require('../db');
 
+// Re-emite un JWT fresco con los datos actuales del usuario (tras editar perfil/usuario)
+async function reissueToken(userId) {
+    const { rows } = await db.query(
+        `SELECT u.*, b.name AS business_name_from_biz
+         FROM users u LEFT JOIN businesses b ON b.id = u.business_id
+         WHERE u.id = $1 LIMIT 1`,
+        [userId]
+    );
+    const user = rows[0];
+    if (!user) return null;
+    const payload = {
+        id:           user.id,
+        username:     user.username,
+        fullName:     user.full_name,
+        role:         user.role,
+        businessId:   user.business_id,
+        businessName: user.business_name || user.business_name_from_biz
+    };
+    return jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN || '7d'
+    });
+}
+
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
     try {
@@ -67,7 +90,8 @@ router.put('/profile', async (req, res) => {
             'UPDATE users SET full_name = $1, email = $2 WHERE id = $3',
             [fullName.trim(), email ? email.trim() : null, payload.id]
         );
-        res.json({ ok: true });
+        const token = await reissueToken(payload.id);
+        res.json({ ok: true, token });
     } catch {
         res.status(401).json({ error: 'Invalid token' });
     }
@@ -120,7 +144,8 @@ router.post('/change-username', async (req, res) => {
         if (existing.length) return res.status(400).json({ error: 'Username already taken' });
 
         await db.query('UPDATE users SET username = $1 WHERE id = $2', [newUsername, payload.id]);
-        res.json({ ok: true });
+        const token = await reissueToken(payload.id);
+        res.json({ ok: true, token });
     } catch {
         res.status(401).json({ error: 'Invalid token' });
     }

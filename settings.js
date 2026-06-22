@@ -116,10 +116,16 @@ document.getElementById('profileForm')?.addEventListener('submit', async e => {
         });
         const body = await res.json();
         if (!res.ok) throw new Error(body.error || 'Error al guardar');
+        // Guardar el JWT nuevo para que el nombre se actualice en TODA la app (navbar, sidebar, al recargar)
+        if (body.token && typeof setToken === 'function') setToken(body.token);
         // Update avatar initials live
         const initials = fullName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2);
         document.getElementById('bigAvatar').textContent = initials || fullName[0].toUpperCase();
         document.getElementById('bigName').textContent   = fullName;
+        // Refrescar el perfil del navbar/sidebar con el token nuevo
+        if (typeof updateUserProfile === 'function' && typeof getCurrentUser === 'function') {
+            updateUserProfile(getCurrentUser());
+        }
         showToast('Perfil actualizado correctamente');
     } catch (err) { showToast('Error: ' + err.message, true); }
     finally {
