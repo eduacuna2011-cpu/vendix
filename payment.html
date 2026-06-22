@@ -13,12 +13,13 @@
     :root {
         --primary:   #00d46a;
         --primary-d: #00b85c;
-        --text-1:    #0f1420;
-        --text-2:    #5a6577;
-        --text-3:    #97a1b2;
-        --border:    #e8ebf0;
-        --bg:        #f4f6fa;
-        --card:      #ffffff;
+        --text-1:    #eef0f8;
+        --text-2:    #98a2b8;
+        --text-3:    #5a6376;
+        --border:    rgba(255,255,255,.08);
+        --bg:        #09090f;
+        --card:      #111116;
+        --card-2:    #1b1b24;
     }
 
     body {
@@ -224,7 +225,7 @@
 
         <button class="pay-btn" id="payBtn" onclick="pagar()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            Pagar con tarjeta
+            Pagar S/. 15.99
         </button>
 
         <div class="status" id="status"></div>
@@ -234,6 +235,7 @@
             <div class="card-logo" style="color:#EB001B">MC</div>
             <div class="card-logo" style="color:#016FD0">AMEX</div>
             <div class="card-logo" style="color:#004B87">DINERS</div>
+            <div class="card-logo" style="color:#741ab0">YAPE</div>
         </div>
 
         <div class="trust-row">
@@ -322,7 +324,7 @@ function initCulqi(pk) {
         options: {
             lang:  'es',
             modal: true,
-            paymentMethods: { tarjeta: true, yape: false, billetera: false, bancaMovil: false, agente: false, cuotealo: false }
+            paymentMethods: { tarjeta: true, yape: true, billetera: false, bancaMovil: false, agente: false, cuotealo: false }
         },
         appearance: {
             theme: 'default',
