@@ -21,32 +21,40 @@ router.post('/charge', async (req, res) => {
 
         const amountCents = Math.round(parseFloat(amount) * 100);
 
+        // description debe tener entre 5 y 80 caracteres
+        let desc = (description || 'Suscripcion mensual Vendix').trim();
+        if (desc.length < 5)  desc = 'Suscripcion mensual Vendix';
+        if (desc.length > 80) desc = desc.slice(0, 80);
+
+        const charge = {
+            amount:        amountCents,
+            currency_code: 'PEN',
+            email,
+            source_id:     token,
+            description:   desc
+        };
+
+        // antifraud_details solo si tenemos datos reales (campos vacios rompen la validacion)
+        if (firstName && lastName) {
+            charge.antifraud_details = {
+                first_name: firstName,
+                last_name:  lastName
+            };
+        }
+
         const response = await fetch('https://api.culqi.com/v2/charges', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${sk}`,
                 'Content-Type':  'application/json'
             },
-            body: JSON.stringify({
-                amount:        amountCents,
-                currency_code: 'PEN',
-                email,
-                source_id:     token,
-                description:   description || 'Licencia Vendix',
-                antifraud_details: {
-                    first_name: firstName || '',
-                    last_name:  lastName  || '',
-                    address:    'Lima',
-                    address_city: 'Lima',
-                    country_code: 'PE',
-                    phone:        ''
-                }
-            })
+            body: JSON.stringify(charge)
         });
 
         const data = await response.json();
 
         if (!response.ok) {
+            console.error('Culqi rechazo:', JSON.stringify(data));
             const msg = data?.user_message || data?.merchant_message || 'Error al procesar el pago';
             return res.status(400).json({ error: msg });
         }

@@ -357,9 +357,11 @@ function initCulqi(pk) {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        token:  culqi.token.id,
-                        amount: 15.99,
-                        email:  cliente.email || culqi.token.email || 'cliente@vendix.app'
+                        token:     culqi.token.id,
+                        amount:    15.99,
+                        email:     cliente.email || culqi.token.email || 'cliente@vendix.app',
+                        firstName: (cliente.name || '').trim().split(' ')[0] || '',
+                        lastName:  (cliente.name || '').trim().split(' ').slice(1).join(' ') || ''
                     })
                 });
                 const data = await res.json();
