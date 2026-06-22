@@ -5,37 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitud enviada — Vendix</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --primary:   #00C864;
-            --primary-d: #059669;
-            --success:   #10b981;
-            --text-1:    #0f172a;
-            --text-2:    #475569;
-            --text-3:    #94a3b8;
-            --border:    #e2e8f0;
-            --surface:   #ffffff;
-            --bg:        #f8fafc;
+            --primary:   #00d46a;
+            --primary-d: #00b85c;
+            --success:   #00d46a;
+            --text-1:    #f3f4f8;
+            --text-2:    #9aa3b4;
+            --text-3:    #5c6477;
+            --border:    rgba(255,255,255,0.07);
+            --border-2:  rgba(255,255,255,0.12);
+            --surface:   #0f0f15;
+            --bg:        #08080c;
+            --serif:     'Fraunces', Georgia, serif;
+            --sans:      'Plus Jakarta Sans', system-ui, sans-serif;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(180deg, #f0f0ff 0%, #f8fafc 100%);
+            font-family: var(--sans);
+            background: var(--bg);
             color: var(--text-1);
             min-height: 100vh;
             display: flex; flex-direction: column;
             -webkit-font-smoothing: antialiased;
+            background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,212,106,.06), transparent 70%);
         }
+
+        h1, h2, h3, .logo { font-family: var(--serif); letter-spacing: -.01em; font-weight: 600; }
 
         /* ── TOP BAR ── */
         .topbar {
-            background: rgba(255,255,255,.85);
+            background: rgba(15,15,21,.85);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
-            height: 60px;
+            height: 64px;
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 24px;
         }
@@ -135,10 +142,11 @@
         .detail-row:last-child { border-bottom: none; }
 
         .detail-icon {
-            width: 34px; height: 34px; border-radius: 8px;
+            width: 36px; height: 36px; border-radius: 9px;
             background: var(--bg);
+            border: 1px solid var(--border);
             display: flex; align-items: center; justify-content: center;
-            font-size: 15px; flex-shrink: 0;
+            color: var(--text-2); flex-shrink: 0;
         }
 
         .detail-label {
@@ -246,7 +254,7 @@
 </div>
 
 <style>
-.steps-bar{background:#fff;border-bottom:1px solid var(--border);padding:12px 24px;display:flex;justify-content:center;}
+.steps-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;justify-content:center;}
 .stp{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--text-3);}
 .stp.done{color:var(--success);}
 .stp.active{color:var(--primary);}
@@ -275,14 +283,16 @@
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
             </div>
-            <h1>¡Solicitud enviada!</h1>
-            <p>Recibimos tus datos. Te contactamos en menos de <strong>1 hora</strong> para activar tu cuenta.</p>
+            <h1>Pago confirmado</h1>
+            <p>Recibimos tu pago. Te contactamos en menos de <strong>1 hora</strong> para entregarte tus accesos.</p>
         </div>
 
         <!-- YOUR DETAILS -->
         <div class="details-card">
             <div class="card-header">
-                <div class="card-header-icon" style="background:rgba(0,200,100,.12);">📋</div>
+                <div class="card-header-icon" style="background:rgba(0,212,106,.12);color:var(--primary);">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </div>
                 <div>
                     <h2>Tus datos registrados</h2>
                     <p>Esto es lo que recibimos de tu parte</p>
@@ -290,42 +300,42 @@
             </div>
             <div class="card-body">
                 <div class="detail-row">
-                    <div class="detail-icon">🏪</div>
+                    <div class="detail-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg></div>
                     <div>
                         <div class="detail-label">Negocio</div>
                         <div class="detail-value" id="dBusiness">—</div>
                     </div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-icon">👤</div>
+                    <div class="detail-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
                     <div>
                         <div class="detail-label">Nombre</div>
                         <div class="detail-value" id="dName">—</div>
                     </div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-icon">📧</div>
+                    <div class="detail-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg></div>
                     <div>
                         <div class="detail-label">Correo electrónico</div>
                         <div class="detail-value" id="dEmail">—</div>
                     </div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-icon">📱</div>
+                    <div class="detail-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg></div>
                     <div>
                         <div class="detail-label">WhatsApp</div>
                         <div class="detail-value" id="dPhone">—</div>
                     </div>
                 </div>
                 <div class="detail-row" id="dBizTypeRow" style="display:none;">
-                    <div class="detail-icon">🏷️</div>
+                    <div class="detail-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7" y2="7"/></svg></div>
                     <div>
                         <div class="detail-label">Tipo de negocio</div>
                         <div class="detail-value" id="dBizType">—</div>
                     </div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-icon">📦</div>
+                    <div class="detail-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg></div>
                     <div>
                         <div class="detail-label">Plan elegido</div>
                         <div class="detail-value"><span class="plan-tag" id="dPlan">—</span></div>

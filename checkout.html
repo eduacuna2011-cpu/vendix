@@ -11,31 +11,46 @@
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <title>Checkout — Vendix</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --primary:   #00d46a;
-            --primary-d: #00a854;
+            --primary-d: #00b85c;
             --success:   #00d46a;
-            --danger:    #ef4444;
-            --text-1:    #eef0f8;
-            --text-2:    #7d8799;
-            --text-3:    #3e4556;
+            --danger:    #ff6b6b;
+            --text-1:    #f3f4f8;
+            --text-2:    #9aa3b4;
+            --text-3:    #5c6477;
             --border:    rgba(255,255,255,0.07);
-            --surface:   #111116;
-            --surface-2: #1b1b24;
-            --bg:        #09090f;
+            --border-2:  rgba(255,255,255,0.12);
+            --surface:   #0f0f15;
+            --surface-2: #16161f;
+            --bg:        #08080c;
+            --serif:     'Fraunces', Georgia, serif;
+            --sans:      'Plus Jakarta Sans', system-ui, sans-serif;
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            font-family: var(--sans);
             background: var(--bg);
             color: var(--text-1);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
+            background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,212,106,.06), transparent 70%);
         }
+
+        h1, h2, h3, .topbar-logo, .summary-plan-name { font-family: var(--serif); letter-spacing: -.01em; font-weight: 600; }
+        .topbar-logo-icon { background: var(--primary) !important; }
+        .btn-pay {
+            font-family: var(--sans) !important;
+            letter-spacing: .01em;
+            box-shadow: 0 6px 24px rgba(0,212,106,.18);
+            transition: all .2s !important;
+        }
+        .btn-pay:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(0,212,106,.26); }
 
         /* ── TOP BAR ── */
         .topbar {
@@ -475,7 +490,7 @@
             </div>
 
             <div class="summary-trial">
-                <div class="summary-trial-title">🔒 Pago 100% seguro</div>
+                <div class="summary-trial-title">Pago 100% seguro</div>
                 <div class="summary-trial-desc">Tarjeta o Yape vía Culqi. Cancela cuando quieras.</div>
             </div>
         </div>
