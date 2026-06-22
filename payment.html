@@ -49,24 +49,19 @@
     </div>
 
 <script>
+// Public key de Culqi — es pública por diseño, va en el frontend.
+const CULQI_PK = 'pk_test_AQBCXE0gad3LsV14';
+
 let culqi = null;
 
 function setStatus(msg) { document.getElementById('status').textContent = msg || ''; }
 
-// 1. Obtener public key del backend
-fetch('/api/payments/config')
-    .then(r => r.json())
-    .then(d => {
-        const pk = (d.publicKey || '').trim();
-        if (!pk) { setStatus('Pago no disponible.'); document.getElementById('payBtn').disabled = true; return; }
-        initCulqi(pk);
-    })
-    .catch(() => setStatus('Error al cargar el pago.'));
+// Inicializar Culqi de inmediato (sin esperar al backend)
+initCulqi(CULQI_PK);
 
-// 2. Inicializar Culqi
 function initCulqi(pk) {
     if (typeof CulqiCheckout === 'undefined') {
-        setTimeout(() => initCulqi(pk), 300);
+        setTimeout(() => initCulqi(pk), 100);
         return;
     }
 
