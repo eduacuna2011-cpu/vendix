@@ -52,7 +52,8 @@ function _localBarcode() {
     return `2${prefix}${rand}`;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// Directo (no DOMContentLoaded) para funcionar también en modo SPA
+(function wireGenerateBarcode() {
     const genBtn = document.getElementById('generateBarcodeBtn');
     if (!genBtn) return;
     genBtn.addEventListener('click', () => {
@@ -64,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         field.value = _localBarcode();
         field.focus();
     });
-});
+})();
 
 function openModal(mode, product = null) {
     productModal.classList.add('show');
