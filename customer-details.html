@@ -344,7 +344,7 @@
                 </div>
                 <div class="step-item">
                     <div class="step-num">2</div>
-                    <div class="step-text"><strong>Activamos tu cuenta</strong> con tus 3 días de prueba gratuita sin tarjeta.</div>
+                    <div class="step-text"><strong>Activamos tu cuenta</strong> de inmediato tras confirmar tu pago.</div>
                 </div>
                 <div class="step-item">
                     <div class="step-num">3</div>
@@ -389,6 +389,7 @@
     const phone    = p.get('phone')    || '';
     const plan     = p.get('plan')     || 'negocio';
     const bizType  = p.get('bizType')  || '';
+    const paid     = p.get('paid')     === '1';
 
     // If no data at all redirect back
     if (!name && !business) window.location.href = 'checkout.html';
@@ -409,12 +410,12 @@
     // WhatsApp link
     const waNumber = '51966127203';
     const msg = encodeURIComponent(
-        `Hola! Acabo de completar el checkout de Vendix 🚀\n\n` +
+        `Hola! ${paid ? 'Acabo de pagar mi suscripción a Vendix ✅' : 'Acabo de completar el checkout de Vendix 🚀'}\n\n` +
         `📦 Plan: ${planInfo.label} (${planInfo.price})\n` +
         `🏪 Negocio: ${business}${bizType ? ' (' + bizType + ')' : ''}\n` +
         `👤 Nombre: ${name}\n` +
         `📧 Email: ${email}\n\n` +
-        `Quiero empezar los 3 días gratis!`
+        `${paid ? 'Ya realicé el pago, quiero activar mi cuenta!' : 'Quiero empezar mi cuenta!'}`
     );
     document.getElementById('waBtn').href = `https://wa.me/${waNumber}?text=${msg}`;
 </script>

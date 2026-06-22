@@ -298,6 +298,17 @@
 // Public key de Culqi — pública por diseño, va en el frontend.
 const CULQI_PK = 'pk_test_AQBCXE0gad3LsV14';
 
+// Datos del cliente que vienen del checkout
+const P = new URLSearchParams(window.location.search);
+const cliente = {
+    name:     P.get('name')     || '',
+    business: P.get('business') || '',
+    email:    P.get('email')    || '',
+    phone:    P.get('phone')    || '',
+    plan:     P.get('plan')     || 'vendix',
+    bizType:  P.get('bizType')  || ''
+};
+
 let culqi = null;
 
 function setStatus(msg, type) {
@@ -319,7 +330,8 @@ function initCulqi(pk) {
         settings: {
             title:    'Vendix',
             currency: 'PEN',
-            amount:   1599
+            amount:   1599,
+            email:    cliente.email || undefined
         },
         options: {
             lang:  'es',
@@ -351,13 +363,16 @@ function initCulqi(pk) {
                     body: JSON.stringify({
                         token:  culqi.token.id,
                         amount: 15.99,
-                        email:  culqi.token.email || 'cliente@vendix.app'
+                        email:  cliente.email || culqi.token.email || 'cliente@vendix.app'
                     })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Error al pagar');
-                setStatus('✓ ¡Pago exitoso! Tu cuenta está activa.', 'ok');
+                setStatus('✓ ¡Pago exitoso! Redirigiendo…', 'ok');
                 btn.textContent = '✓ Pagado';
+                // Ir a solicitar acceso, marcando que ya pagó
+                const out = new URLSearchParams({ ...cliente, paid: '1' });
+                setTimeout(() => { window.location.href = 'customer-details.html?' + out.toString(); }, 1000);
             } catch (err) {
                 btn.disabled = false;
                 setStatus('❌ ' + err.message, 'err');
