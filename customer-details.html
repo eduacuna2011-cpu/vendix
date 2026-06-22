@@ -420,12 +420,12 @@
     // WhatsApp link
     const waNumber = '51966127203';
     const msg = encodeURIComponent(
-        `Hola! ${paid ? 'Acabo de pagar mi suscripción a Vendix ✅' : 'Acabo de completar el checkout de Vendix 🚀'}\n\n` +
-        `📦 Plan: ${planInfo.label} (${planInfo.price})\n` +
-        `🏪 Negocio: ${business}${bizType ? ' (' + bizType + ')' : ''}\n` +
-        `👤 Nombre: ${name}\n` +
-        `📧 Email: ${email}\n\n` +
-        `${paid ? 'Ya realicé el pago, quiero activar mi cuenta!' : 'Quiero empezar mi cuenta!'}`
+        `Hola, ${paid ? 'acabo de pagar mi suscripción a Vendix.' : 'acabo de completar el checkout de Vendix.'}\n\n` +
+        `Plan: ${planInfo.label} (${planInfo.price})\n` +
+        `Negocio: ${business}${bizType ? ' (' + bizType + ')' : ''}\n` +
+        `Nombre: ${name}\n` +
+        `Email: ${email}\n\n` +
+        `${paid ? 'Quisiera activar mi cuenta, por favor.' : 'Quisiera empezar mi cuenta.'}`
     );
     document.getElementById('waBtn').href = `https://wa.me/${waNumber}?text=${msg}`;
 </script>
