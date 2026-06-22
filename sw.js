@@ -1,4 +1,4 @@
-const CACHE = 'vendix-v3';
+const CACHE = 'vendix-v4';
 
 self.addEventListener('install', e => {
   e.waitUntil(self.skipWaiting());
@@ -13,22 +13,30 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
+  const req = e.request;
+  const url = new URL(req.url);
 
-  // HTML y API: siempre red, nunca cache
+  // Solo manejar http/https del mismo origen. Ignorar chrome-extension, data:, etc.
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+  if (url.origin !== self.location.origin) return;
+  if (req.method !== 'GET') return;
+
+  // HTML y API: siempre red, con fallback a cache solo si existe
   if (url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.startsWith('/api/')) {
-    return e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
+    e.respondWith(
+      fetch(req).catch(async () => (await caches.match(req)) || Response.error())
     );
+    return;
   }
 
-  // CSS / JS / imágenes: network-first con cache fallback
+  // CSS / JS / imágenes: red primero, cachea si se puede
   e.respondWith(
-    fetch(e.request).then(res => {
-      if (!res || res.status !== 200 || res.type === 'opaque') return res;
-      const clone = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, clone));
+    fetch(req).then(res => {
+      if (res && res.status === 200 && res.type === 'basic') {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(req, clone).catch(() => {}));
+      }
       return res;
-    }).catch(() => caches.match(e.request))
+    }).catch(async () => (await caches.match(req)) || Response.error())
   );
 });
