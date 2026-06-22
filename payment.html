@@ -6,6 +6,7 @@
     <title>Pago — Vendix</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900" rel="stylesheet">
+<script src="https://js.culqi.com/checkout-js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -391,10 +392,18 @@
                 </div>
             </div>
 
-            <!-- Panel Tarjeta (Culqi embebido) -->
+            <!-- Panel Tarjeta (Culqi modal) -->
             <div class="pm-panel" id="panelCard">
-                <div id="culqi-container" style="min-height:320px;"></div>
-                <div class="culqi-secure-note" style="margin-top:8px;">
+                <div style="text-align:center;padding:8px 0 18px;">
+                    <div class="yape-amount-badge" style="background:rgba(0,212,106,.1);color:var(--primary);border-color:rgba(0,212,106,.25);">💳 S/. 15.99 / mes</div>
+                    <p style="font-size:13px;color:var(--text-2);font-weight:600;margin-top:4px;">Paga con tarjeta de crédito o débito</p>
+                    <p style="font-size:12px;color:var(--text-3);margin-top:4px;">Visa · Mastercard · Amex · Diners</p>
+                </div>
+                <button class="btn-free" id="culqiBtn" onclick="openCulqi()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Pagar con tarjeta
+                </button>
+                <div class="culqi-secure-note" style="margin-top:12px;">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     Pago 100% seguro · Procesado por Culqi
                 </div>
@@ -533,89 +542,107 @@
         window.location.href = 'payment-confirm.html?' + out.toString();
     }
 
-    // ── Culqi Checkout Custom (embebido) ─────────────────────────────────────
-    let _CulqiInstance = null;
+    // ── Culqi Checkout (modal) ────────────────────────────────────────────────
+    let _Culqi = null;
+    let _culqiReady = false;
 
-    async function initCulqi() {
-        try {
-            const { publicKey } = await fetch('/api/payments/config').then(r => r.json());
-            if (!publicKey || publicKey === 'pk_test_REEMPLAZAR') return;
+    // Cargar la public key apenas abre la página
+    fetch('/api/payments/config')
+        .then(r => r.json())
+        .then(d => {
+            const pk = d.publicKey || '';
+            if (!pk || pk === 'pk_test_REEMPLAZAR') {
+                const btn = document.getElementById('culqiBtn');
+                if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.innerHTML = '💳 Tarjeta no disponible aún'; }
+                return;
+            }
+            buildCulqi(pk);
+        })
+        .catch(() => {});
 
-            const parts = (name || '').trim().split(' ');
-
-            _CulqiInstance = new CulqiCheckout(publicKey, {
-                settings: {
-                    title:       'Vendix',
-                    currency:    'PEN',
-                    amount:      1599,
-                    description: 'Licencia mensual Vendix'
-                },
-                client: {
-                    email: email || ''
-                },
-                options: {
-                    lang:         'es',
-                    modal:        false,
-                    container:    '#culqi-container',
-                    installments: false,
-                    paymentMethods: {
-                        tarjeta:    true,
-                        yape:       false,
-                        billetera:  false,
-                        bancaMovil: false,
-                        agente:     false,
-                        cuotealo:   false
-                    }
-                }
-            });
-
-            _CulqiInstance.culqi = async function() {
-                if (_CulqiInstance.token) {
-                    try {
-                        const res = await fetch('/api/payments/charge', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                token:       _CulqiInstance.token.id,
-                                amount:      15.99,
-                                email:       email || 'cliente@vendix.app',
-                                firstName:   parts[0] || '',
-                                lastName:    parts.slice(1).join(' ') || '',
-                                description: 'Licencia mensual Vendix'
-                            })
-                        });
-                        const data = await res.json();
-                        if (!res.ok) throw new Error(data.error || 'Error al pagar');
-                        goConfirm('Tarjeta');
-                    } catch (err) {
-                        alert('❌ ' + err.message);
-                    }
-                } else if (_CulqiInstance.error) {
-                    const e = _CulqiInstance.error;
-                    alert('Error: ' + (e.user_message || e.merchant_message || 'Intenta de nuevo'));
-                }
-            };
-
-            _CulqiInstance.open();
-        } catch (e) {
-            console.warn('Culqi init error:', e);
+    function buildCulqi(pk) {
+        if (typeof CulqiCheckout === 'undefined') {
+            // El script de Culqi aún no cargó — reintentar
+            setTimeout(() => buildCulqi(pk), 300);
+            return;
         }
+
+        const parts = (name || '').trim().split(' ');
+
+        _Culqi = new CulqiCheckout(pk, {
+            settings: {
+                title:       'Vendix',
+                currency:    'PEN',
+                amount:      1599,            // S/. 15.99 en céntimos
+                description: 'Licencia mensual Vendix'
+            },
+            client: { email: email || '' },
+            options: {
+                lang:         'es',
+                modal:        true,
+                installments: false,
+                paymentMethods: {
+                    tarjeta:    true,
+                    yape:       false,
+                    billetera:  false,
+                    bancaMovil: false,
+                    agente:     false,
+                    cuotealo:   false
+                }
+            },
+            appearance: {
+                theme: 'default',
+                hiddenCulqiLogo: false,
+                menuType: 'sliderTop',
+                buttonCardPayText: 'Pagar S/. 15.99'
+            }
+        });
+
+        _Culqi.culqi = async function() {
+            if (_Culqi.token) {
+                const btn = document.getElementById('culqiBtn');
+                if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Procesando…'; }
+                try {
+                    const res = await fetch('/api/payments/charge', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            token:       _Culqi.token.id,
+                            amount:      15.99,
+                            email:       email || 'cliente@vendix.app',
+                            firstName:   parts[0] || '',
+                            lastName:    parts.slice(1).join(' ') || '',
+                            description: 'Licencia mensual Vendix'
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Error al pagar');
+                    goConfirm('Tarjeta');
+                } catch (err) {
+                    if (btn) { btn.disabled = false; btn.innerHTML = '💳 Pagar con tarjeta'; }
+                    alert('❌ ' + err.message);
+                }
+            } else if (_Culqi.error) {
+                const e = _Culqi.error;
+                alert('Error: ' + (e.user_message || e.merchant_message || 'Intenta de nuevo'));
+            }
+        };
+
+        _culqiReady = true;
     }
 
-    // Iniciar Culqi cuando el usuario cambia al tab de tarjeta
-    function switchTab(tab) {
-        document.getElementById('tabYape').classList.toggle('active', tab === 'yape');
-        document.getElementById('tabCard').classList.toggle('active', tab === 'card');
-        document.getElementById('panelYape').classList.toggle('active', tab === 'yape');
-        document.getElementById('panelCard').classList.toggle('active', tab === 'card');
-        if (tab === 'card' && !_CulqiInstance) initCulqi();
+    function openCulqi() {
+        if (!_culqiReady || !_Culqi) {
+            alert('El pago con tarjeta se está cargando, intenta en un segundo.');
+            return;
+        }
+        _Culqi.open();
     }
 </script>
 <style>
     @keyframes spin { to { transform: rotate(360deg); } }
     .spin { animation: spin .7s linear infinite; }
 </style>
-<script src="https://js.culqi.com/checkout-js"></script>
 </body>
 </html>
 
