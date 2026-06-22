@@ -330,8 +330,10 @@ function initCulqi(pk) {
         settings: {
             title:    'Vendix',
             currency: 'PEN',
-            amount:   1599,
-            email:    cliente.email || undefined
+            amount:   1599
+        },
+        client: {
+            email: cliente.email || ''
         },
         options: {
             lang:  'es',
@@ -340,14 +342,8 @@ function initCulqi(pk) {
         },
         appearance: {
             theme: 'default',
-            hiddenCulqiLogo: false,
             menuType: 'sidebar',
-            buttonCardPayText: 'Pagar S/. 15.99',
-            logo: 'https://vendix-app.vercel.app/icons/icon-192.png',
-            defaultStyle: {
-                bgColorButton: '#00d46a',
-                textColorButton: '#03120a'
-            }
+            buttonCardPayText: 'Pagar S/. 15.99'
         }
     });
 
