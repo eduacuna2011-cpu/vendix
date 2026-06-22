@@ -4,10 +4,24 @@ const { authMiddleware } = require('../middleware/auth');
 
 router.use(authMiddleware);
 
+// Crea la tabla settings si no existe (evita 500 en cold start / DB nueva)
+async function ensureTable() {
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS settings (
+            id         SERIAL PRIMARY KEY,
+            user_id    INTEGER NOT NULL,
+            key        TEXT NOT NULL,
+            value      TEXT,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    `);
+}
+
 // GET /api/settings  — get all settings for current user
 // Uses DISTINCT ON to return the most recent value per key (safe even with duplicate rows)
 router.get('/', async (req, res) => {
     try {
+        await ensureTable();
         const { rows } = await db.query(
             `SELECT DISTINCT ON (key) key, value
              FROM settings
@@ -29,6 +43,7 @@ router.get('/', async (req, res) => {
 // Works correctly whether or not the UNIQUE constraint exists on the table.
 router.put('/', async (req, res) => {
     try {
+        await ensureTable();
         const entries = Object.entries(req.body);
         for (const [key, value] of entries) {
             const { rowCount } = await db.query(
