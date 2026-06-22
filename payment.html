@@ -364,11 +364,27 @@ function initCulqi(pk) {
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Error al pagar');
+
+                // Crear la solicitud SOLO ahora que ya pagó — marcada como pagada (trial 0)
+                await fetch('/api/leads', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName:     cliente.name,
+                        businessName: cliente.business,
+                        email:        cliente.email,
+                        phone:        cliente.phone,
+                        plan:         cliente.plan,
+                        bizType:      cliente.bizType,
+                        paid:         true
+                    })
+                }).catch(() => {});
+
                 setStatus('✓ ¡Pago exitoso! Redirigiendo…', 'ok');
                 btn.textContent = '✓ Pagado';
                 // Ir a solicitar acceso, marcando que ya pagó
                 const out = new URLSearchParams({ ...cliente, paid: '1' });
-                setTimeout(() => { window.location.href = 'customer-details.html?' + out.toString(); }, 1000);
+                setTimeout(() => { window.location.href = 'customer-details.html?' + out.toString(); }, 1200);
             } catch (err) {
                 btn.disabled = false;
                 setStatus('❌ ' + err.message, 'err');

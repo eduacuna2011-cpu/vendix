@@ -33,15 +33,16 @@ router.post('/', async (req, res) => {
         // Always ensure table before first write — handles cold starts safely
         await ensureTable();
 
-        const { fullName, businessName, email, phone, plan, bizType } = req.body;
+        const { fullName, businessName, email, phone, plan, bizType, paid } = req.body;
         if (!fullName || !businessName || !email || !phone) {
             return res.status(400).json({ error: 'fullName, businessName, email and phone are required' });
         }
+        const isPaid = paid === true || paid === 'true' || paid === 1 || paid === '1';
         const { rows: [lead] } = await db.query(
-            `INSERT INTO leads (full_name, business_name, email, phone, plan, biz_type)
-             VALUES ($1, $2, $3, $4, $5, $6)
+            `INSERT INTO leads (full_name, business_name, email, phone, plan, biz_type, paid)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING *`,
-            [fullName, businessName, email, phone, plan || 'negocio', bizType || null]
+            [fullName, businessName, email, phone, plan || 'negocio', bizType || null, isPaid]
         );
         res.status(201).json({ ok: true, id: lead.id });
     } catch (err) {
@@ -128,13 +129,23 @@ router.post('/:id/create-account', async (req, res) => {
                 ADD COLUMN IF NOT EXISTS is_paid BOOLEAN NOT NULL DEFAULT FALSE
         `);
 
-        // Create business with 3-day trial
-        const trialEnd = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
-        const { rows: [biz] } = await client.query(
-            `INSERT INTO businesses (name, status, trial_ends_at, is_paid)
-             VALUES ($1, 'Active', $2, FALSE) RETURNING *`,
-            [lead.business_name, trialEnd]
-        );
+        // Solicitud pagada → cuenta activa sin trial (trial 0).
+        // Solicitud no pagada → 3 días de prueba.
+        let biz;
+        if (lead.paid) {
+            ({ rows: [biz] } = await client.query(
+                `INSERT INTO businesses (name, status, trial_ends_at, is_paid)
+                 VALUES ($1, 'Active', NULL, TRUE) RETURNING *`,
+                [lead.business_name]
+            ));
+        } else {
+            const trialEnd = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+            ({ rows: [biz] } = await client.query(
+                `INSERT INTO businesses (name, status, trial_ends_at, is_paid)
+                 VALUES ($1, 'Active', $2, FALSE) RETURNING *`,
+                [lead.business_name, trialEnd]
+            ));
+        }
 
         // Generate username + temp password
         const base = lead.business_name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 15) || 'biz';
