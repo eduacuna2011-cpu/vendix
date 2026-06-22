@@ -13,6 +13,7 @@
     'sales.html':        { css: ['sales.css'],        js: 'sales.js',       title: 'Punto de Venta' },
     'inventory.html':    { css: ['inventory.css'],    js: 'inventory.js',   title: 'Inventario' },
     'sellers.html':      { css: ['sellers.css'],      js: 'sellers.js',     title: 'Vendedores' },
+    'labels.html':       { css: ['labels.css'],       js: 'labels.js',      title: 'Etiquetas' },
     'settings.html':     { css: ['settings.css'],     js: 'settings.js',    title: 'Configuración' },
     'users.html':        { css: ['users.css'],         js: 'users.js',       title: 'Usuarios' },
     'platform-sa.html':  { css: ['platform-sa.css'],  js: 'platform-sa.js', title: 'Platform Admin' },

@@ -242,6 +242,21 @@ backBtn.addEventListener('click', () => {
     step1Indicator.classList.add('active');
 });
 
+// ── Asegurar JsBarcode (en modo SPA el <head> no carga el CDN) ────────────────
+let _jsBarcodePromise = null;
+function ensureJsBarcode() {
+    if (typeof JsBarcode !== 'undefined') return Promise.resolve();
+    if (_jsBarcodePromise) return _jsBarcodePromise;
+    _jsBarcodePromise = new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js';
+        s.onload = resolve;
+        s.onerror = resolve;
+        document.head.appendChild(s);
+    });
+    return _jsBarcodePromise;
+}
+
 // ── Barcode SVG builder ───────────────────────────────────────────────────────
 function makeBarcodeEl(code, size) {
     const heights = { sm: 28, md: 42, lg: 58 };
@@ -264,7 +279,8 @@ function makeBarcodeEl(code, size) {
 }
 
 // ── Preview render — 1 card per product + qty badge ──────────────────────────
-function renderPreview() {
+async function renderPreview() {
+    await ensureJsBarcode();
     const size    = getLabelSize();
     const withPx  = showPrice.checked;
     const withSku = showSku.checked;
@@ -331,7 +347,8 @@ showPrice.addEventListener('change', renderPreview);
 showSku.addEventListener('change', renderPreview);
 
 // ── Print area builder ────────────────────────────────────────────────────────
-function buildPrintArea() {
+async function buildPrintArea() {
+    await ensureJsBarcode();
     const size    = getLabelSize();
     const withPx  = showPrice.checked;
     const withSku = showSku.checked;
@@ -380,18 +397,19 @@ function buildPrintArea() {
 }
 
 // ── Print / PDF ───────────────────────────────────────────────────────────────
-printBtn.addEventListener('click', () => {
-    buildPrintArea();
+printBtn.addEventListener('click', async () => {
+    await buildPrintArea();
     window.print();
 });
 
-pdfBtn.addEventListener('click', () => {
-    buildPrintArea();
+pdfBtn.addEventListener('click', async () => {
+    await buildPrintArea();
     showNotification('En el diálogo de impresión elige "Guardar como PDF"');
     setTimeout(() => window.print(), 280);
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+ensureJsBarcode();  // precargar el lib temprano (modo SPA)
 const _labelsUser = initPage({ requireStore: true });
 if (_labelsUser) {
     loadLabelProducts();
