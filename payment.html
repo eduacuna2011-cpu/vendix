@@ -3,60 +3,308 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pago — Vendix</title>
+<title>Completa tu pago — Vendix</title>
 <script src="https://js.culqi.com/checkout-js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+        --primary:   #00d46a;
+        --primary-d: #00b85c;
+        --text-1:    #0f1420;
+        --text-2:    #5a6577;
+        --text-3:    #97a1b2;
+        --border:    #e8ebf0;
+        --bg:        #f4f6fa;
+        --card:      #ffffff;
+    }
+
     body {
-        font-family: -apple-system, system-ui, sans-serif;
-        background: #09090f; color: #eef0f8;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text-1);
         min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+        height: 64px;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 24px;
+    }
+    .logo {
+        display: flex; align-items: center; gap: 9px;
+        font-size: 19px; font-weight: 800; color: var(--text-1);
+    }
+    .logo-mark {
+        width: 32px; height: 32px; border-radius: 8px;
+        background: var(--primary);
         display: flex; align-items: center; justify-content: center;
-        padding: 20px;
     }
-    .box {
-        background: #111116; border: 1px solid rgba(255,255,255,.08);
-        border-radius: 20px; padding: 36px 32px; width: 100%; max-width: 380px;
+    .secure-tag {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 13px; color: var(--text-2); font-weight: 600;
+    }
+
+    /* ── LAYOUT ── */
+    .wrap {
+        max-width: 860px; margin: 0 auto;
+        padding: 40px 20px 60px;
+        display: grid; grid-template-columns: 1fr 360px;
+        gap: 28px; align-items: start;
+    }
+    @media (max-width: 760px) {
+        .wrap { grid-template-columns: 1fr; }
+        .summary { order: -1; }
+    }
+
+    /* ── LEFT CARD ── */
+    .pay-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 32px;
+        box-shadow: 0 1px 3px rgba(15,20,32,.04);
+    }
+    .pay-head h1 {
+        font-size: 22px; font-weight: 800; margin-bottom: 6px;
+    }
+    .pay-head p {
+        font-size: 14px; color: var(--text-2); margin-bottom: 28px;
+    }
+
+    .amount-block {
         text-align: center;
+        padding: 24px;
+        background: linear-gradient(135deg, rgba(0,212,106,.06), rgba(0,212,106,.02));
+        border: 1px solid rgba(0,212,106,.15);
+        border-radius: 14px;
+        margin-bottom: 24px;
     }
-    .logo { font-size: 24px; font-weight: 800; color: #00d46a; margin-bottom: 6px; }
-    .sub  { font-size: 14px; color: #7d8799; margin-bottom: 28px; }
-    .amount { font-size: 42px; font-weight: 900; margin-bottom: 4px; }
-    .amount span { font-size: 18px; color: #7d8799; }
-    .period { font-size: 13px; color: #7d8799; margin-bottom: 28px; }
-    button {
+    .amount-label { font-size: 13px; color: var(--text-2); font-weight: 600; margin-bottom: 8px; }
+    .amount-value { font-size: 44px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+    .amount-value span { font-size: 20px; color: var(--text-3); vertical-align: super; }
+    .amount-period { font-size: 13px; color: var(--text-3); margin-top: 6px; }
+
+    .pay-btn {
         width: 100%; padding: 16px;
-        background: #00d46a; color: #03120a;
+        background: var(--primary); color: #03120a;
         border: none; border-radius: 12px;
-        font-size: 16px; font-weight: 800; cursor: pointer;
-        transition: opacity .15s;
+        font-size: 16px; font-weight: 800; font-family: inherit;
+        cursor: pointer; transition: background .15s, transform .1s;
+        display: flex; align-items: center; justify-content: center; gap: 9px;
     }
-    button:hover { opacity: .9; }
-    button:disabled { opacity: .5; cursor: not-allowed; }
-    .secure { font-size: 12px; color: #3e4556; margin-top: 16px; }
-    .status { font-size: 13px; color: #7d8799; margin-top: 14px; min-height: 18px; }
+    .pay-btn:hover { background: var(--primary-d); }
+    .pay-btn:active { transform: scale(.99); }
+    .pay-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+    .status { font-size: 14px; text-align: center; margin-top: 14px; min-height: 20px; font-weight: 600; }
+    .status.ok  { color: var(--primary-d); }
+    .status.err { color: #e5484d; }
+
+    .trust-row {
+        display: flex; align-items: center; justify-content: center; gap: 18px;
+        margin-top: 24px; padding-top: 20px;
+        border-top: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+    .trust-item {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 12px; color: var(--text-3); font-weight: 600;
+    }
+
+    .card-logos {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        margin-top: 18px;
+    }
+    .card-logo {
+        height: 26px; padding: 4px 9px;
+        background: #fff; border: 1px solid var(--border);
+        border-radius: 6px;
+        display: flex; align-items: center;
+        font-size: 11px; font-weight: 900; font-style: italic;
+    }
+
+    /* ── SUMMARY ── */
+    .summary {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 26px;
+        position: sticky; top: 28px;
+    }
+    .summary-title {
+        font-size: 12px; font-weight: 700; color: var(--text-3);
+        text-transform: uppercase; letter-spacing: .6px;
+        margin-bottom: 18px;
+    }
+    .plan-row {
+        display: flex; align-items: center; gap: 12px;
+        margin-bottom: 20px;
+    }
+    .plan-icon {
+        width: 44px; height: 44px; border-radius: 11px;
+        background: rgba(0,212,106,.1);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px; flex-shrink: 0;
+    }
+    .plan-name { font-size: 16px; font-weight: 800; }
+    .plan-tag  { font-size: 12px; color: var(--text-2); }
+
+    .feats { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .feat {
+        display: flex; align-items: center; gap: 9px;
+        font-size: 13px; color: var(--text-2);
+    }
+    .feat-check {
+        width: 18px; height: 18px; border-radius: 50%;
+        background: rgba(0,212,106,.12); color: var(--primary-d);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 10px; font-weight: 900; flex-shrink: 0;
+    }
+
+    .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+    .sum-line {
+        display: flex; justify-content: space-between;
+        font-size: 14px; color: var(--text-2); margin-bottom: 10px;
+    }
+    .sum-total {
+        display: flex; justify-content: space-between; align-items: baseline;
+        font-size: 20px; font-weight: 900; margin-top: 6px;
+    }
+    .sum-total small { font-size: 13px; color: var(--text-3); font-weight: 600; }
+
+    .guarantee {
+        display: flex; align-items: flex-start; gap: 9px;
+        background: rgba(0,212,106,.05);
+        border: 1px solid rgba(0,212,106,.15);
+        border-radius: 11px; padding: 13px;
+        margin-top: 18px;
+        font-size: 12px; color: var(--text-2); line-height: 1.5;
+    }
 </style>
 </head>
 <body>
-    <div class="box">
-        <div class="logo">Vendix</div>
-        <div class="sub">Licencia mensual</div>
-        <div class="amount"><span>S/.</span> 15.99</div>
-        <div class="period">por mes</div>
-        <button id="payBtn" onclick="pagar()">Abrir pago</button>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">
+        <div class="logo-mark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#03120a" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+        </div>
+        Vendix
+    </div>
+    <div class="secure-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Pago seguro
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="wrap">
+
+    <!-- LEFT: PAYMENT -->
+    <div class="pay-card">
+        <div class="pay-head">
+            <h1>Completa tu pago</h1>
+            <p>Activa tu suscripción a Vendix en segundos.</p>
+        </div>
+
+        <div class="amount-block">
+            <div class="amount-label">Total a pagar hoy</div>
+            <div class="amount-value"><span>S/.</span> 15.99</div>
+            <div class="amount-period">Suscripción mensual · Cancela cuando quieras</div>
+        </div>
+
+        <button class="pay-btn" id="payBtn" onclick="pagar()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Pagar con tarjeta
+        </button>
+
         <div class="status" id="status"></div>
-        <div class="secure">🔒 Pago seguro procesado por Culqi</div>
+
+        <div class="card-logos">
+            <div class="card-logo" style="color:#1A1F71">VISA</div>
+            <div class="card-logo" style="color:#EB001B">MC</div>
+            <div class="card-logo" style="color:#016FD0">AMEX</div>
+            <div class="card-logo" style="color:#004B87">DINERS</div>
+        </div>
+
+        <div class="trust-row">
+            <div class="trust-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Cifrado SSL
+            </div>
+            <div class="trust-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Procesado por Culqi
+            </div>
+            <div class="trust-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Datos protegidos
+            </div>
+        </div>
     </div>
 
+    <!-- RIGHT: SUMMARY -->
+    <div class="summary">
+        <div class="summary-title">Resumen del pedido</div>
+
+        <div class="plan-row">
+            <div class="plan-icon">🚀</div>
+            <div>
+                <div class="plan-name">Plan Vendix</div>
+                <div class="plan-tag">Facturación mensual</div>
+            </div>
+        </div>
+
+        <div class="feats">
+            <div class="feat"><div class="feat-check">✓</div> Vendedores ilimitados</div>
+            <div class="feat"><div class="feat-check">✓</div> Productos ilimitados</div>
+            <div class="feat"><div class="feat-check">✓</div> Dashboard y gráficas</div>
+            <div class="feat"><div class="feat-check">✓</div> Reportes y export Excel</div>
+            <div class="feat"><div class="feat-check">✓</div> Soporte por WhatsApp</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sum-line"><span>Plan Vendix (mensual)</span><span>S/. 15.99</span></div>
+        <div class="sum-line"><span>IGV incluido</span><span>—</span></div>
+
+        <div class="divider"></div>
+
+        <div class="sum-total">
+            <span>Total</span>
+            <span>S/. 15.99 <small>/mes</small></span>
+        </div>
+
+        <div class="guarantee">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-d)" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            <span>Pago 100% seguro. Tu información de tarjeta nunca toca nuestros servidores.</span>
+        </div>
+    </div>
+
+</div>
+
 <script>
-// Public key de Culqi — es pública por diseño, va en el frontend.
+// Public key de Culqi — pública por diseño, va en el frontend.
 const CULQI_PK = 'pk_test_AQBCXE0gad3LsV14';
 
 let culqi = null;
 
-function setStatus(msg) { document.getElementById('status').textContent = msg || ''; }
+function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.textContent = msg || '';
+    el.className = 'status' + (type ? ' ' + type : '');
+}
 
-// Inicializar Culqi de inmediato (sin esperar al backend)
+// Inicializar Culqi de inmediato
 initCulqi(CULQI_PK);
 
 function initCulqi(pk) {
@@ -75,10 +323,20 @@ function initCulqi(pk) {
             lang:  'es',
             modal: true,
             paymentMethods: { tarjeta: true, yape: false, billetera: false, bancaMovil: false, agente: false, cuotealo: false }
+        },
+        appearance: {
+            theme: 'default',
+            hiddenCulqiLogo: false,
+            menuType: 'sidebar',
+            buttonCardPayText: 'Pagar S/. 15.99',
+            logo: 'https://vendix-app.vercel.app/icons/icon-192.png',
+            defaultStyle: {
+                bgColorButton: '#00d46a',
+                textColorButton: '#03120a'
+            }
         }
     });
 
-    // 3. Callback cuando se genera el token
     culqi.culqi = async function() {
         if (culqi.token) {
             const btn = document.getElementById('payBtn');
@@ -96,22 +354,18 @@ function initCulqi(pk) {
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Error al pagar');
-                setStatus('✓ Pago exitoso');
+                setStatus('✓ ¡Pago exitoso! Tu cuenta está activa.', 'ok');
                 btn.textContent = '✓ Pagado';
             } catch (err) {
                 btn.disabled = false;
-                setStatus('❌ ' + err.message);
+                setStatus('❌ ' + err.message, 'err');
             }
         } else if (culqi.error) {
-            setStatus('❌ ' + (culqi.error.user_message || 'Error en el pago'));
+            setStatus('❌ ' + (culqi.error.user_message || 'Error en el pago'), 'err');
         }
     };
-
-    // Abrir el modal automáticamente al cargar la página
-    culqi.open();
 }
 
-// Reabrir modal si el usuario lo cierra
 function pagar() {
     if (!culqi) { setStatus('Cargando, intenta de nuevo…'); return; }
     culqi.open();
