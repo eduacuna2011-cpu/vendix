@@ -36,14 +36,17 @@ async function loadStatistics() {
     } catch (err) { console.error('Stats error:', err); }
 }
 
+let _adminUsersLoaded = false;
 async function loadAdminUsers() {
     const filters = {
         status: statusFilter ? statusFilter.value : 'all',
         q:      searchInput  ? searchInput.value  : ''
     };
     try {
+        if (!_adminUsersLoaded && adminUsersBody) adminUsersBody.innerHTML = skeletonRows(8, 5);
         const users = await getAdminUsers(filters);
         _usersCache = users || [];
+        _adminUsersLoaded = true;
         if (!users || users.length === 0) {
             adminUsersBody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);">No admin users found</td></tr>`;
             return;
@@ -391,9 +394,13 @@ let _leadCredsData = null;
 
 const PLAN_LABELS = { vendix: 'Vendix S/.15.99', starter: 'Vendix S/.15.99', negocio: 'Vendix S/.15.99', pro: 'Vendix S/.15.99' };
 
+let _leadsLoaded = false;
 async function loadLeads() {
     try {
+        const _lb = document.getElementById('leadsBody');
+        if (!_leadsLoaded && _lb) _lb.innerHTML = skeletonRows(7, 4);
         const [leads, countData] = await Promise.all([getLeads(), getLeadsCount()]);
+        _leadsLoaded = true;
         _leadsCache = leads || [];
         renderLeads(_leadsCache);
         updateLeadsBadge(countData?.count || 0);

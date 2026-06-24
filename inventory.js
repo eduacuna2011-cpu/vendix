@@ -145,8 +145,10 @@ function getStockBadge(stock) {
     return `<span class="stock-badge in-stock">${stock}</span>`;
 }
 
+let _invLoaded = false;
 async function loadProducts() {
     try {
+        if (!_invLoaded && productsTableBody) productsTableBody.innerHTML = skeletonRows(10, 6);
         const filters = {};
         if (searchInput    && searchInput.value)   filters.q        = searchInput.value;
         if (categoryFilter && categoryFilter.value !== 'all') filters.category = categoryFilter.value;
@@ -155,6 +157,7 @@ async function loadProducts() {
 
         const products     = await getProducts(filters) || [];
         _productsCache     = products;
+        _invLoaded         = true;
         const isUserSeller = isSeller() && !isBusinessAdmin() && !isSuperAdmin();
 
         if (products.length === 0) {

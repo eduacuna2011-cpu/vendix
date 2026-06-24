@@ -5,6 +5,24 @@
 
 const API_BASE = '/api';
 
+// ─── Skeleton loaders (evitan el "flash vacío" mientras carga la data) ────────
+// Filas shimmer para tablas
+function skeletonRows(cols, rows = 6) {
+    const td = `<td><div class="sk-row"></div></td>`.repeat(cols);
+    return Array.from({ length: rows }, () => `<tr class="sk-tr">${td}</tr>`).join('');
+}
+// Tarjetas shimmer para grids (productos, etc.)
+function skeletonCards(n = 8) {
+    return Array.from({ length: n }, () => `<div class="sk-card"></div>`).join('');
+}
+// Pone un valor "cargando" suave en una tarjeta de stat
+function skeletonStats(...ids) {
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<span class="sk-inline"></span>';
+    });
+}
+
 // ─── DB warm-up — ping on load + every 4 min to keep Neon awake ──────────────
 (function warmUp() {
     const ping = () => fetch('/api/health', { method: 'GET' }).catch(() => {});

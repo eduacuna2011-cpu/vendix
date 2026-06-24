@@ -43,11 +43,14 @@ function _getReceipt(id) {
 }
 
 // ─── Products ─────────────────────────────────────────────────────────────────
+let _salesProductsLoaded = false;
 async function loadProducts(searchQuery = '') {
     try {
+        if (!_salesProductsLoaded && productsGrid) productsGrid.innerHTML = skeletonCards(8);
         const filters = {};
         if (searchQuery) filters.q = searchQuery;
         const products = await getProducts(filters) || [];
+        _salesProductsLoaded = true;
         allProducts = products;
 
         if (!products.length) {
@@ -314,9 +317,12 @@ function showSaleCompletedModal()  { document.getElementById('saleCompletedModal
 function closeSaleCompletedModal() { document.getElementById('saleCompletedModal').classList.remove('show'); }
 
 // ─── Recent Sales ─────────────────────────────────────────────────────────────
+let _recentSalesLoaded = false;
 async function loadRecentSales() {
     try {
+        if (!_recentSalesLoaded && recentSalesBody) recentSalesBody.innerHTML = skeletonRows(8, 4);
         const transactions = await getRecentTransactions(10) || [];
+        _recentSalesLoaded = true;
 
         if (!transactions.length) {
             recentSalesBody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);">No sales yet</td></tr>`;

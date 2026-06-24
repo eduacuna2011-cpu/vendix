@@ -184,14 +184,17 @@ function showCredentialsModal(fullName, username, password) {
 }
 
 // ── Load Sellers ──────────────────────────────────────────────────
+let _sellersLoaded = false;
 async function loadSellers() {
     try {
+        if (!_sellersLoaded && sellersTableBody) sellersTableBody.innerHTML = skeletonRows(7, 5);
         const filters = {};
         if (statusFilter && statusFilter.value !== 'all') filters.status = statusFilter.value;
         if (searchInput  && searchInput.value.trim())     filters.q      = searchInput.value.trim();
 
         const sellers = await getSellers(filters) || [];
         _sellersCache = sellers;
+        _sellersLoaded = true;
         const isUserSeller = isSeller() && !isBusinessAdmin() && !isSuperAdmin();
 
         if (sellers.length === 0) {
