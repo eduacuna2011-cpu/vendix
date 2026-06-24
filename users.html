@@ -73,6 +73,8 @@
                 </div>
             </header>
 
+            <div id="spaContent" class="spa-content">
+            <main>
             <!-- Page Content -->
             <div class="users-content">
 
@@ -221,8 +223,6 @@
                 </div>
 
             </div>
-        </div>
-    </div>
 
     <!-- ── Credentials Modal for Leads ── -->
     <div class="modal" id="leadCredsModal" style="display:none;">
@@ -469,12 +469,16 @@
             </div>
         </div>
     </div>
+            </main>
+            </div><!-- end spaContent -->
+        </div>
+    </div>
 
     <script src="api-client.js" defer></script>
     <script src="auth.js" defer></script>
     <script src="sidebar.js" defer></script>
     <script src="users.js" defer></script>
-<script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
+    <script src="router.js" defer></script>
 </body>
 </html>
 
