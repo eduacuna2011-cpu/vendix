@@ -65,19 +65,19 @@ function openDetailsModal(seller) {
             </div>
         </div>
         <div class="seller-details-grid">
-            <div class="detail-item"><label>Username:</label><span>${escapeHtml(seller.username)}</span></div>
-            <div class="detail-item"><label>Email:</label><span>${escapeHtml(seller.email || 'N/A')}</span></div>
-            <div class="detail-item"><label>Phone:</label><span>${escapeHtml(seller.phone || 'N/A')}</span></div>
-            <div class="detail-item"><label>Commission:</label><span>${seller.commission_percentage || 0}%</span></div>
-            <div class="detail-item"><label>Status:</label><span class="status-badge ${(seller.status || '').toLowerCase()}">${seller.status}</span></div>
-            <div class="detail-item"><label>Joined:</label><span>${seller.join_date ? new Date(seller.join_date).toLocaleDateString() : '—'}</span></div>
+            <div class="detail-item"><label>Usuario:</label><span>${escapeHtml(seller.username)}</span></div>
+            <div class="detail-item"><label>Correo:</label><span>${escapeHtml(seller.email || 'N/A')}</span></div>
+            <div class="detail-item"><label>Teléfono:</label><span>${escapeHtml(seller.phone || 'N/A')}</span></div>
+            <div class="detail-item"><label>Comisión:</label><span>${seller.commission_percentage || 0}%</span></div>
+            <div class="detail-item"><label>Estado:</label><span class="status-badge ${(seller.status || '').toLowerCase()}">${seller.status}</span></div>
+            <div class="detail-item"><label>Ingreso:</label><span>${seller.join_date ? new Date(seller.join_date).toLocaleDateString() : '—'}</span></div>
         </div>
         <div class="seller-performance">
-            <h4>Performance</h4>
+            <h4>Rendimiento</h4>
             <div class="performance-grid">
-                <div class="performance-card"><div class="performance-label">Total Orders</div><div class="performance-value">${orders}</div></div>
-                <div class="performance-card"><div class="performance-label">Total Sales</div><div class="performance-value">S/. ${totalSales.toFixed(2)}</div></div>
-                <div class="performance-card"><div class="performance-label">Commission</div><div class="performance-value">S/. ${commission.toFixed(2)}</div></div>
+                <div class="performance-card"><div class="performance-label">Pedidos</div><div class="performance-value">${orders}</div></div>
+                <div class="performance-card"><div class="performance-label">Ventas</div><div class="performance-value">S/. ${totalSales.toFixed(2)}</div></div>
+                <div class="performance-card"><div class="performance-label">Comisión</div><div class="performance-value">S/. ${commission.toFixed(2)}</div></div>
             </div>
         </div>`;
 
@@ -128,7 +128,7 @@ function showCredentialsModal(fullName, username, password) {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Seller Credentials</h2>
+                <h2>Credenciales del Vendedor</h2>
                 <button class="modal-close" onclick="document.getElementById('credentialsModal').remove()">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -140,43 +140,43 @@ function showCredentialsModal(fullName, username, password) {
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
-                    <h3>Save These Credentials</h3>
-                    <p>These credentials will only be shown once. Please save them securely.</p>
+                    <h3>Guarda estas credenciales</h3>
+                    <p>Solo se mostrarán una vez. Guárdalas en un lugar seguro.</p>
                 </div>
                 <div class="credentials-display">
                     <div class="credential-item">
-                        <label>Full Name:</label>
+                        <label>Nombre completo:</label>
                         <div class="credential-input-group">
                             <input type="text" id="credFullName" value="${escAttr(fullName)}" readonly>
-                            <button class="copy-btn" onclick="copyToClipboard('credFullName')">Copy</button>
+                            <button class="copy-btn" onclick="copyToClipboard('credFullName')">Copiar</button>
                         </div>
                     </div>
                     <div class="credential-item">
-                        <label>Username:</label>
+                        <label>Usuario:</label>
                         <div class="credential-input-group">
                             <input type="text" id="credUsername" value="${escAttr(username)}" readonly>
-                            <button class="copy-btn" onclick="copyToClipboard('credUsername')">Copy</button>
+                            <button class="copy-btn" onclick="copyToClipboard('credUsername')">Copiar</button>
                         </div>
                     </div>
                     <div class="credential-item">
-                        <label>Password:</label>
+                        <label>Contraseña:</label>
                         <div class="credential-input-group">
                             <input type="text" id="credPassword" value="${escAttr(password)}" readonly>
-                            <button class="copy-btn" onclick="copyToClipboard('credPassword')">Copy</button>
+                            <button class="copy-btn" onclick="copyToClipboard('credPassword')">Copiar</button>
                         </div>
                     </div>
                     <div class="credential-item">
-                        <label>Magic Login Link:</label>
+                        <label>Enlace de acceso directo:</label>
                         <div class="credential-input-group">
                             <input type="text" id="credLoginLink" value="${escAttr(link)}" readonly style="font-size:11px;">
-                            <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('credLoginLink').value)">Copy</button>
+                            <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('credLoginLink').value)">Copiar</button>
                         </div>
                     </div>
-                    <button class="btn btn-primary copy-all-btn" onclick="copyAllCredentials('${escAttr(fullName)}','${escAttr(username)}','${escAttr(password)}')">Copy All Credentials</button>
+                    <button class="btn btn-primary copy-all-btn" onclick="copyAllCredentials('${escAttr(fullName)}','${escAttr(username)}','${escAttr(password)}')">Copiar todo</button>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" onclick="document.getElementById('credentialsModal').remove()">I've Saved the Credentials</button>
+                <button class="btn btn-primary" onclick="document.getElementById('credentialsModal').remove()">Ya las guardé</button>
             </div>
         </div>`;
     document.body.appendChild(modal);
@@ -228,15 +228,15 @@ async function loadSellers() {
                     <td>${seller.join_date ? new Date(seller.join_date).toLocaleDateString() : '—'}</td>
                     <td>
                         <div class="performance-stats">
-                            <div class="performance-stat"><strong>${orders}</strong> orders</div>
-                            <div class="performance-stat"><strong>$${sales}</strong> sales</div>
-                            <div class="performance-stat"><strong>$${commission}</strong> commission</div>
+                            <div class="performance-stat"><strong>${orders}</strong> pedidos</div>
+                            <div class="performance-stat"><strong>S/. ${sales}</strong> ventas</div>
+                            <div class="performance-stat"><strong>S/. ${commission}</strong> comisión</div>
                         </div>
                     </td>
                     <td>
                         <div class="action-buttons">
                             ${isUserSeller ? '' : `
-                            <button class="btn-icon" onclick="handleResetPassword(${seller.id})" title="Reset Password">
+                            <button class="btn-icon" onclick="handleResetPassword(${seller.id})" title="Restablecer contraseña">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                             </button>`}
                             <button class="btn-icon edit" onclick="viewSeller(${seller.id})">
