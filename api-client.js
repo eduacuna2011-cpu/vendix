@@ -287,6 +287,15 @@ async function getUserStats() {
     return apiFetch('/users/stats');
 }
 
+// ─── Integración tienda Vercel (Super Admin) ─────────────────────────────────
+async function getBusinessIntegration(businessId) {
+    return apiFetch(`/businesses/${businessId}/integration`);
+}
+
+async function saveBusinessIntegration(businessId, data) {
+    return apiFetch(`/businesses/${businessId}/integration`, { method: 'PUT', body: data });
+}
+
 // ─── Settings ─────────────────────────────────────────────────────────────────
 async function getSettings() {
     return apiFetch('/settings');

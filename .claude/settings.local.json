@@ -7,7 +7,25 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\eduac\\\\CascadeProjects\\\\inventory-sales-dashboard\" -Recurse -Force | Where-Object {$_.PSIsContainer} | ForEach-Object {$_.FullName.Replace\\('C:\\\\Users\\\\eduac\\\\CascadeProjects\\\\inventory-sales-dashboard', ''\\)})",
       "mcp__Claude_Preview__preview_start",
       "mcp__visualize__read_me",
-      "mcp__visualize__show_widget"
+      "mcp__visualize__show_widget",
+      "Bash(ls -la .env)",
+      "Bash(grep -c DATABASE_URL .env)",
+      "Bash(node server/dev.js)",
+      "Bash(node _test_integration.js)",
+      "Bash(node --check users.js)",
+      "Bash(node --check api-client.js)",
+      "Bash(node --check server/routes/integration.js)",
+      "Bash(node --check server/routes/businesses.js)",
+      "Bash(node --check server/app.js)",
+      "Bash(cd \"C:\\\\Users\\\\eduac\\\\CascadeProjects\" && ls -d */ 2>/dev/null | head -50; echo \"--- buscando 'olivia' ---\"; find . -maxdepth 3 -iname \"*olivia*\" 2>/dev/null | head -20)",
+      "Bash(sed -i \"s/u={business_id:c.business_id}; console.log\\('✓ Negocio Oliverde creado, id:',c.business_id,'| admin:',c.username\\);/u={business_id:c.business.id}; console.log\\('✓ Negocio Oliverde creado, id:',c.business.id,'| admin:',c.user.username\\);/\" _e2e_olivia.js)",
+      "Bash(node _e2e_olivia.js)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(node -e ' *)",
+      "Bash(awk '/<script>/{f=1;next} /<\\\\/script>/{f=0} f' index.html)",
+      "Bash(node --check /tmp/olivia_script.js)",
+      "Read(//tmp/**)",
+      "Bash(rm -f olivia-preview.html)"
     ]
   }
 }

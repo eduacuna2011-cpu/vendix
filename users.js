@@ -48,7 +48,7 @@ async function loadAdminUsers() {
         _usersCache = users || [];
         _adminUsersLoaded = true;
         if (!users || users.length === 0) {
-            adminUsersBody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);">No admin users found</td></tr>`;
+            adminUsersBody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);">No se encontraron usuarios</td></tr>`;
             return;
         }
         adminUsersBody.innerHTML = users.map(user => {
@@ -62,19 +62,22 @@ async function loadAdminUsers() {
                     <td>${escapeHtml(user.full_name)}</td>
                     <td>${escapeHtml(user.username)}</td>
                     <td>${escapeHtml(user.email || '—')}</td>
-                    <td><span class="status-badge ${status}">${user.status}</span></td>
+                    <td><span class="status-badge ${status}">${user.status === 'Active' ? 'Activo' : 'Deshabilitado'}</span></td>
                     <td>${trialBadge}</td>
                     <td>${date}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-icon" onclick="showAdminPassword(${user.id})" title="View Credentials">
+                            <button class="btn-icon" onclick="showAdminPassword(${user.id})" title="Ver credenciales">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                             </button>
-                            <button class="btn-icon" onclick="viewBusinessProfile(${user.id})" title="View Profile">
+                            <button class="btn-icon" onclick="viewBusinessProfile(${user.id})" title="Ver perfil">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
                             </button>
-                            <button class="btn-icon" onclick="editAdminUser(${user.id})" title="Edit">
+                            <button class="btn-icon" onclick="editAdminUser(${user.id})" title="Editar">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button class="btn-icon" onclick="openStoreLink(${user.business_id}, '${escapeHtml(user.business_name || '').replace(/'/g, "\\'")}')" title="Conectar tienda Vercel" style="color:#0ea5e9;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M9 22V12h6v10"/></svg>
                             </button>
                             <button class="btn-icon" onclick="sendCredsWhatsApp(${user.id})" title="Enviar credenciales por WhatsApp" style="color:#25d366;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -85,10 +88,10 @@ async function loadAdminUsers() {
                             <button class="btn-icon" onclick="handleExtendTrial(${user.id})" title="Extender +3 días" style="color:#6366f1;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                             </button>
-                            <button class="btn-icon ${user.status === 'Active' ? '' : 'danger'}" onclick="handleToggleStatus(${user.id})" title="${user.status === 'Active' ? 'Disable' : 'Enable'}">
+                            <button class="btn-icon ${user.status === 'Active' ? '' : 'danger'}" onclick="handleToggleStatus(${user.id})" title="${user.status === 'Active' ? 'Deshabilitar' : 'Habilitar'}">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                             </button>
-                            <button class="btn-icon danger" onclick="promptDeleteAdminUser(${user.id})" title="Delete">
+                            <button class="btn-icon danger" onclick="promptDeleteAdminUser(${user.id})" title="Eliminar">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             </button>
                         </div>
@@ -131,7 +134,7 @@ function showQuickCredPopup(fullName, username, password, link) {
     const el = document.createElement('div');
     el.id = 'quickCredPopup';
     el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    el.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:Inter,sans-serif;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--text-1);">New Password — ${escapeHtml(fullName)}</h3><button onclick="document.getElementById('quickCredPopup').remove()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:18px;">&times;</button></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;"><div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">Username</div><div style="display:flex;align-items:center;gap:8px;"><code style="flex:1;font-size:13px;font-weight:600;color:var(--text-1);">${escapeHtml(username)}</code><button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent)" style="padding:4px 9px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text-2);cursor:pointer;">Copy</button></div></div><div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">New Password</div><div style="display:flex;align-items:center;gap:8px;"><code style="flex:1;font-size:13px;font-weight:600;color:var(--text-1);">${escapeHtml(password)}</code><button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent)" style="padding:4px 9px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text-2);cursor:pointer;">Copy</button></div></div><div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">Magic Login Link</div><div style="display:flex;align-items:center;gap:8px;"><input readonly value="${escapeHtml(link)}" style="flex:1;font-size:11px;color:var(--text-2);background:none;border:none;outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)" style="padding:4px 9px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text-2);cursor:pointer;white-space:nowrap;">Copy Link</button></div></div></div><button onclick="document.getElementById('quickCredPopup').remove()" style="width:100%;padding:10px;background:#6366f1;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">Close</button></div>`;
+    el.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:Inter,sans-serif;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--text-1);">Nueva contraseña — ${escapeHtml(fullName)}</h3><button onclick="document.getElementById('quickCredPopup').remove()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:18px;">&times;</button></div><div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;"><div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">Usuario</div><div style="display:flex;align-items:center;gap:8px;"><code style="flex:1;font-size:13px;font-weight:600;color:var(--text-1);">${escapeHtml(username)}</code><button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent)" style="padding:4px 9px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text-2);cursor:pointer;">Copiar</button></div></div><div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">Nueva contraseña</div><div style="display:flex;align-items:center;gap:8px;"><code style="flex:1;font-size:13px;font-weight:600;color:var(--text-1);">${escapeHtml(password)}</code><button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent)" style="padding:4px 9px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text-2);cursor:pointer;">Copiar</button></div></div><div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;"><div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">Enlace de acceso directo</div><div style="display:flex;align-items:center;gap:8px;"><input readonly value="${escapeHtml(link)}" style="flex:1;font-size:11px;color:var(--text-2);background:none;border:none;outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)" style="padding:4px 9px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text-2);cursor:pointer;white-space:nowrap;">Copiar enlace</button></div></div></div><button onclick="document.getElementById('quickCredPopup').remove()" style="width:100%;padding:10px;background:#6366f1;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">Cerrar</button></div>`;
     document.body.appendChild(el);
     el.addEventListener('click', e => { if (e.target === el) el.remove(); });
 }
@@ -141,14 +144,14 @@ let _usersCache = [];
 
 function showAdminUserModal(user = null) {
     if (user) {
-        modalTitle.textContent = 'Edit Admin User';
+        modalTitle.textContent = 'Editar Usuario';
         document.getElementById('adminUserId').value    = user.id;
         document.getElementById('businessName').value   = user.business_name || '';
         document.getElementById('adminFullName').value  = user.full_name || '';
         document.getElementById('adminEmail').value     = user.email || '';
         document.getElementById('adminPhone').value     = user.phone || '';
     } else {
-        modalTitle.textContent = 'Add Admin User';
+        modalTitle.textContent = 'Agregar Usuario';
         adminUserForm.reset();
         document.getElementById('adminUserId').value = '';
     }
@@ -178,11 +181,11 @@ async function handleToggleStatus(id) {
     const badge = row?.querySelector('.status-badge');
     if (!badge) return;
 
-    const wasActive = badge.textContent.trim() === 'Active';
-    const newStatus = wasActive ? 'Disabled' : 'Active';
+    const wasActive = badge.textContent.trim() === 'Activo';
+    const newStatus = wasActive ? 'Disabled' : 'Active';   // valor en BD/caché (inglés)
 
     // Optimistic UI — instant feedback
-    badge.textContent = newStatus;
+    badge.textContent = wasActive ? 'Deshabilitado' : 'Activo';
     badge.className   = 'status-badge ' + (wasActive ? 'status-disabled' : 'status-active');
     if (btn) btn.classList.toggle('danger', !wasActive);
 
@@ -193,7 +196,7 @@ async function handleToggleStatus(id) {
         if (cached) cached.status = newStatus;
     } catch (err) {
         // Revert optimistic update on failure
-        badge.textContent = wasActive ? 'Active' : 'Disabled';
+        badge.textContent = wasActive ? 'Activo' : 'Deshabilitado';
         badge.className   = 'status-badge ' + (wasActive ? 'status-active' : 'status-disabled');
         if (btn) btn.classList.toggle('danger', wasActive);
         showNotification('Error: ' + err.message, true);
@@ -213,7 +216,7 @@ async function viewBusinessProfile(id) {
         document.getElementById('profileAdminEmail').textContent  = u.email || '—';
         document.getElementById('profileAdminPhone').textContent  = u.phone || '—';
         document.getElementById('profileAdminUsername').textContent = u.username;
-        document.getElementById('profileAdminStatus').textContent = u.status;
+        document.getElementById('profileAdminStatus').textContent = u.status === 'Active' ? 'Activo' : 'Deshabilitado';
         document.getElementById('profileAdminStatus').className   = 'status-badge ' + (u.status === 'Active' ? 'status-active' : 'status-disabled');
 
         document.getElementById('statTotalProducts').textContent  = s.totalProducts;
@@ -225,8 +228,8 @@ async function viewBusinessProfile(id) {
 
         const sellersBody = document.getElementById('profileSellersBody');
         sellersBody.innerHTML = data.sellers.length === 0
-            ? `<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);">No sellers yet</td></tr>`
-            : data.sellers.map(s => `<tr><td>${escapeHtml(s.full_name)}</td><td>${escapeHtml(s.username)}</td><td>${escapeHtml(s.email||'—')}</td><td>${escapeHtml(s.phone||'—')}</td><td><span class="status-badge ${s.status==='Active'?'status-active':'status-disabled'}">${s.status}</span></td></tr>`).join('');
+            ? `<tr><td colspan="5" style="text-align:center;color:var(--text-secondary);">Sin vendedores aún</td></tr>`
+            : data.sellers.map(s => `<tr><td>${escapeHtml(s.full_name)}</td><td>${escapeHtml(s.username)}</td><td>${escapeHtml(s.email||'—')}</td><td>${escapeHtml(s.phone||'—')}</td><td><span class="status-badge ${s.status==='Active'?'status-active':'status-disabled'}">${s.status==='Active'?'Activo':'Deshabilitado'}</span></td></tr>`).join('');
 
         statsModal.classList.add('show');
     } catch (err) { showNotification('Error al cargar perfil', true); }
@@ -241,6 +244,47 @@ function copyAllCredentials() {
     navigator.clipboard.writeText(`Business: ${biz}\nUsername: ${user}\nPassword: ${pw}`)
         .then(() => showNotification('Copiado')).catch(() => showNotification('No se pudo copiar', true));
 }
+
+// ── Conectar tienda Vercel (Super Admin) ──────────────────────────────────────
+const storeLinkModal = document.getElementById('storeLinkModal');
+let _storeLinkBizId = null;
+
+async function openStoreLink(businessId, businessName) {
+    if (!businessId) return showNotification('Este usuario no tiene un negocio asociado', true);
+    _storeLinkBizId = businessId;
+    document.getElementById('storeLinkBizName').textContent = businessName || '';
+    document.getElementById('storeVercelId').value = '';
+    document.getElementById('storeSyncKey').value  = '';
+    document.getElementById('storeSyncEnabled').checked = true;
+    storeLinkModal.classList.add('show');
+    try {
+        const info = await getBusinessIntegration(businessId);
+        document.getElementById('storeVercelId').value = info.vercel_store_id || '';
+        document.getElementById('storeSyncKey').value  = info.sync_api_key || '';
+        document.getElementById('storeSyncEnabled').checked = info.sync_enabled !== false;
+    } catch (err) { showNotification('No se pudo cargar la integración: ' + err.message, true); }
+}
+
+function hideStoreLink() { storeLinkModal.classList.remove('show'); _storeLinkBizId = null; }
+
+async function saveStoreLink(regenerateKey = false) {
+    if (!_storeLinkBizId) return;
+    try {
+        const info = await saveBusinessIntegration(_storeLinkBizId, {
+            vercelStoreId: document.getElementById('storeVercelId').value.trim(),
+            sync_enabled:  document.getElementById('storeSyncEnabled').checked,
+            regenerateKey
+        });
+        document.getElementById('storeSyncKey').value = info.sync_api_key || '';
+        showNotification(regenerateKey ? 'Llave regenerada' : 'Tienda conectada');
+    } catch (err) { showNotification('Error al guardar: ' + err.message, true); }
+}
+
+if (document.getElementById('closeStoreLinkBtn')) document.getElementById('closeStoreLinkBtn').addEventListener('click', hideStoreLink);
+if (document.getElementById('storeSaveBtn'))      document.getElementById('storeSaveBtn').addEventListener('click', () => saveStoreLink(false));
+if (document.getElementById('storeRegenBtn'))     document.getElementById('storeRegenBtn').addEventListener('click', () => {
+    if (confirm('¿Regenerar la llave? La tienda dejará de sincronizar hasta que actualices la llave nueva en ella.')) saveStoreLink(true);
+});
 
 // Event listeners
 if (addAdminUserBtn)          addAdminUserBtn.addEventListener('click', () => showAdminUserModal());
@@ -365,6 +409,7 @@ window.addEventListener('click', (e) => {
     if (e.target === credentialsModal) hideCredentialsModal();
     if (e.target === deleteModal)      hideDeleteModal();
     if (e.target === statsModal)       hideStatsModal();
+    if (e.target === storeLinkModal)   hideStoreLink();
 });
 
 // Cache is populated inside loadAdminUsers directly (no double-fetch wrapper)

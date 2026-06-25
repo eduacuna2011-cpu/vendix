@@ -58,7 +58,7 @@
                     <div class="page-breadcrumb">
                         <span class="breadcrumb-root">Super Admin</span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                        <span class="breadcrumb-current">Admin Users</span>
+                        <span class="breadcrumb-current">Usuarios Admin</span>
                     </div>
                 </div>
                 <div class="navbar-right">
@@ -81,12 +81,12 @@
                 <!-- Page Header -->
                 <div class="users-page-header">
                     <div>
-                        <h1>Admin Users</h1>
-                        <p>Manage business accounts and their administrators.</p>
+                        <h1>Usuarios Admin</h1>
+                        <p>Administra las cuentas de negocios y sus administradores.</p>
                     </div>
                     <button class="btn btn-primary" id="addAdminUserBtn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        Add Admin User
+                        Agregar Usuario
                     </button>
                 </div>
 
@@ -100,7 +100,7 @@
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-label">Total Businesses</div>
+                            <div class="stat-label">Negocios</div>
                             <div class="stat-value" id="totalBusinesses">0</div>
                         </div>
                     </div>
@@ -112,7 +112,7 @@
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-label">Active Businesses</div>
+                            <div class="stat-label">Activos</div>
                             <div class="stat-value" id="activeBusinesses">0</div>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-label">Created This Month</div>
+                            <div class="stat-label">Creados este mes</div>
                             <div class="stat-value" id="createdThisMonth">0</div>
                         </div>
                     </div>
@@ -136,7 +136,7 @@
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-label">Total Revenue</div>
+                            <div class="stat-label">Ingresos</div>
                             <div class="stat-value" id="totalRevenue">S/. 0</div>
                         </div>
                     </div>
@@ -145,7 +145,7 @@
                 <!-- Admin Users Section -->
                 <div class="admin-users-section">
                     <div class="section-header">
-                        <h2>Admin Users (Businesses)</h2>
+                        <h2>Cuentas de Negocios</h2>
                     </div>
 
                     <!-- Search and Filter -->
@@ -155,13 +155,13 @@
                                 <circle cx="11" cy="11" r="8"/>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                             </svg>
-                            <input type="text" id="searchInput" placeholder="Search by business name, admin name, username, or email...">
+                            <input type="text" id="searchInput" placeholder="Buscar por negocio, nombre, usuario o correo...">
                         </div>
                         <div class="filter-box">
                             <select id="statusFilter">
-                                <option value="all">All Status</option>
-                                <option value="Active">Active</option>
-                                <option value="Disabled">Disabled</option>
+                                <option value="all">Todos los estados</option>
+                                <option value="Active">Activo</option>
+                                <option value="Disabled">Deshabilitado</option>
                             </select>
                         </div>
                     </div>
@@ -171,14 +171,14 @@
                         <table class="admin-users-table">
                             <thead>
                                 <tr>
-                                    <th>Business Name</th>
-                                    <th>Admin Name</th>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Status</th>
-                                    <th>Trial</th>
-                                    <th>Created Date</th>
-                                    <th>Actions</th>
+                                    <th>Negocio</th>
+                                    <th>Administrador</th>
+                                    <th>Usuario</th>
+                                    <th>Correo</th>
+                                    <th>Estado</th>
+                                    <th>Prueba</th>
+                                    <th>Fecha de creación</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="adminUsersBody">
@@ -251,7 +251,7 @@
     <div class="modal" id="adminUserModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Add Admin User</h2>
+                <h2 id="modalTitle">Agregar Usuario</h2>
                 <button class="modal-close" id="closeModalBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"/>
@@ -263,24 +263,24 @@
                 <form id="adminUserForm">
                     <input type="hidden" id="adminUserId">
                     <div class="form-group">
-                        <label for="businessName">Business Name *</label>
-                        <input type="text" id="businessName" required placeholder="Enter business name">
+                        <label for="businessName">Nombre del Negocio *</label>
+                        <input type="text" id="businessName" required placeholder="Ingresa el nombre del negocio">
                     </div>
                     <div class="form-group">
-                        <label for="adminFullName">Admin Full Name *</label>
-                        <input type="text" id="adminFullName" required placeholder="Enter admin full name">
+                        <label for="adminFullName">Nombre del Administrador *</label>
+                        <input type="text" id="adminFullName" required placeholder="Ingresa el nombre del administrador">
                     </div>
                     <div class="form-group">
-                        <label for="adminEmail">Email *</label>
-                        <input type="email" id="adminEmail" required placeholder="Enter email address">
+                        <label for="adminEmail">Correo *</label>
+                        <input type="email" id="adminEmail" required placeholder="Ingresa el correo">
                     </div>
                     <div class="form-group">
-                        <label for="adminPhone">Phone Number *</label>
-                        <input type="tel" id="adminPhone" required placeholder="Enter phone number">
+                        <label for="adminPhone">Teléfono *</label>
+                        <input type="tel" id="adminPhone" required placeholder="Ingresa el teléfono">
                     </div>
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
                     </div>
                 </form>
             </div>
@@ -291,7 +291,7 @@
     <div class="modal" id="credentialsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Admin User Created Successfully</h2>
+                <h2>Usuario creado con éxito</h2>
                 <button class="modal-close" id="closeCredentialsModalBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"/>
@@ -301,13 +301,13 @@
             </div>
             <div class="modal-body">
                 <div class="credentials-info">
-                    <p class="info-text">Please save these credentials. You won't be able to see them again.</p>
+                    <p class="info-text">Guarda estas credenciales. No podrás verlas de nuevo.</p>
                     <div class="credential-item">
-                        <label>Business Name:</label>
+                        <label>Negocio:</label>
                         <div class="credential-value" id="credBusinessName"></div>
                     </div>
                     <div class="credential-item">
-                        <label>Username:</label>
+                        <label>Usuario:</label>
                         <div class="credential-value-with-copy">
                             <span id="credUsername"></span>
                             <button class="copy-btn" onclick="copyToClipboard('credUsername')">
@@ -319,7 +319,7 @@
                         </div>
                     </div>
                     <div class="credential-item">
-                        <label>Password:</label>
+                        <label>Contraseña:</label>
                         <div class="credential-value-with-copy">
                             <span id="credPassword"></span>
                             <button class="copy-btn" onclick="copyToClipboard('credPassword')">
@@ -331,7 +331,7 @@
                         </div>
                     </div>
                     <div class="credential-item" id="credLoginLinkRow">
-                        <label>Magic Login Link:</label>
+                        <label>Enlace de acceso directo:</label>
                         <div class="credential-value-with-copy">
                             <input type="text" id="credLoginLink" readonly style="flex:1;font-size:12px;border:none;background:none;color:var(--text-2);outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                             <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('credLoginLink').value)">
@@ -349,9 +349,9 @@
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                         </svg>
-                        Copy All Credentials
+                        Copiar todas las credenciales
                     </button>
-                    <button class="btn btn-primary" id="closeCredentialsBtn">Done</button>
+                    <button class="btn btn-primary" id="closeCredentialsBtn">Listo</button>
                 </div>
             </div>
         </div>
@@ -361,7 +361,7 @@
     <div class="modal" id="deleteModal">
         <div class="modal-content modal-small">
             <div class="modal-header">
-                <h2>Delete Admin User</h2>
+                <h2>Eliminar Usuario</h2>
                 <button class="modal-close" id="closeDeleteModalBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"/>
@@ -370,10 +370,10 @@
                 </button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this admin user and their business? This action cannot be undone.</p>
+                <p>¿Seguro que quieres eliminar este usuario y su negocio? Esta acción no se puede deshacer.</p>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
-                    <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                    <button class="btn btn-secondary" id="cancelDeleteBtn">Cancelar</button>
+                    <button class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
                 </div>
             </div>
         </div>
@@ -383,7 +383,7 @@
     <div class="modal" id="statsModal">
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Business Profile</h2>
+                <h2>Perfil del Negocio</h2>
                 <button class="modal-close" id="closeStatsModalBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"/>
@@ -396,69 +396,69 @@
                     <h3 id="statsBusinessName"></h3>
 
                     <div class="profile-admin-info">
-                        <h4>Admin Information</h4>
+                        <h4>Información del Administrador</h4>
                         <div class="profile-info-grid">
                             <div class="profile-info-item">
-                                <span class="profile-info-label">Admin Name</span>
+                                <span class="profile-info-label">Administrador</span>
                                 <span class="profile-info-value" id="profileAdminName"></span>
                             </div>
                             <div class="profile-info-item">
-                                <span class="profile-info-label">Username</span>
+                                <span class="profile-info-label">Usuario</span>
                                 <span class="profile-info-value" id="profileAdminUsername"></span>
                             </div>
                             <div class="profile-info-item">
-                                <span class="profile-info-label">Email</span>
+                                <span class="profile-info-label">Correo</span>
                                 <span class="profile-info-value" id="profileAdminEmail"></span>
                             </div>
                             <div class="profile-info-item">
-                                <span class="profile-info-label">Phone</span>
+                                <span class="profile-info-label">Teléfono</span>
                                 <span class="profile-info-value" id="profileAdminPhone"></span>
                             </div>
                             <div class="profile-info-item">
-                                <span class="profile-info-label">Status</span>
+                                <span class="profile-info-label">Estado</span>
                                 <span class="profile-info-value" id="profileAdminStatus"></span>
                             </div>
                         </div>
                     </div>
 
-                    <h4 class="profile-section-title">Store Metrics</h4>
+                    <h4 class="profile-section-title">Métricas de la Tienda</h4>
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <div class="stat-label">Total Products</div>
+                            <div class="stat-label">Productos</div>
                             <div class="stat-value" id="statTotalProducts">0</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-label">Total Sales</div>
+                            <div class="stat-label">Ventas</div>
                             <div class="stat-value" id="statTotalSales">S/. 0</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-label">Total Profit</div>
+                            <div class="stat-label">Ganancia</div>
                             <div class="stat-value" id="statTotalProfit">S/. 0</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-label">Total Orders</div>
+                            <div class="stat-label">Pedidos</div>
                             <div class="stat-value" id="statTotalOrders">0</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-label">Total Sellers</div>
+                            <div class="stat-label">Vendedores</div>
                             <div class="stat-value" id="statTotalSellers">0</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-label">Active Sellers</div>
+                            <div class="stat-label">Vendedores Activos</div>
                             <div class="stat-value" id="statActiveSellers">0</div>
                         </div>
                     </div>
 
-                    <h4 class="profile-section-title">Sellers</h4>
+                    <h4 class="profile-section-title">Vendedores</h4>
                     <div class="table-container">
                         <table class="admin-users-table profile-sellers-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Status</th>
+                                    <th>Nombre</th>
+                                    <th>Usuario</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th>Estado</th>
                                 </tr>
                             </thead>
                             <tbody id="profileSellersBody">
@@ -469,6 +469,46 @@
             </div>
         </div>
     </div>
+    <!-- Conectar Tienda Vercel Modal (solo Super Admin) -->
+    <div class="modal" id="storeLinkModal">
+        <div class="modal-content" style="max-width:560px;">
+            <div class="modal-header">
+                <h2>Conectar tienda online</h2>
+                <button class="modal-close" id="closeStoreLinkBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+                    Negocio: <strong id="storeLinkBizName"></strong>. Pega el ID de la tienda Vercel
+                    y guarda. La llave secreta se genera sola: va en la tienda para que sincronice
+                    productos y ventas hacia este negocio.
+                </p>
+                <div class="form-group">
+                    <label for="storeVercelId">ID de la tienda Vercel</label>
+                    <input type="text" id="storeVercelId" placeholder="p.ej. tienda-cliente-xyz">
+                </div>
+                <div class="form-group">
+                    <label>Llave secreta de sincronización</label>
+                    <div class="credential-value-with-copy">
+                        <input type="text" id="storeSyncKey" readonly placeholder="Se genera al guardar"
+                               style="flex:1;font-size:12px;border:none;background:none;color:var(--text-2);outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        <button class="copy-btn" type="button" onclick="navigator.clipboard.writeText(document.getElementById('storeSyncKey').value)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);margin:10px 0;">
+                    <input type="checkbox" id="storeSyncEnabled" checked> Sincronización activa
+                </label>
+                <div class="form-actions" style="display:flex;gap:10px;justify-content:space-between;">
+                    <button type="button" class="btn btn-secondary" id="storeRegenBtn">Regenerar llave</button>
+                    <button type="button" class="btn btn-primary" id="storeSaveBtn">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
             </main>
             </div><!-- end spaContent -->
         </div>
