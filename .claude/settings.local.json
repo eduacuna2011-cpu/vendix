@@ -25,7 +25,14 @@
       "Bash(awk '/<script>/{f=1;next} /<\\\\/script>/{f=0} f' index.html)",
       "Bash(node --check /tmp/olivia_script.js)",
       "Read(//tmp/**)",
-      "Bash(rm -f olivia-preview.html)"
+      "Bash(rm -f olivia-preview.html)",
+      "Bash(vercel --prod --yes)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://vendix-app.vercel.app/api/health)",
+      "Bash(curl -s https://vendix-app.vercel.app/api/integration/products -H \"X-Store-Key: vx_2fe4a9a5e2f8a5680a55b79c2285a6269c79bd1f8fd9c455\" -w \"\\\\nHTTP %{http_code}\\\\n\")",
+      "Bash(curl -s https://vendix-app.vercel.app/api/integration/products -H 'X-Store-Key: vx_2fe4a9a5e2f8a5680a55b79c2285a6269c79bd1f8fd9c455')",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\).find\\(x=>x.sku==='DIP-MED'\\);console.log\\('  Dip Mediterráneo:',p.stock\\)}\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

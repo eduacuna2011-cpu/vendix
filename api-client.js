@@ -233,6 +233,23 @@ async function addTransaction(transaction) {
     return r;
 }
 
+// ─── Pedidos web por confirmar (pendientes) ───────────────────────────────────
+async function getPendingOrders() {
+    return apiFetch('/transactions/pending');
+}
+
+async function confirmOrder(id) {
+    const r = await apiFetch(`/transactions/${id}/confirm`, { method: 'PATCH' });
+    _bust('/transactions', '/products');
+    return r;
+}
+
+async function cancelOrder(id) {
+    const r = await apiFetch(`/transactions/${id}/cancel`, { method: 'PATCH' });
+    _bust('/transactions');
+    return r;
+}
+
 // ─── Users (Super Admin) ──────────────────────────────────────────────────────
 async function getAdminUsers(filters = {}) {
     const params = new URLSearchParams(filters).toString();

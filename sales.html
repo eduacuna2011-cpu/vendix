@@ -158,6 +158,17 @@
 
             <!-- Sales Content -->
             <main class="sales-content">
+                <!-- ── Pedidos por confirmar (llegan de la tienda online) ── -->
+                <div id="pendingOrdersSection" style="display:none;margin-bottom:20px;background:var(--surface,#fff);border:1px solid var(--border,#e5e7eb);border-left:4px solid #f59e0b;border-radius:12px;padding:16px 18px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <h2 style="margin:0;font-size:16px;">Pedidos por confirmar</h2>
+                        <span id="pendingCount" style="background:#f59e0b;color:#fff;font-size:12px;font-weight:800;padding:2px 9px;border-radius:20px;">0</span>
+                        <span style="font-size:12px;color:var(--text-secondary,#6b7280);margin-left:auto;">Confirma si el cliente pagó o cancela el pedido.</span>
+                    </div>
+                    <div id="pendingOrdersList"></div>
+                </div>
+
                 <div class="sales-layout">
                     <!-- Products Section -->
                     <div class="products-section">
@@ -287,10 +298,6 @@
                         </table>
                     </div>
                 </div>
-            </main>
-        </div>
-    </div>
-
     <!-- Receipt Modal -->
     <div class="modal" id="receiptModal">
         <div class="modal-content receipt-modal-content">
@@ -376,6 +383,9 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+            </main>
         </div>
     </div>
 

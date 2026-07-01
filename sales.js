@@ -223,7 +223,18 @@ async function completeSale(paymentMethod) {
         Promise.all([loadProducts(productSearch?.value || ''), loadRecentSales()]);
         showSaleCompletedModal();
     } catch (err) {
-        showNotification('Error al procesar la venta: ' + err.message, true);
+        showNotification(err.message || 'Error al procesar la venta', true);
+        // La venta pudo fallar por datos viejos (producto eliminado o sin stock):
+        // refresca la grilla y depura el carrito para poder reintentar.
+        try {
+            if (typeof _bust === 'function') _bust('/products', '/transactions');
+            await loadProducts(productSearch?.value || '');
+            const validIds = new Set(allProducts.map(p => p.id));
+            const before = cart.length;
+            cart = cart.filter(i => validIds.has(i.id));
+            if (cart.length !== before) showNotification('Quité del carrito productos que ya no existen', true);
+            renderCart();
+        } catch {}
     } finally {
         completeSaleBtn.disabled = false;
         completeSaleBtn.textContent = 'Complete Sale';
@@ -315,6 +326,14 @@ function downloadLastReceiptPDF() {
 function closeReceiptModal()       { document.getElementById('receiptModal').classList.remove('show'); }
 function showSaleCompletedModal()  { document.getElementById('saleCompletedModal').classList.add('show'); }
 function closeSaleCompletedModal() { document.getElementById('saleCompletedModal').classList.remove('show'); }
+
+// Exponer al scope global para los onclick inline de los modales: bajo el router
+// SPA el script va envuelto en un IIFE, así que sin esto las funciones no existen.
+window.viewLastReceipt        = viewLastReceipt;
+window.printLastReceipt       = printLastReceipt;
+window.downloadLastReceiptPDF = downloadLastReceiptPDF;
+window.closeReceiptModal      = closeReceiptModal;
+window.closeSaleCompletedModal = closeSaleCompletedModal;
 
 // ─── Recent Sales ─────────────────────────────────────────────────────────────
 let _recentSalesLoaded = false;
@@ -448,9 +467,59 @@ if (productSearch) {
     productSearch.addEventListener('input', productSearch._inputHandler);
 }
 
+// ─── Pedidos por confirmar (llegan de la tienda online como 'pending') ────────
+async function loadPendingOrders() {
+    const section = document.getElementById('pendingOrdersSection');
+    if (!section) return;
+    try {
+        const orders = await getPendingOrders() || [];
+        const list   = document.getElementById('pendingOrdersList');
+        document.getElementById('pendingCount').textContent = orders.length;
+        if (!orders.length) { section.style.display = 'none'; return; }
+        section.style.display = '';
+        list.innerHTML = orders.map(o => {
+            const when  = new Date(o.date).toLocaleString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            const items = (o.items || []).map(i => `${escapeHtml(i.product_name)} x${i.quantity}`).join(', ');
+            return `
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--border,#eee);flex-wrap:wrap;">
+                <div style="flex:1;min-width:180px;">
+                    <div style="font-weight:700;">${escapeHtml(o.customer || 'Cliente Web')} · S/. ${parseFloat(o.total).toFixed(2)}</div>
+                    <div style="font-size:12px;color:var(--text-secondary,#6b7280);">${items || '—'} · ${when} · ${escapeHtml(o.payment_method || '')}</div>
+                </div>
+                <button class="btn btn-primary" style="background:#16a34a;border:none;" onclick="confirmPendingOrder(${o.id})">✓ Pagado</button>
+                <button class="btn btn-secondary" onclick="cancelPendingOrder(${o.id})">✗ Cancelar</button>
+            </div>`;
+        }).join('');
+    } catch (err) {
+        console.error('loadPendingOrders error:', err);
+    }
+}
+
+window.confirmPendingOrder = async function(id) {
+    try {
+        await confirmOrder(id);
+        showNotification('✓ Pago confirmado — venta registrada');
+        await Promise.all([loadPendingOrders(), loadProducts(productSearch?.value || ''), loadRecentSales()]);
+    } catch (err) {
+        showNotification('No se pudo confirmar: ' + err.message, true);
+        loadPendingOrders();
+    }
+};
+
+window.cancelPendingOrder = async function(id) {
+    if (!confirm('¿Cancelar este pedido? No se descuenta stock ni cuenta como venta.')) return;
+    try {
+        await cancelOrder(id);
+        showNotification('Pedido cancelado');
+        loadPendingOrders();
+    } catch (err) {
+        showNotification('No se pudo cancelar: ' + err.message, true);
+    }
+};
+
 // ─── Init — load products and recent sales in parallel ────────────────────────
 const _salesUser = initPage({ requireStore: true });
 if (_salesUser) {
     renderCart();
-    Promise.all([loadTaxSettings(), loadProducts(), loadRecentSales()]);
+    Promise.all([loadTaxSettings(), loadProducts(), loadRecentSales(), loadPendingOrders()]);
 }

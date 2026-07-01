@@ -22,6 +22,9 @@ async function ensureSyncColumns() {
     await db.query(
         'CREATE INDEX IF NOT EXISTS idx_businesses_sync_key ON businesses(sync_api_key)'
     );
+    // Estado de pago de los pedidos web (pending/paid/cancelled)
+    await db.query(`ALTER TABLE transactions
+        ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) NOT NULL DEFAULT 'paid'`);
     _columnsReady = true;
 }
 ensureSyncColumns().catch(console.error);
@@ -150,8 +153,9 @@ router.post('/products', async (req, res) => {
 });
 
 // ── POST /api/integration/sales ───────────────────────────────────────────────
-// La tienda registra una venta. Descuenta stock e inserta la transacción + items.
-// El admin la ve en sus ventas marcada como "Tienda Online".
+// La tienda registra un PEDIDO. Entra como 'pending' (por confirmar) y NO
+// descuenta stock todavía: el admin decide en Vendix si se pagó o no. Al
+// confirmar el pago se descuenta el stock; al cancelar, no se toca nada.
 router.post('/sales', async (req, res) => {
     const client = await db.getClient();
     try {
@@ -165,7 +169,8 @@ router.post('/sales', async (req, res) => {
 
         let subtotal = 0, total = 0, profit = 0;
 
-        // Resolver cada item por SKU (o por id directo) dentro del negocio
+        // Resolver cada item por SKU (o por id directo) dentro del negocio.
+        // No se valida ni descuenta stock aquí: es solo un pedido por confirmar.
         for (const item of items) {
             let p = null;
             if (item.sku) {
@@ -185,10 +190,6 @@ router.post('/sales', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ error: `Producto no encontrado: ${item.sku || item.productId}` });
             }
-            if (p.stock < item.quantity) {
-                await client.query('ROLLBACK');
-                return res.status(409).json({ error: `Stock insuficiente para "${p.name}"` });
-            }
             item._product  = p;
             item._unitPrice = item.unitPrice != null ? parseFloat(item.unitPrice) : parseFloat(p.sale_price);
             const lineTotal = item._unitPrice * item.quantity;
@@ -197,19 +198,11 @@ router.post('/sales', async (req, res) => {
             profit   += (item._unitPrice - parseFloat(p.cost_price)) * item.quantity;
         }
 
-        // Descontar stock
-        for (const item of items) {
-            await client.query(
-                'UPDATE products SET stock = stock - $1 WHERE id = $2',
-                [item.quantity, item._product.id]
-            );
-        }
-
-        // Insertar transacción (seller_id null = venta online, no la hizo un vendedor)
+        // Insertar el pedido como pendiente (seller_id null = pedido online)
         const { rows: [tx] } = await client.query(
             `INSERT INTO transactions
-               (business_id, seller_id, seller_name, customer, payment_method, subtotal, total, profit, date)
-             VALUES ($1, NULL, $2, $3, $4, $5, $6, $7, NOW())
+               (business_id, seller_id, seller_name, customer, payment_method, subtotal, total, profit, date, payment_status)
+             VALUES ($1, NULL, $2, $3, $4, $5, $6, $7, NOW(), 'pending')
              RETURNING *`,
             [bizId, 'Tienda Online', customer || null, paymentMethod || 'Online',
              subtotal, total, profit]

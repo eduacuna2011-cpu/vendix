@@ -1,17 +1,33 @@
 const router = require('express').Router();
 const db     = require('../db');
-const { authMiddleware } = require('../middleware/auth');
+const { authMiddleware, requireBusinessAdmin } = require('../middleware/auth');
 
 router.use(authMiddleware);
+
+// Estado de pago: 'paid' (venta confirmada / POS) | 'pending' (pedido web por
+// confirmar) | 'cancelled'. Columna idempotente; las ventas antiguas (NULL) se
+// tratan como 'paid'.
+let _payColReady = false;
+async function ensurePaymentStatus() {
+    if (_payColReady) return;
+    await db.query(`ALTER TABLE transactions
+        ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) NOT NULL DEFAULT 'paid'`);
+    _payColReady = true;
+}
+ensurePaymentStatus().catch(console.error);
 
 function bizScope(req) {
     if (req.user.role === 'Super Admin') return { where: '', params: [] };
     return { where: 'AND t.business_id = $1', params: [req.user.businessId] };
 }
 
-// GET /api/transactions
+// Filtro para contar solo ventas confirmadas (excluye pendientes y canceladas).
+const PAID_ONLY = `AND COALESCE(t.payment_status,'paid') = 'paid'`;
+
+// GET /api/transactions  — solo ventas confirmadas (pagadas)
 router.get('/', async (req, res) => {
     try {
+        await ensurePaymentStatus();
         const scope = bizScope(req);
         const params = [...scope.params];
         let sql = `
@@ -23,7 +39,7 @@ router.get('/', async (req, res) => {
                    ) ORDER BY ti.id) AS items
             FROM transactions t
             LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
-            WHERE 1=1 ${scope.where}
+            WHERE 1=1 ${scope.where} ${PAID_ONLY}
         `;
         sql += ' GROUP BY t.id ORDER BY t.date DESC';
 
@@ -66,7 +82,7 @@ router.get('/stats', async (req, res) => {
                 COALESCE(SUM(total) FILTER (WHERE date_trunc('month', date AT TIME ZONE 'America/Lima') = date_trunc('month', NOW() AT TIME ZONE 'America/Lima')), 0) AS sales_month,
                 COUNT(*) FILTER (WHERE date_trunc('month', date AT TIME ZONE 'America/Lima') = date_trunc('month', NOW() AT TIME ZONE 'America/Lima'))               AS orders_month,
                 COUNT(*)                                                                                           AS total_orders
-             FROM transactions t WHERE 1=1 ${scope.where}${sellerWhere}`,
+             FROM transactions t WHERE 1=1 ${scope.where}${sellerWhere} ${PAID_ONLY}`,
             params
         );
         res.json({
@@ -102,7 +118,7 @@ router.get('/recent', async (req, res) => {
                     ) ORDER BY ti.id) AS items
              FROM transactions t
              LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
-             WHERE 1=1 ${scope.where}${sellerWhere}
+             WHERE 1=1 ${scope.where}${sellerWhere} ${PAID_ONLY}
              GROUP BY t.id ORDER BY t.date DESC
              LIMIT $${params.length}`,
             params
@@ -137,11 +153,11 @@ router.post('/', async (req, res) => {
             );
             if (!p) {
                 await client.query('ROLLBACK');
-                return res.status(400).json({ error: `Product ${item.productId} not found` });
+                return res.status(409).json({ error: 'Uno de los productos ya no existe (fue eliminado). Actualicé la lista, vuelve a intentar.' });
             }
             if (p.stock < item.quantity) {
                 await client.query('ROLLBACK');
-                return res.status(400).json({ error: `Insufficient stock for "${p.name}"` });
+                return res.status(409).json({ error: `Stock insuficiente para "${p.name}"` });
             }
             item._product = p;
             const lineTotal = item.unitPrice * item.quantity;
@@ -189,6 +205,109 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     } finally {
         client.release();
+    }
+});
+
+// GET /api/transactions/pending  — pedidos web por confirmar
+router.get('/pending', async (req, res) => {
+    try {
+        await ensurePaymentStatus();
+        const scope = bizScope(req);
+        const { rows } = await db.query(
+            `SELECT t.*,
+                    json_agg(json_build_object(
+                        'product_id', ti.product_id, 'product_name', ti.product_name,
+                        'quantity', ti.quantity, 'unit_price', ti.unit_price, 'total', ti.total
+                    ) ORDER BY ti.id) AS items
+             FROM transactions t
+             LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
+             WHERE t.payment_status = 'pending' ${scope.where}
+             GROUP BY t.id ORDER BY t.date DESC`,
+            scope.params
+        );
+        rows.forEach(r => { if (r.items && r.items[0] && r.items[0].product_name === null) r.items = []; });
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// PATCH /api/transactions/:id/confirm  — marca pagado y descuenta stock
+router.patch('/:id/confirm', requireBusinessAdmin, async (req, res) => {
+    const client = await db.getClient();
+    try {
+        await ensurePaymentStatus();
+        await client.query('BEGIN');
+
+        // Bloquea la fila del pedido para evitar doble confirmación.
+        // Los params del scope van primero (su WHERE usa $1); el id va al final.
+        const scope = bizScope(req);
+        const params = [...scope.params, req.params.id];
+        const idParam = '$' + params.length;
+        const { rows: [tx] } = await client.query(
+            `SELECT * FROM transactions t WHERE t.id = ${idParam} ${scope.where} FOR UPDATE`,
+            params
+        );
+        if (!tx) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Not found' }); }
+        if (tx.payment_status !== 'pending') {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ error: 'El pedido ya no está pendiente' });
+        }
+
+        // Verifica y descuenta stock ahora (al confirmar el pago)
+        const { rows: items } = await client.query(
+            'SELECT product_id, product_name, quantity FROM transaction_items WHERE transaction_id = $1',
+            [tx.id]
+        );
+        for (const it of items) {
+            if (!it.product_id) continue; // producto borrado; se ignora
+            const { rows: [p] } = await client.query(
+                'SELECT stock, name FROM products WHERE id = $1 FOR UPDATE', [it.product_id]
+            );
+            if (p && p.stock < it.quantity) {
+                await client.query('ROLLBACK');
+                return res.status(409).json({ error: `Stock insuficiente para "${p.name || it.product_name}"` });
+            }
+        }
+        for (const it of items) {
+            if (!it.product_id) continue;
+            await client.query('UPDATE products SET stock = stock - $1 WHERE id = $2',
+                [it.quantity, it.product_id]);
+        }
+
+        const { rows: [updated] } = await client.query(
+            `UPDATE transactions SET payment_status = 'paid' WHERE id = $1 RETURNING *`, [tx.id]
+        );
+        await client.query('COMMIT');
+        res.json(updated);
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        client.release();
+    }
+});
+
+// PATCH /api/transactions/:id/cancel  — cancela el pedido (no toca stock)
+router.patch('/:id/cancel', requireBusinessAdmin, async (req, res) => {
+    try {
+        await ensurePaymentStatus();
+        const scope = bizScope(req);
+        const params = [...scope.params, req.params.id];
+        const idParam = '$' + params.length;
+        const { rows: [tx] } = await db.query(
+            `UPDATE transactions t SET payment_status = 'cancelled'
+             WHERE t.id = ${idParam} AND t.payment_status = 'pending' ${scope.where}
+             RETURNING *`,
+            params
+        );
+        if (!tx) return res.status(404).json({ error: 'Pedido no encontrado o ya procesado' });
+        res.json(tx);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
