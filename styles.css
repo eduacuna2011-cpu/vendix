@@ -1207,3 +1207,32 @@ body {
 .sidebar.compact ~ .main-content {
     margin-left: 64px;
 }
+
+/* ═══ Pulido "smooth" (Fase 2) ═══════════════════════════════════════════════ */
+
+/* Miniaturas lazy: aparecen con un fade suave en vez de saltar */
+img.lazy-img            { opacity: 0; transition: opacity .35s ease; }
+img.lazy-img.lazy-in    { opacity: 1; }
+
+/* Bump del contador del carrito al agregar un producto */
+@keyframes cartBump {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+.cart-bump { animation: cartBump .35s ease; }
+
+/* Feedback táctil: los botones se hunden levemente al presionar */
+button, .btn, .btn-icon, .add-btn, .product-card {
+    transition: transform .08s ease, box-shadow .15s ease, background-color .15s ease;
+}
+button:active, .btn:active, .btn-icon:active, .add-btn:active {
+    transform: scale(.96);
+}
+
+/* Pulso al agregar un producto al carrito desde su tarjeta */
+@keyframes addedPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(58,92,26,.45); }
+    100% { box-shadow: 0 0 0 12px rgba(58,92,26,0); }
+}
+.product-card.added { animation: addedPulse .5s ease; }

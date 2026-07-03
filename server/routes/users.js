@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
             SELECT u.id, u.username, u.full_name, u.email, u.phone,
                    u.role, u.status, u.business_id, u.business_name,
                    u.created_at, b.name AS biz_name, b.status AS biz_status,
-                   b.trial_ends_at, b.is_paid
+                   b.trial_ends_at, b.is_paid, COALESCE(b.plan, 'basico') AS plan
             FROM users u
             LEFT JOIN businesses b ON b.id = u.business_id
             WHERE u.role = 'Business Admin'
@@ -247,19 +247,22 @@ router.post('/:id/reset-password', async (req, res) => {
     }
 });
 
-// PATCH /api/users/:id/mark-paid  — mark business as paid (unlocks after trial)
+// PATCH /api/users/:id/mark-paid  — marca el negocio como pagado + su plan
+// body: { plan: 'basico' | 'premium' }  (default 'basico')
 router.patch('/:id/mark-paid', async (req, res) => {
     try {
+        const plan = (req.body && req.body.plan) === 'premium' ? 'premium' : 'basico';
         const { rows: [u] } = await db.query(
             'SELECT business_id FROM users WHERE id = $1 AND role = $2',
             [req.params.id, 'Business Admin']
         );
         if (!u || !u.business_id) return res.status(404).json({ error: 'Not found' });
+        await db.query(`ALTER TABLE businesses ADD COLUMN IF NOT EXISTS plan VARCHAR(20) NOT NULL DEFAULT 'basico'`);
         await db.query(
-            'UPDATE businesses SET is_paid = TRUE WHERE id = $1',
-            [u.business_id]
+            'UPDATE businesses SET is_paid = TRUE, plan = $2 WHERE id = $1',
+            [u.business_id, plan]
         );
-        res.json({ ok: true });
+        res.json({ ok: true, plan });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });

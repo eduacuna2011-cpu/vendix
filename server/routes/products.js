@@ -16,7 +16,17 @@ router.get('/', async (req, res) => {
         const scope = bizScope(req);
         const params = [...scope.params];
 
-        let sql = `SELECT * FROM products p WHERE 1=1 ${scope.where}`;
+        // Por defecto NO se devuelve la imagen (base64 pesada): la lista trae solo
+        // un flag has_image y el front carga cada miniatura aparte (lazy). Con
+        // ?images=1 se incluye la imagen (p.ej. para imprimir etiquetas).
+        const withImages = req.query.images === '1';
+        const cols = withImages
+            ? 'p.*'
+            : `p.id, p.business_id, p.sku, p.name, p.category, p.color, p.size, p.model,
+               p.stock, p.cost_price, p.sale_price, p.barcode, p.created_at, p.updated_at,
+               (p.image IS NOT NULL AND p.image <> '') AS has_image`;
+
+        let sql = `SELECT ${cols} FROM products p WHERE 1=1 ${scope.where}`;
 
         if (q) {
             params.push(`%${q}%`);
@@ -36,6 +46,18 @@ router.get('/', async (req, res) => {
             sql += ` AND p.size = $${params.length}`;
         }
         sql += ' ORDER BY p.created_at DESC';
+
+        // Paginación opcional por lotes (?limit=&offset=). Sin limit, trae todo.
+        const limit = parseInt(req.query.limit);
+        if (!isNaN(limit) && limit > 0) {
+            params.push(limit);
+            sql += ` LIMIT $${params.length}`;
+            const offset = parseInt(req.query.offset);
+            if (!isNaN(offset) && offset > 0) {
+                params.push(offset);
+                sql += ` OFFSET $${params.length}`;
+            }
+        }
 
         const { rows } = await db.query(sql, params);
         res.json(rows);
@@ -121,6 +143,26 @@ router.get('/barcode/:code', async (req, res) => {
         );
         if (!rows[0]) return res.status(404).json({ error: 'No product found with that barcode' });
         res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// GET /api/products/:id/image  — imagen suelta (para carga perezosa de miniaturas)
+router.get('/:id/image', async (req, res) => {
+    try {
+        // Aislamiento multi-tenant: solo el propio negocio (o el Super Admin) puede
+        // leer la imagen de un producto.
+        const params = [req.params.id];
+        let where = 'id = $1';
+        if (req.user.role !== 'Super Admin') {
+            params.push(req.user.businessId);
+            where += ' AND business_id = $2';
+        }
+        const { rows: [p] } = await db.query(`SELECT image FROM products WHERE ${where}`, params);
+        if (!p) return res.status(404).json({ error: 'Not found' });
+        res.json({ image: p.image || null });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });

@@ -384,12 +384,26 @@ async function sendCredsWhatsApp(id) {
     }
 }
 
-async function handleMarkUserPaid(id) {
-    if (!confirm('¿Marcar este usuario como pagado? Se desbloquearán todas las funciones permanentemente.')) return;
+// Abre el selector de plan antes de marcar pagado.
+let _payTargetId = null;
+function handleMarkUserPaid(id) {
+    _payTargetId = id;
+    const m = document.getElementById('planSelectModal');
+    if (m) m.classList.add('show');
+    else confirmMarkPaid('basico'); // fallback si el modal no existe
+}
+
+async function confirmMarkPaid(plan) {
+    const id = _payTargetId;
+    document.getElementById('planSelectModal')?.classList.remove('show');
+    if (!id) return;
     try {
-        await markUserPaid(id);
+        const r = await markUserPaid(id, plan === 'premium' ? 'premium' : 'basico');
         await loadAdminUsers();
+        if (typeof loadVendixSales === 'function') loadVendixSales(); // refresca MRR si está en pantalla
+        showNotification('Marcado como pagado — ' + (r.plan === 'premium' ? 'Premium S/.31.99' : 'Básico S/.15.99'));
     } catch (err) { showNotification('Error: ' + err.message, true); }
+    _payTargetId = null;
 }
 
 async function handleExtendTrial(id) {
@@ -413,6 +427,10 @@ window.addEventListener('click', (e) => {
 });
 
 // Cache is populated inside loadAdminUsers directly (no double-fetch wrapper)
+
+// Estado de leads declarado antes de la init: loadLeads() se llama abajo y lee
+// _leadsLoaded antes del primer await (evita el TDZ "before initialization").
+let _leadsLoaded = false;
 
 // Initialize — only Super Admin
 const _usersSession = getCurrentUser();
@@ -439,7 +457,6 @@ let _leadCredsData = null;
 
 const PLAN_LABELS = { vendix: 'Vendix S/.15.99', starter: 'Vendix S/.15.99', negocio: 'Vendix S/.15.99', pro: 'Vendix S/.15.99' };
 
-let _leadsLoaded = false;
 async function loadLeads() {
     try {
         const _lb = document.getElementById('leadsBody');

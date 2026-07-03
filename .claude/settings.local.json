@@ -32,7 +32,17 @@
       "Bash(curl -s https://vendix-app.vercel.app/api/integration/products -H 'X-Store-Key: vx_2fe4a9a5e2f8a5680a55b79c2285a6269c79bd1f8fd9c455')",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\).find\\(x=>x.sku==='DIP-MED'\\);console.log\\('  Dip Mediterráneo:',p.stock\\)}\\)\")",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(node --check server/routes/products.js)",
+      "Bash(node --check inventory.js)",
+      "Bash(node --check sales.js)",
+      "Bash(node --check labels.js)",
+      "Bash(curl -s \"https://olivia-dips.vercel.app/?_=$\\(date +%s\\)\")",
+      "Bash(node --check vendix-sales.js)",
+      "Bash(curl -s \"https://vendix-app.vercel.app/api/integration/products\" -H \"X-Store-Key: vx_2fe4a9a5e2f8a5680a55b79c2285a6269c79bd1f8fd9c455\")",
+      "Bash(curl -s \"https://sabores-abuela.vercel.app/?_=$\\(date +%s\\)\")",
+      "Bash(vercel projects *)"
     ]
   }
 }

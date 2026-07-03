@@ -86,7 +86,7 @@ function syncCheckAll() {
 // ── Load ─────────────────────────────────────────────────────────────────────
 async function loadLabelProducts() {
     try {
-        const all = await getProducts();
+        const all = await getProducts({ images: 1 }); // las etiquetas necesitan la foto
         _labelsProducts = (all || []).filter(p => p.barcode && p.barcode.trim());
 
         if (_labelsProducts.length === 0) {

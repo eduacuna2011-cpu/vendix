@@ -292,23 +292,29 @@
 
         <div class="amount-block">
             <div class="amount-label">Total a pagar</div>
-            <div class="amount-value"><span>S/.</span> 15.99</div>
+            <div class="amount-value"><span>S/.</span> <span id="payAmountNum">15.99</span></div>
             <div class="amount-period">Suscripción mensual · Cancela cuando quieras</div>
         </div>
 
-        <button class="pay-btn" id="payBtn" onclick="pagar()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            Pagar S/. 15.99
+        <!-- Pago por Yape (QR) -->
+        <div style="text-align:center;padding:6px 0 2px;">
+            <div style="font-weight:700;margin-bottom:12px;color:var(--text-2);font-size:14px;">Escanea y paga con Yape 💜</div>
+            <img id="yapeQR" src="yape-qr.png" alt="QR de Yape"
+                 style="width:220px;height:220px;object-fit:contain;border-radius:16px;background:#fff;padding:10px;"
+                 onerror="this.style.display='none';document.getElementById('yapeQRfallback').style.display='flex';">
+            <div id="yapeQRfallback" style="display:none;width:220px;height:220px;margin:0 auto;border:2px dashed #a855f7;border-radius:16px;align-items:center;justify-content:center;color:#a855f7;font-size:13px;text-align:center;padding:16px;">Aquí va tu QR de Yape<br>(archivo <strong>yape-qr.png</strong>)</div>
+            <div style="margin-top:14px;font-size:13px;color:var(--text-3);">Yapea exactamente <strong id="yapeAmount">S/. 15.99</strong></div>
+        </div>
+
+        <button class="pay-btn" id="payBtn" onclick="yaPague()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6L9 17l-5-5"/></svg>
+            Ya realicé el pago por Yape
         </button>
 
         <div class="status" id="status"></div>
 
-        <div class="card-logos">
-            <div class="card-logo" style="color:#4d6cff">VISA</div>
-            <div class="card-logo" style="color:#ff5a5f">Mastercard</div>
-            <div class="card-logo" style="color:#3a9be8">Amex</div>
-            <div class="card-logo" style="color:#5fa3d6">Diners</div>
-            <div class="card-logo" style="color:#a855f7">Yape</div>
+        <div style="text-align:center;font-size:12.5px;color:var(--text-3);margin-top:8px;line-height:1.5;">
+            Yapea el monto exacto y toca el botón. Verificamos tu pago y activamos tu cuenta — te avisamos por WhatsApp.
         </div>
 
         <div class="trust-row">
@@ -342,6 +348,7 @@
         </div>
 
         <div class="feats">
+            <div class="feat" id="payStoreFeat" style="display:none;"><span class="feat-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span> <strong>Tienda online diseñada por nosotros</strong></div>
             <div class="feat"><span class="feat-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span> Vendedores ilimitados</div>
             <div class="feat"><span class="feat-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span> Productos ilimitados</div>
             <div class="feat"><span class="feat-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span> Dashboard con analíticas</div>
@@ -351,14 +358,14 @@
 
         <div class="divider"></div>
 
-        <div class="sum-line"><span>Plan Vendix (mensual)</span><span>S/. 15.99</span></div>
+        <div class="sum-line"><span id="paySumName">Plan Básico (mensual)</span><span id="paySumPrice">S/. 15.99</span></div>
         <div class="sum-line"><span>IGV incluido</span><span>—</span></div>
 
         <div class="divider"></div>
 
         <div class="sum-total">
             <span>Total</span>
-            <span><span class="total-amount">S/. 15.99</span> <small>/mes</small></span>
+            <span><span class="total-amount" id="payTotalPrice">S/. 15.99</span> <small>/mes</small></span>
         </div>
 
         <div class="guarantee">
@@ -380,9 +387,32 @@ const cliente = {
     business: P.get('business') || '',
     email:    P.get('email')    || '',
     phone:    P.get('phone')    || '',
-    plan:     P.get('plan')     || 'vendix',
+    plan:     P.get('plan')     || 'basico',
     bizType:  P.get('bizType')  || ''
 };
+
+// Precio según el plan elegido en el checkout.
+const PLAN_PRICES = { basico: 15.99, premium: 31.99 };
+const PLAN_NAMES  = { basico: 'Plan Básico', premium: 'Plan Premium' };
+const planKey     = (cliente.plan === 'premium') ? 'premium' : 'basico';
+const planPrice   = PLAN_PRICES[planKey];
+const planAmount  = Math.round(planPrice * 100);           // en céntimos para Culqi
+const planPriceStr = 'S/. ' + planPrice.toFixed(2);
+
+// Reflejar el plan elegido en toda la pantalla de pago
+document.addEventListener('DOMContentLoaded', () => {
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    const nameEl = document.querySelector('.plan-name');
+    if (nameEl) nameEl.textContent = PLAN_NAMES[planKey];
+    set('payAmountNum', planPrice.toFixed(2));
+    set('payBtnPrice', planPriceStr);
+    set('yapeAmount', planPriceStr);
+    set('paySumName', PLAN_NAMES[planKey] + ' (mensual)');
+    set('paySumPrice', planPriceStr);
+    set('payTotalPrice', planPriceStr);
+    const storeFeat = document.getElementById('payStoreFeat');
+    if (storeFeat) storeFeat.style.display = planKey === 'premium' ? '' : 'none';
+});
 
 let culqi = null;
 
@@ -392,8 +422,9 @@ function setStatus(msg, type) {
     el.className = 'status' + (type ? ' ' + type : '');
 }
 
-// Inicializar Culqi de inmediato
-initCulqi(CULQI_PK);
+// Culqi desactivado por ahora — el pago es por Yape (QR).
+// Para reactivar tarjeta/Culqi, descomenta la siguiente línea:
+// initCulqi(CULQI_PK);
 
 function initCulqi(pk) {
     if (typeof CulqiCheckout === 'undefined') {
@@ -405,7 +436,7 @@ function initCulqi(pk) {
         settings: {
             title:    'Vendix',
             currency: 'PEN',
-            amount:   1599
+            amount:   planAmount
         },
         client: {
             email: cliente.email || ''
@@ -418,7 +449,7 @@ function initCulqi(pk) {
         appearance: {
             theme: 'default',
             menuType: 'sidebar',
-            buttonCardPayText: 'Pagar S/. 15.99'
+            buttonCardPayText: 'Pagar ' + planPriceStr
         }
     });
 
@@ -433,7 +464,7 @@ function initCulqi(pk) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         token:     culqi.token.id,
-                        amount:    15.99,
+                        amount:    planPrice,
                         email:     cliente.email || culqi.token.email || 'cliente@vendix.app',
                         firstName: (cliente.name || '').trim().split(' ')[0] || '',
                         lastName:  (cliente.name || '').trim().split(' ').slice(1).join(' ') || ''
@@ -486,6 +517,44 @@ function initCulqi(pk) {
 function pagar() {
     if (!culqi) { setStatus('Cargando, intenta de nuevo…'); return; }
     culqi.open();
+}
+
+// Pago por Yape: el cliente ya yapeó → registramos la solicitud como NO pagada.
+// El Super Admin verifica el Yape y la acepta desde "Solicitudes".
+async function yaPague() {
+    const btn = document.getElementById('payBtn');
+    btn.disabled = true;
+    setStatus('Enviando tu solicitud…');
+    try {
+        await fetch('/api/leads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                fullName:     cliente.name,
+                businessName: cliente.business,
+                email:        cliente.email,
+                phone:        cliente.phone,
+                plan:         cliente.plan,
+                bizType:      cliente.bizType,
+                paid:         false
+            })
+        });
+
+        // Avanzar el paso de arriba a "Listo"
+        try {
+            document.getElementById('stepPago').classList.remove('active');
+            document.getElementById('stepPago').classList.add('done');
+            document.getElementById('lineListo').classList.add('done');
+            document.getElementById('stepListo').classList.add('active');
+            document.getElementById('stepListo').querySelector('.step-circle').innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+        } catch {}
+
+        btn.textContent = 'Solicitud enviada ✓';
+        setStatus('¡Listo! Recibimos tu solicitud. Verificaremos tu pago por Yape y activaremos tu cuenta — te contactamos por WhatsApp. 💜', 'ok');
+    } catch (err) {
+        btn.disabled = false;
+        setStatus('No se pudo enviar. Intenta de nuevo.', 'err');
+    }
 }
 </script>
 </body>

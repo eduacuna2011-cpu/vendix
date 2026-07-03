@@ -23,6 +23,78 @@ function skeletonStats(...ids) {
     });
 }
 
+// ─── Lazy-load de imágenes de producto ────────────────────────────────────────
+// La lista de productos ya NO trae la imagen base64 (pesada). Cada miniatura se
+// pide aparte solo cuando entra en pantalla, y se guarda en memoria para no
+// repetir. Uso: renderiza `lazyThumb(id, clase, alt)` y luego llama
+// `observeLazyImages(contenedor)` una vez inyectado el HTML.
+const _imgCache = new Map(); // id -> dataURI (o null si no tiene)
+function _imgCacheSet(id, v) {
+    if (_imgCache.size > 300) _imgCache.delete(_imgCache.keys().next().value);
+    _imgCache.set(String(id), v);
+}
+
+async function _loadThumb(img) {
+    if (img.dataset.loaded) return;
+    img.dataset.loaded = '1';
+    const id = img.dataset.pid;
+    if (!id) return;
+    try {
+        let uri = _imgCache.get(String(id));
+        if (uri === undefined) {
+            const res  = await fetch(`${API_BASE}/products/${id}/image`, { headers: authHeaders() });
+            const data = res.ok ? await res.json() : {};
+            uri = data.image || null;
+            _imgCacheSet(id, uri);
+        }
+        if (uri) {
+            img.classList.add('lazy-img');          // arranca transparente (CSS)
+            img.onload = () => img.classList.add('lazy-in'); // fade suave al cargar
+            img.src = uri;
+        } else {
+            img.classList.add('img-empty');
+        }
+    } catch {
+        img.dataset.loaded = ''; // permite reintento en el próximo barrido
+    }
+}
+
+// Carga las miniaturas que están (o casi) en pantalla. Robusto en cualquier
+// contenedor con scroll (no depende de IntersectionObserver).
+function _sweepThumbs() {
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    document.querySelectorAll('img[data-pid]:not([data-loaded])').forEach(img => {
+        const r = img.getBoundingClientRect();
+        if (r.bottom > -300 && r.top < vh + 300) _loadThumb(img);
+    });
+}
+
+let _sweepScheduled = false;
+function _scheduleSweep() {
+    if (_sweepScheduled) return;
+    _sweepScheduled = true;
+    setTimeout(() => { _sweepScheduled = false; _sweepThumbs(); }, 120);
+}
+
+let _lazyWired = false;
+function lazyThumb(id, className, alt) {
+    const safeAlt = String(alt || '').replace(/"/g, '&quot;');
+    return `<img data-pid="${id}" alt="${safeAlt}" class="${className || ''}" loading="lazy">`;
+}
+
+function observeLazyImages(/* root ignorado: barre todo el documento */) {
+    _sweepThumbs();
+    // Barridos diferidos por si el layout aún se está acomodando al renderizar.
+    setTimeout(_sweepThumbs, 300);
+    setTimeout(_sweepThumbs, 900);
+    if (!_lazyWired) {
+        _lazyWired = true;
+        // capture:true atrapa el scroll de contenedores internos (.main-content)
+        window.addEventListener('scroll', _scheduleSweep, { passive: true, capture: true });
+        window.addEventListener('resize', _scheduleSweep, { passive: true });
+    }
+}
+
 // ─── DB warm-up — ping on load + every 4 min to keep Neon awake ──────────────
 (function warmUp() {
     const ping = () => fetch('/api/health', { method: 'GET' }).catch(() => {});
@@ -288,8 +360,8 @@ async function resetAdminPassword(id) {
     return apiFetch(`/users/${id}/reset-password`, { method: 'POST' });
 }
 
-async function markUserPaid(id) {
-    const r = await apiFetch(`/users/${id}/mark-paid`, { method: 'PATCH' });
+async function markUserPaid(id, plan = 'basico') {
+    const r = await apiFetch(`/users/${id}/mark-paid`, { method: 'PATCH', body: { plan } });
     _bust('/users');
     return r;
 }

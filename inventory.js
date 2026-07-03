@@ -145,34 +145,15 @@ function getStockBadge(stock) {
     return `<span class="stock-badge in-stock">${stock}</span>`;
 }
 
-let _invLoaded = false;
-async function loadProducts() {
-    try {
-        if (!_invLoaded && productsTableBody) productsTableBody.innerHTML = skeletonRows(10, 6);
-        const filters = {};
-        if (searchInput    && searchInput.value)   filters.q        = searchInput.value;
-        if (categoryFilter && categoryFilter.value !== 'all') filters.category = categoryFilter.value;
-        if (colorFilter    && colorFilter.value    !== 'all') filters.color    = colorFilter.value;
-        if (sizeFilter     && sizeFilter.value     !== 'all') filters.size     = sizeFilter.value;
+let _invLoaded = false, _invLimit = 50, _invLoadingMore = false, _invScrollWired = false;
 
-        const products     = await getProducts(filters) || [];
-        _productsCache     = products;
-        _invLoaded         = true;
-        const isUserSeller = isSeller() && !isBusinessAdmin() && !isSuperAdmin();
-
-        if (products.length === 0) {
-            productsTableBody.innerHTML = '';
-            emptyState.classList.add('show');
-            return;
-        }
-        emptyState.classList.remove('show');
-
-        productsTableBody.innerHTML = products.map(p => `
+function _invRowHtml(p, isUserSeller) {
+    return `
             <tr>
                 <td><strong>${escapeHtml(p.sku || '')}</strong></td>
                 <td>
                     <div class="product-cell-with-image">
-                        ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}" class="product-thumbnail">` : ''}
+                        ${p.has_image ? lazyThumb(p.id, 'product-thumbnail', p.name) : ''}
                         <span>${escapeHtml(p.name)}</span>
                     </div>
                 </td>
@@ -198,8 +179,63 @@ async function loadProducts() {
                         </button>
                     </div>`}
                 </td>
-            </tr>`).join('');
+            </tr>`;
+}
+
+// Carga la primera ventana de productos (reinicia la paginación por lotes).
+async function loadProducts() {
+    _invLimit = 50;
+    return _renderInventory();
+}
+
+// Crece la ventana en otro lote (scroll infinito).
+async function loadMoreInv() {
+    if (_invLoadingMore) return;
+    _invLimit += 50;
+    return _renderInventory();
+}
+
+async function _renderInventory() {
+    try {
+        _invLoadingMore = true;
+        if (!_invLoaded && productsTableBody) productsTableBody.innerHTML = skeletonRows(10, 6);
+        const filters = { limit: _invLimit };
+        if (searchInput    && searchInput.value)   filters.q        = searchInput.value;
+        if (categoryFilter && categoryFilter.value !== 'all') filters.category = categoryFilter.value;
+        if (colorFilter    && colorFilter.value    !== 'all') filters.color    = colorFilter.value;
+        if (sizeFilter     && sizeFilter.value     !== 'all') filters.size     = sizeFilter.value;
+
+        const products     = await getProducts(filters) || [];
+        _productsCache     = products;
+        _invLoaded         = true;
+        const isUserSeller = isSeller() && !isBusinessAdmin() && !isSuperAdmin();
+
+        if (products.length === 0) {
+            productsTableBody.innerHTML = '';
+            emptyState.classList.add('show');
+            return;
+        }
+        emptyState.classList.remove('show');
+        productsTableBody.innerHTML = products.map(p => _invRowHtml(p, isUserSeller)).join('');
+        observeLazyImages(productsTableBody);
+        _wireInvScroll();
     } catch (err) { console.error('loadProducts error:', err); }
+    finally { _invLoadingMore = false; }
+}
+
+// Scroll infinito: pide el siguiente lote cuando te acercas al final de la lista.
+function _wireInvScroll() {
+    if (_invScrollWired) return;
+    _invScrollWired = true;
+    const onScroll = () => {
+        if (_invLoadingMore) return;
+        // Solo pide más si la última ventana vino llena (probablemente hay más).
+        if (!_productsCache || _productsCache.length < _invLimit) return;
+        const rect = productsTableBody.getBoundingClientRect();
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        if (rect.bottom < vh + 400) loadMoreInv();
+    };
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true });
 }
 
 window.editProduct = function(id) {

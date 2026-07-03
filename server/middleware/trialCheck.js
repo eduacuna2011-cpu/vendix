@@ -7,7 +7,8 @@ async function ensureTrialColumns() {
     await db.query(`
         ALTER TABLE businesses
             ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMPTZ,
-            ADD COLUMN IF NOT EXISTS is_paid BOOLEAN NOT NULL DEFAULT FALSE
+            ADD COLUMN IF NOT EXISTS is_paid BOOLEAN NOT NULL DEFAULT FALSE,
+            ADD COLUMN IF NOT EXISTS plan VARCHAR(20) NOT NULL DEFAULT 'basico'
     `);
     columnsReady = true;
 }

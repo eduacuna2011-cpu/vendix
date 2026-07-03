@@ -396,6 +396,34 @@
 
     <!-- LEFT: FORM -->
     <div>
+        <!-- Plan selector -->
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>Elige tu plan</h2>
+                <p>Puedes cambiar de plan después</p>
+            </div>
+            <div class="form-body">
+                <div class="plan-options">
+                    <label class="plan-option selected" id="planOpt-basico" onclick="selectPlan('basico')">
+                        <div class="plan-radio"><div class="plan-radio-dot"></div></div>
+                        <div class="plan-info">
+                            <div class="plan-name">Básico</div>
+                            <div class="plan-desc">Inventario + Punto de venta + vendedores</div>
+                        </div>
+                        <div class="plan-price-tag">S/. 15.99</div>
+                    </label>
+                    <label class="plan-option" id="planOpt-premium" onclick="selectPlan('premium')">
+                        <div class="plan-radio"><div class="plan-radio-dot"></div></div>
+                        <div class="plan-info">
+                            <div class="plan-name">Premium <span class="plan-badge">Tienda incluida</span></div>
+                            <div class="plan-desc">Todo lo del Básico + tienda online diseñada por nosotros</div>
+                        </div>
+                        <div class="plan-price-tag">S/. 31.99</div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <!-- Contact info -->
         <div class="form-card">
             <div class="form-card-header">
@@ -443,7 +471,7 @@
 
                 <button class="btn-pay" onclick="submitOrder()">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                    Ir a pagar — S/. 15.99
+                    Ir a pagar — <span id="payPrice" style="margin-left:4px;">S/. 15.99</span>
                 </button>
 
                 <p class="pay-note">
@@ -461,10 +489,11 @@
             <h3>Resumen del pedido</h3>
         </div>
         <div class="summary-body">
-            <div class="summary-plan-name">Plan Vendix</div>
-            <div class="summary-plan-desc">Todo ilimitado · S/. 15.99/mes</div>
+            <div class="summary-plan-name" id="sumPlanName">Plan Básico</div>
+            <div class="summary-plan-desc" id="sumPlanDesc">Todo ilimitado · S/. 15.99/mes</div>
 
             <div class="summary-features">
+                <div class="summary-feature" id="sumStoreFeature" style="display:none;"><div class="summary-check">✓</div> <strong>Tienda online diseñada por nosotros</strong></div>
                 <div class="summary-feature"><div class="summary-check">✓</div> Vendedores ilimitados</div>
                 <div class="summary-feature"><div class="summary-check">✓</div> Productos ilimitados</div>
                 <div class="summary-feature"><div class="summary-check">✓</div> Ventas ilimitadas</div>
@@ -477,7 +506,7 @@
 
             <div class="summary-row">
                 <span>Precio mensual</span>
-                <span>S/. 15.99</span>
+                <span id="sumPrice">S/. 15.99</span>
             </div>
             <div class="summary-row">
                 <span>IGV incluido</span>
@@ -486,7 +515,7 @@
             <div class="summary-divider"></div>
             <div class="summary-total">
                 <span>Total a pagar</span>
-                <span style="color:var(--success);">S/. 15.99</span>
+                <span id="sumTotal" style="color:var(--success);">S/. 15.99</span>
             </div>
 
             <div class="summary-trial">
@@ -499,6 +528,27 @@
 </div>
 
 <script>
+    // ── Selector de plan ──────────────────────────────────────────────────────
+    const PLAN_PRICES = { basico: 15.99, premium: 31.99 };
+    const PLAN_NAMES  = { basico: 'Plan Básico', premium: 'Plan Premium' };
+    let selectedPlan = 'basico';
+
+    function selectPlan(p) {
+        selectedPlan = (p === 'premium') ? 'premium' : 'basico';
+        document.getElementById('planOpt-basico').classList.toggle('selected', selectedPlan === 'basico');
+        document.getElementById('planOpt-premium').classList.toggle('selected', selectedPlan === 'premium');
+        const price = 'S/. ' + PLAN_PRICES[selectedPlan].toFixed(2);
+        document.getElementById('payPrice').textContent   = price;
+        document.getElementById('sumPlanName').textContent = PLAN_NAMES[selectedPlan];
+        document.getElementById('sumPlanDesc').textContent = 'Todo ilimitado · ' + price + '/mes';
+        document.getElementById('sumPrice').textContent    = price;
+        document.getElementById('sumTotal').textContent    = price;
+        document.getElementById('sumStoreFeature').style.display = selectedPlan === 'premium' ? '' : 'none';
+    }
+
+    // Preseleccionar el plan si viene en la URL (?plan=premium desde el landing)
+    if (new URLSearchParams(location.search).get('plan') === 'premium') selectPlan('premium');
+
     function setErr(id, msg) { document.getElementById('err-' + id).textContent = msg; }
     function clearErrs()     { ['businessName','fullName','phone','email'].forEach(id => setErr(id, '')); }
     function markError(id, msg) {
@@ -533,7 +583,7 @@
             business: businessName,
             email,
             phone,
-            plan:     'vendix',
+            plan:     selectedPlan,
             bizType:  bizType || ''
         });
         window.location.href = 'payment.html?' + params.toString();

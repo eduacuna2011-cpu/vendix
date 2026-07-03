@@ -509,6 +509,31 @@
         </div>
     </div>
 
+    <!-- Selector de plan al marcar pagado -->
+    <div class="modal" id="planSelectModal">
+        <div class="modal-content" style="max-width:460px;">
+            <div class="modal-header">
+                <h2>¿Qué plan pagó?</h2>
+                <button class="modal-close" onclick="document.getElementById('planSelectModal').classList.remove('show')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">Selecciona el plan del cliente. Se desbloquean las funciones y suma al MRR.</p>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <button type="button" onclick="confirmMarkPaid('basico')" style="text-align:left;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);cursor:pointer;">
+                        <div style="font-weight:800;color:var(--text-primary);">Básico — S/. 15.99/mes</div>
+                        <div style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Inventario + Punto de venta + vendedores</div>
+                    </button>
+                    <button type="button" onclick="confirmMarkPaid('premium')" style="text-align:left;padding:16px;border:2px solid #16a34a;border-radius:12px;background:rgba(22,163,74,.06);cursor:pointer;">
+                        <div style="font-weight:800;color:var(--text-primary);">Premium — S/. 31.99/mes ⭐</div>
+                        <div style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Todo lo del Básico + <strong>tienda online diseñada por nosotros</strong></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
             </main>
             </div><!-- end spaContent -->
         </div>

@@ -63,8 +63,8 @@ async function loadProducts(searchQuery = '') {
         productsGrid.innerHTML = products.map(p => `
             <div class="product-card ${p.stock === 0 ? 'out-of-stock' : ''}" onclick="${p.stock > 0 ? `addToCart(${p.id})` : ''}">
                 <div class="product-image">
-                    ${p.image
-                        ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">`
+                    ${p.has_image
+                        ? lazyThumb(p.id, '', p.name)
                         : `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
@@ -80,6 +80,7 @@ async function loadProducts(searchQuery = '') {
                     </div>
                 </div>
             </div>`).join('');
+        observeLazyImages(productsGrid);
     } catch (err) {
         console.error('loadProducts error:', err);
     }
@@ -106,6 +107,11 @@ window.addToCart = function(productId) {
         });
     }
     renderCart();
+    // Micro-feedback: bump del contador + pulso en la tarjeta
+    const badge = document.getElementById('cartBadge');
+    if (badge) { badge.classList.remove('cart-bump'); void badge.offsetWidth; badge.classList.add('cart-bump'); }
+    const card = document.querySelector(`.product-card[onclick*="addToCart(${productId})"]`);
+    if (card) { card.classList.remove('added'); void card.offsetWidth; card.classList.add('added'); }
 };
 
 window.updateQuantity = function(productId, change) {

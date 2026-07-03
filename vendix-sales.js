@@ -1,5 +1,11 @@
 // Vendix Sales — carga después de que los scripts defer hayan ejecutado
-const PLAN_PRICE = 15.99; // único plan
+const PLANS = {
+    basico:  { price: 15.99, label: 'Básico'  },
+    premium: { price: 31.99, label: 'Premium' },
+};
+function planPrice(p) { return (PLANS[p] || PLANS.basico).price; }
+function planLabel(p) { return (PLANS[p] || PLANS.basico).label; }
+const PLAN_PRICE = PLANS.basico.price; // compat
 const PLAN_LABEL = 'Plan Vendix';
 
 function _esc(s) {
@@ -18,55 +24,64 @@ function _badge(text, color) {
     return `<span style="background:${style};padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;">${text}</span>`;
 }
 
+function _setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+
 async function loadVendixSales() {
     try {
-        const leads = await getLeads();
+        // MRR se basa en los NEGOCIOS realmente pagados (businesses.is_paid), que es
+        // lo que marca "marcar pagado" en el panel de Usuarios. Los leads son solo
+        // el embudo de prospectos (solicitudes del landing).
+        const [leads, admins] = await Promise.all([getLeads(), getAdminUsers()]);
+        const biz = admins || [];
 
-        if (!leads || !leads.length) {
-            _renderEmpty(); return;
-        }
+        const paidList        = biz.filter(a => a.is_paid);          // pagando ahora
+        const paidBusinesses  = paidList.length;
+        const activeAccounts  = biz.length;                          // negocios con cuenta
+        const trialBusinesses = biz.filter(a => !a.is_paid).length;  // con cuenta, sin pagar
+        const pendingLeads    = (leads || []).filter(l => !l.account_created); // prospectos sin cuenta
+        // MRR = suma del precio del plan de cada negocio pagado (Básico/Premium)
+        const mrr             = paidList.reduce((s, a) => s + planPrice(a.plan), 0);
+        const mrrPotential    = biz.reduce((s, a) => s + planPrice(a.plan), 0);
 
-        const withAccount = leads.filter(l => l.account_created);
-        const paidLeads   = leads.filter(l => l.paid);
-        const trialLeads  = leads.filter(l => l.account_created && !l.paid);
-        const pendingLeads = leads.filter(l => !l.account_created);
-        const mrr         = paidLeads.length * PLAN_PRICE;
-        const mrrPotential = withAccount.length * PLAN_PRICE;
+        // Nombres de negocios pagados, para reflejarlo también en la tabla de leads.
+        const paidBizNames = new Set(
+            biz.filter(a => a.is_paid).map(a => (a.business_name || '').trim().toLowerCase())
+        );
 
         // ── KPIs ──────────────────────────────────────────────────────────────
-        document.getElementById('vMRR').textContent       = 'S/. ' + mrr.toFixed(2);
-        document.getElementById('vLicencias').textContent = withAccount.length;
-        document.getElementById('vPagados').textContent   = paidLeads.length;
-        document.getElementById('vTotal').textContent     = leads.length;
+        _setText('vMRR', 'S/. ' + mrr.toFixed(2));
+        _setText('vLicencias', activeAccounts);
+        _setText('vPagados', paidBusinesses);
+        _setText('vTotal', (leads || []).length);
 
         // Badge header
         const badge = document.getElementById('vendixSalesBadge');
-        if (badge) badge.textContent = mrr > 0 ? 'MRR: S/. ' + mrr.toFixed(2) : leads.length + ' solicitudes';
+        if (badge) badge.textContent = mrr > 0 ? 'MRR: S/. ' + mrr.toFixed(2) : ((leads || []).length + ' solicitudes');
 
         // ── Plan breakdown ─────────────────────────────────────────────────────
-        const elVendix   = document.getElementById('planVendix');
-        const elPagados  = document.getElementById('planPagados');
-        const elTrial    = document.getElementById('planTrial');
-        const elPendiente = document.getElementById('planPendiente');
-        const elPotencial = document.getElementById('planMRRPotencial');
-        if (elVendix)    elVendix.textContent   = leads.length;
-        if (elPagados)   elPagados.textContent  = paidLeads.length;
-        if (elTrial)     elTrial.textContent     = trialLeads.length;
-        if (elPendiente) elPendiente.textContent = pendingLeads.length;
-        if (elPotencial) elPotencial.textContent = 'S/. ' + mrrPotential.toFixed(2);
+        _setText('planVendix', activeAccounts);
+        _setText('planPagados', paidBusinesses);
+        _setText('planTrial', trialBusinesses);
+        _setText('planPendiente', pendingLeads.length);
+        _setText('planMRRPotencial', 'S/. ' + mrrPotential.toFixed(2));
 
         // ── Tabla de leads ─────────────────────────────────────────────────────
         const tbody = document.getElementById('vendixLeadsTable');
         if (!tbody) return;
+        if (!leads || !leads.length) { _renderEmpty(); return; }
 
         tbody.innerHTML = leads.map(l => {
             const date       = l.created_at
                 ? new Date(l.created_at).toLocaleDateString('es-PE', { day:'2-digit', month:'short', year:'2-digit' })
                 : '—';
-            const pagoHtml   = l.paid           ? _badge('Pagado', 'green')  : _badge('Pendiente', 'amber');
+            // Un lead cuenta como pagado si su lead.paid es true O si su negocio ya
+            // está marcado como pagado en Vendix.
+            const isPaid     = l.paid || paidBizNames.has((l.business_name || '').trim().toLowerCase());
+            const pagoHtml   = isPaid           ? _badge('Pagado', 'green')  : _badge('Pendiente', 'amber');
             const cuentaHtml  = l.account_created ? _badge('✓ Activa', 'green') : _badge('Sin cuenta', 'slate');
-            const planHtml   = `<span style="font-weight:700;">${PLAN_LABEL}</span>
-                                <br><span style="font-size:11px;color:var(--text-secondary);">S/. ${PLAN_PRICE}/mes</span>`;
+            const planKey    = l.plan === 'premium' ? 'premium' : 'basico';
+            const planHtml   = `<span style="font-weight:700;">Plan ${planLabel(planKey)}</span>
+                                <br><span style="font-size:11px;color:var(--text-secondary);">S/. ${planPrice(planKey).toFixed(2)}/mes</span>`;
             return `<tr>
                 <td><strong>${_esc(l.business_name)}</strong><br>
                     <span style="font-size:11px;color:var(--text-secondary);">${_esc(l.biz_type)}</span></td>
@@ -86,8 +101,7 @@ async function loadVendixSales() {
 }
 
 function _renderEmpty() {
-    const badge = document.getElementById('vendixSalesBadge');
-    if (badge) badge.textContent = 'Sin datos aún';
+    // No tocar el badge aquí: los KPIs/MRR ya se calculan desde los negocios.
     const tbody = document.getElementById('vendixLeadsTable');
     if (tbody) tbody.innerHTML = `
         <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-secondary);">

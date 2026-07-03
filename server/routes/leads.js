@@ -122,28 +122,32 @@ router.post('/:id/create-account', async (req, res) => {
 
         await client.query('BEGIN');
 
-        // Ensure trial columns exist
+        // Ensure trial/plan columns exist
         await client.query(`
             ALTER TABLE businesses
                 ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMPTZ,
-                ADD COLUMN IF NOT EXISTS is_paid BOOLEAN NOT NULL DEFAULT FALSE
+                ADD COLUMN IF NOT EXISTS is_paid BOOLEAN NOT NULL DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS plan VARCHAR(20) NOT NULL DEFAULT 'basico'
         `);
+
+        // Plan elegido en el checkout (basico | premium).
+        const bizPlan = lead.plan === 'premium' ? 'premium' : 'basico';
 
         // Solicitud pagada → cuenta activa sin trial (trial 0).
         // Solicitud no pagada → 3 días de prueba.
         let biz;
         if (lead.paid) {
             ({ rows: [biz] } = await client.query(
-                `INSERT INTO businesses (name, status, trial_ends_at, is_paid)
-                 VALUES ($1, 'Active', NULL, TRUE) RETURNING *`,
-                [lead.business_name]
+                `INSERT INTO businesses (name, status, trial_ends_at, is_paid, plan)
+                 VALUES ($1, 'Active', NULL, TRUE, $2) RETURNING *`,
+                [lead.business_name, bizPlan]
             ));
         } else {
             const trialEnd = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
             ({ rows: [biz] } = await client.query(
-                `INSERT INTO businesses (name, status, trial_ends_at, is_paid)
-                 VALUES ($1, 'Active', $2, FALSE) RETURNING *`,
-                [lead.business_name, trialEnd]
+                `INSERT INTO businesses (name, status, trial_ends_at, is_paid, plan)
+                 VALUES ($1, 'Active', $2, FALSE, $3) RETURNING *`,
+                [lead.business_name, trialEnd, bizPlan]
             ));
         }
 
