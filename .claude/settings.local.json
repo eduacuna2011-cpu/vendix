@@ -46,7 +46,8 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://vendix-app.vercel.app/api/health\")",
       "Bash(curl -s \"https://vendix-app.vercel.app/api/health\")",
       "Bash(node --check server/routes/transactions.js)",
-      "Bash(timeout 8 node -e \"const app=require\\('./server/app'\\); console.log\\('app loaded OK, type:', typeof app\\);\")"
+      "Bash(timeout 8 node -e \"const app=require\\('./server/app'\\); console.log\\('app loaded OK, type:', typeof app\\);\")",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"https://vendix-app.vercel.app/api/integration/ping\" -H \"X-Store-Key: vx_2fe4a9a5e2f8a5680a55b79c2285a6269c79bd1f8fd9c455\")"
     ]
   }
 }
