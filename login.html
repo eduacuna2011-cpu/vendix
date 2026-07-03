@@ -73,6 +73,7 @@
                         <span class="checkmark"></span>
                         <span>Recordarme</span>
                     </label>
+                    <a href="#" id="forgotPassword" style="font-size:13px;color:#25D366;text-decoration:none;font-weight:600;">¿Olvidaste tu contraseña?</a>
                 </div>
 
                 <div class="error-banner" id="errorBanner">
@@ -164,6 +165,19 @@
 
     <script src="api-client.js"></script>
     <script src="login.js"></script>
+<script>
+    // Recuperación de contraseña por WhatsApp: no usamos correo. El usuario le
+    // escribe a soporte/su administrador para que le reseteen la clave.
+    document.getElementById('forgotPassword')?.addEventListener('click', function (e) {
+        e.preventDefault();
+        const u = (document.getElementById('username')?.value || '').trim();
+        const msg = encodeURIComponent(
+            'Hola! Olvidé mi contraseña de Vendix y necesito recuperarla.' +
+            (u ? ' Mi usuario es: ' + u : '')
+        );
+        window.open('https://wa.me/51966127203?text=' + msg, '_blank');
+    });
+</script>
 <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");</script>
 </body>
 </html>
