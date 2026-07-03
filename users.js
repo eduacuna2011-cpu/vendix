@@ -85,6 +85,9 @@ async function loadAdminUsers() {
                             <button class="btn-icon" onclick="handleMarkUserPaid(${user.id})" title="Marcar pagado" style="color:#16a34a;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14l-4-4 1.41-1.41L11 13.17l6.59-6.59L19 8l-8 8z" fill="currentColor" stroke="none"/></svg>
                             </button>
+                            <button class="btn-icon" onclick="handleDeactivateUser(${user.id})" title="Marcar NO pagado y desactivar (bloquea la cuenta)" style="color:#dc2626;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                            </button>
                             <button class="btn-icon" onclick="handleExtendTrial(${user.id})" title="Extender +3 días" style="color:#6366f1;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                             </button>
@@ -404,6 +407,16 @@ async function confirmMarkPaid(plan) {
         showNotification('Marcado como pagado — ' + (r.plan === 'premium' ? 'Premium S/.31.99' : 'Básico S/.15.99'));
     } catch (err) { showNotification('Error: ' + err.message, true); }
     _payTargetId = null;
+}
+
+async function handleDeactivateUser(id) {
+    if (!confirm('¿Desactivar esta cuenta? Se marcará como NO pagada y se suspenderá: el negocio no podrá usar la app hasta que la vuelvas a marcar como pagada.')) return;
+    try {
+        await deactivateUser(id);
+        await loadAdminUsers();
+        if (typeof loadVendixSales === 'function') loadVendixSales(); // refresca MRR
+        showNotification('Cuenta desactivada — negocio suspendido');
+    } catch (err) { showNotification('Error: ' + err.message, true); }
 }
 
 async function handleExtendTrial(id) {

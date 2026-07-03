@@ -18,18 +18,21 @@ require('./migrations').ensureMigrated().catch(err => console.error('migrations:
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
 const { trialCheck } = require('./middleware/trialCheck');
+const { authMiddleware } = require('./middleware/auth');
 
 app.use('/api/auth',         require('./routes/auth'));
 app.use('/api/users',        require('./routes/users'));
 app.use('/api/businesses',   require('./routes/businesses'));
 app.use('/api/leads',        require('./routes/leads'));
 
-// Business routes — protected by trial check
-app.use('/api/sellers',      trialCheck, require('./routes/sellers'));
-app.use('/api/products',     trialCheck, require('./routes/products'));
-app.use('/api/transactions', trialCheck, require('./routes/transactions'));
-app.use('/api/settings',     trialCheck, require('./routes/settings'));
-app.use('/api/tax',          trialCheck, require('./routes/tax'));
+// Business routes — auth ANTES de trialCheck para que req.user exista (el
+// trialCheck lo necesita para resolver el negocio). Los routers repiten
+// authMiddleware internamente (cache hit, sin costo real).
+app.use('/api/sellers',      authMiddleware, trialCheck, require('./routes/sellers'));
+app.use('/api/products',     authMiddleware, trialCheck, require('./routes/products'));
+app.use('/api/transactions', authMiddleware, trialCheck, require('./routes/transactions'));
+app.use('/api/settings',     authMiddleware, trialCheck, require('./routes/settings'));
+app.use('/api/tax',          authMiddleware, trialCheck, require('./routes/tax'));
 
 // Public receipt endpoint — no auth
 const { publicRouter: receiptPublic } = require('./routes/transactions');

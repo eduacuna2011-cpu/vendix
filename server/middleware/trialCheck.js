@@ -10,13 +10,16 @@ async function trialCheck(req, res, next) {
     const user = req.user;
     if (!user) return next();
     if (user.role === 'Super Admin') return next();
-    if (!user.business_id) return next();
+    // El JWT lleva businessId (camelCase). Aceptamos ambos por robustez: sin esto
+    // el guard cortaba siempre y el bloqueo de trial/suspensión nunca se aplicaba.
+    const bizId = user.businessId ?? user.business_id;
+    if (!bizId) return next();
 
     try {
         await ensureTrialColumns();
         const { rows: [biz] } = await db.query(
             'SELECT trial_ends_at, is_paid, status FROM businesses WHERE id = $1',
-            [user.business_id]
+            [bizId]
         );
         if (!biz) return next();
         if (biz.is_paid) return next();

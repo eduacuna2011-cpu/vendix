@@ -41,10 +41,13 @@ async function _runMigrations() {
     await db.query('CREATE INDEX IF NOT EXISTS idx_businesses_sync_key ON businesses(sync_api_key)');
 
     // Grandfathering: un negocio que YA tiene tienda conectada (sync_api_key) es
-    // Premium por definición — la tienda online es la función del plan Premium.
-    // Evita que el gateo Premium bloquee tiendas que ya estaban en producción.
-    await db.query(`UPDATE businesses SET plan = 'premium'
-        WHERE sync_api_key IS NOT NULL AND plan <> 'premium'`);
+    // un cliente Premium activo — la tienda online es la función del plan Premium.
+    // Se marca premium + pagado + activo para que NI el gateo Premium NI el
+    // trialCheck (ahora que sí bloquea) dejen afuera tiendas ya en producción.
+    await db.query(`UPDATE businesses
+        SET plan = 'premium', is_paid = TRUE, status = 'Active'
+        WHERE sync_api_key IS NOT NULL
+          AND (plan <> 'premium' OR is_paid = FALSE)`);
 
     // transactions — estado de pago de pedidos web (pending/paid/cancelled)
     await db.query(`ALTER TABLE transactions

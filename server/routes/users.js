@@ -259,11 +259,34 @@ router.patch('/:id/mark-paid', async (req, res) => {
         );
         if (!u || !u.business_id) return res.status(404).json({ error: 'Not found' });
         await ensureMigrated(); // columna plan garantizada
+        // Pagado → activo (reactiva si estaba suspendido) y sin restricción de trial.
         await db.query(
-            'UPDATE businesses SET is_paid = TRUE, plan = $2 WHERE id = $1',
+            `UPDATE businesses SET is_paid = TRUE, plan = $2, status = 'Active' WHERE id = $1`,
             [u.business_id, plan]
         );
         res.json({ ok: true, plan });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// PATCH /api/users/:id/deactivate  — marca el negocio como NO pagado y lo
+// SUSPENDE: is_paid=FALSE + status='Suspended'. trialCheck devuelve 403
+// trial_expired, así que el negocio no puede hacer nada hasta reactivarlo
+// (con "marcar pagado"). El login sigue permitido; el bloqueo es en la app.
+router.patch('/:id/deactivate', async (req, res) => {
+    try {
+        const { rows: [u] } = await db.query(
+            'SELECT business_id FROM users WHERE id = $1 AND role = $2',
+            [req.params.id, 'Business Admin']
+        );
+        if (!u || !u.business_id) return res.status(404).json({ error: 'Not found' });
+        await db.query(
+            `UPDATE businesses SET is_paid = FALSE, status = 'Suspended' WHERE id = $1`,
+            [u.business_id]
+        );
+        res.json({ ok: true });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });

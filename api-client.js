@@ -366,6 +366,13 @@ async function markUserPaid(id, plan = 'basico') {
     return r;
 }
 
+// Desactiva la cuenta: marca no pagado + suspende (bloquea el uso de la app).
+async function deactivateUser(id) {
+    const r = await apiFetch(`/users/${id}/deactivate`, { method: 'PATCH' });
+    _bust('/users');
+    return r;
+}
+
 async function extendUserTrial(id, days = 7) {
     const r = await apiFetch(`/users/${id}/extend-trial`, { method: 'PATCH', body: { days } });
     _bust('/users');
