@@ -145,33 +145,32 @@ router.post('/', async (req, res) => {
         const bizId = req.user.role === 'Super Admin' ? (req.body.businessId || null) : req.user.businessId;
         let subtotal = 0, total = 0, profit = 0;
 
-        // Validate stock and compute totals
+        // Descuento de stock ATÓMICO: en la misma sentencia validamos y restamos
+        // con la guarda `stock >= cantidad`. Si otra venta concurrente ya bajó el
+        // stock, el rowCount es 0 y abortamos — evita sobreventa (stock negativo).
         for (const item of items) {
             const { rows: [p] } = await client.query(
-                'SELECT id, name, stock, cost_price, sale_price FROM products WHERE id = $1',
-                [item.productId]
+                `UPDATE products SET stock = stock - $1
+                 WHERE id = $2 AND stock >= $1
+                 RETURNING id, name, cost_price, sale_price`,
+                [item.quantity, item.productId]
             );
             if (!p) {
+                // O el producto no existe, o no alcanza el stock. Distinguimos para el mensaje.
+                const { rows: [exists] } = await client.query(
+                    'SELECT name FROM products WHERE id = $1', [item.productId]
+                );
                 await client.query('ROLLBACK');
-                return res.status(409).json({ error: 'Uno de los productos ya no existe (fue eliminado). Actualicé la lista, vuelve a intentar.' });
-            }
-            if (p.stock < item.quantity) {
-                await client.query('ROLLBACK');
-                return res.status(409).json({ error: `Stock insuficiente para "${p.name}"` });
+                if (!exists) {
+                    return res.status(409).json({ error: 'Uno de los productos ya no existe (fue eliminado). Actualicé la lista, vuelve a intentar.' });
+                }
+                return res.status(409).json({ error: `Stock insuficiente para "${exists.name}"` });
             }
             item._product = p;
             const lineTotal = item.unitPrice * item.quantity;
             subtotal += lineTotal;
             total    += lineTotal;
             profit   += (item.unitPrice - p.cost_price) * item.quantity;
-        }
-
-        // Deduct stock FIRST
-        for (const item of items) {
-            await client.query(
-                'UPDATE products SET stock = stock - $1 WHERE id = $2',
-                [item.quantity, item.productId]
-            );
         }
 
         // Insert transaction
@@ -330,8 +329,10 @@ module.exports = router;
 const publicRouter = require('express').Router();
 publicRouter.get('/:id', async (req, res) => {
     try {
+        // Recibo público (sin auth): NO exponemos `profit` ni costos — solo lo que
+        // el cliente necesita ver de su compra.
         const { rows: [tx] } = await db.query(`
-            SELECT t.id, t.date, t.total, t.subtotal, t.profit,
+            SELECT t.id, t.date, t.total, t.subtotal,
                    t.payment_method, t.seller_name, t.customer,
                    b.name AS business_name,
                    json_agg(json_build_object(
@@ -344,7 +345,7 @@ publicRouter.get('/:id', async (req, res) => {
             JOIN businesses b ON b.id = t.business_id
             LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
             WHERE t.id = $1
-            GROUP BY t.id, t.date, t.total, t.subtotal, t.profit,
+            GROUP BY t.id, t.date, t.total, t.subtotal,
                      t.payment_method, t.seller_name, t.customer, b.name
         `, [req.params.id]);
         if (!tx) return res.status(404).json({ error: 'Not found' });

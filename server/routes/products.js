@@ -169,10 +169,23 @@ router.get('/:id/image', async (req, res) => {
     }
 });
 
+// Aislamiento multi-tenant para rutas por id: el propio negocio (o Super Admin).
+// Devuelve { where, params } con el id ya incluido como primer parámetro.
+function ownScope(req) {
+    const params = [req.params.id];
+    let where = 'id = $1';
+    if (req.user.role !== 'Super Admin') {
+        params.push(req.user.businessId);
+        where += ' AND business_id = $2';
+    }
+    return { where, params };
+}
+
 // GET /api/products/:id
 router.get('/:id', async (req, res) => {
     try {
-        const { rows: [p] } = await db.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
+        const { where, params } = ownScope(req);
+        const { rows: [p] } = await db.query(`SELECT * FROM products WHERE ${where}`, params);
         if (!p) return res.status(404).json({ error: 'Not found' });
         res.json(p);
     } catch (err) {
@@ -230,6 +243,19 @@ router.post('/', requireBusinessAdmin, async (req, res) => {
 router.put('/:id', requireBusinessAdmin, async (req, res) => {
     try {
         const { sku, name, category, color, size, model, stock, costPrice, salePrice, image, barcode } = req.body;
+        // Aislamiento multi-tenant: solo el propio negocio (o el Super Admin) puede editar.
+        const params = [sku, name, category, color, size, model,
+            stock !== undefined ? parseInt(stock) : null,
+            costPrice !== undefined ? parseFloat(costPrice) : null,
+            salePrice !== undefined ? parseFloat(salePrice) : null,
+            image,
+            barcode !== undefined ? (barcode || null) : null,
+            req.params.id];
+        let scopeWhere = '';
+        if (req.user.role !== 'Super Admin') {
+            params.push(req.user.businessId);
+            scopeWhere = ` AND business_id = $${params.length}`;
+        }
         const { rows: [p] } = await db.query(
             `UPDATE products
              SET sku        = COALESCE($1,  sku),
@@ -243,15 +269,9 @@ router.put('/:id', requireBusinessAdmin, async (req, res) => {
                  sale_price = COALESCE($9,  sale_price),
                  image      = COALESCE($10, image),
                  barcode    = $11
-             WHERE id = $12
+             WHERE id = $12${scopeWhere}
              RETURNING *`,
-            [sku, name, category, color, size, model,
-             stock !== undefined ? parseInt(stock) : null,
-             costPrice !== undefined ? parseFloat(costPrice) : null,
-             salePrice !== undefined ? parseFloat(salePrice) : null,
-             image,
-             barcode !== undefined ? (barcode || null) : null,
-             req.params.id]
+            params
         );
         if (!p) return res.status(404).json({ error: 'Not found' });
         res.json(p);
@@ -264,7 +284,8 @@ router.put('/:id', requireBusinessAdmin, async (req, res) => {
 // DELETE /api/products/:id
 router.delete('/:id', requireBusinessAdmin, async (req, res) => {
     try {
-        const { rowCount } = await db.query('DELETE FROM products WHERE id = $1', [req.params.id]);
+        const { where, params } = ownScope(req);
+        const { rowCount } = await db.query(`DELETE FROM products WHERE ${where}`, params);
         if (!rowCount) return res.status(404).json({ error: 'Not found' });
         res.json({ ok: true });
     } catch (err) {
