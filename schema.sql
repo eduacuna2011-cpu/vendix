@@ -8,10 +8,18 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ─── Businesses ───────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS businesses (
-    id          SERIAL PRIMARY KEY,
-    name        VARCHAR(255) NOT NULL,
-    status      VARCHAR(50)  NOT NULL DEFAULT 'Active',
-    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    id              SERIAL PRIMARY KEY,
+    name            VARCHAR(255) NOT NULL,
+    status          VARCHAR(50)  NOT NULL DEFAULT 'Active',
+    trial_ends_at   TIMESTAMPTZ,
+    is_paid         BOOLEAN      NOT NULL DEFAULT FALSE,
+    plan            VARCHAR(20)  NOT NULL DEFAULT 'basico',  -- 'basico' | 'premium'
+    vercel_store_id VARCHAR(255),                            -- integración tienda online
+    sync_api_key    VARCHAR(64),                             -- llave X-Store-Key (solo Premium)
+    sync_enabled    BOOLEAN      NOT NULL DEFAULT TRUE,
+    igv_enabled     BOOLEAN      DEFAULT FALSE,
+    igv_rate        NUMERIC(5,2) DEFAULT 18,
+    created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
 -- ─── Users (Super Admin + Business Admin + Sellers) ───────────────────────────
@@ -61,6 +69,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     subtotal       NUMERIC(10,2) DEFAULT 0,
     total          NUMERIC(10,2) DEFAULT 0,
     profit         NUMERIC(10,2) DEFAULT 0,
+    payment_status VARCHAR(20)   NOT NULL DEFAULT 'paid',  -- 'paid' | 'pending' | 'cancelled'
     date           TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
     created_at     TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
@@ -85,6 +94,32 @@ CREATE TABLE IF NOT EXISTS settings (
     value      TEXT,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (user_id, key)
+);
+
+-- ─── Leads (embudo del checkout de la landing) ───────────────────────────────
+CREATE TABLE IF NOT EXISTS leads (
+    id              SERIAL PRIMARY KEY,
+    full_name       TEXT NOT NULL,
+    business_name   TEXT NOT NULL,
+    email           TEXT NOT NULL,
+    phone           TEXT NOT NULL,
+    plan            TEXT NOT NULL DEFAULT 'negocio',
+    biz_type        TEXT,
+    status          TEXT NOT NULL DEFAULT 'pending',
+    paid            BOOLEAN NOT NULL DEFAULT FALSE,
+    account_created BOOLEAN NOT NULL DEFAULT FALSE,
+    created_user_id INTEGER,
+    notes           TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ─── Telegram bot sessions ────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS telegram_sessions (
+    chat_id    BIGINT PRIMARY KEY,
+    user_id    INTEGER,
+    state      TEXT DEFAULT 'idle',
+    data       JSONB DEFAULT '{}',
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ─── Audit Log ────────────────────────────────────────────────────────────────
@@ -112,6 +147,7 @@ CREATE INDEX IF NOT EXISTS idx_transactions_seller ON transactions(seller_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_date   ON transactions(date DESC);
 CREATE INDEX IF NOT EXISTS idx_tx_items_tx         ON transaction_items(transaction_id);
 CREATE INDEX IF NOT EXISTS idx_settings_user       ON settings(user_id);
+CREATE INDEX IF NOT EXISTS idx_businesses_sync_key  ON businesses(sync_api_key);
 
 -- ─── Updated_at trigger ───────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION set_updated_at()

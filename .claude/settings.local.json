@@ -45,7 +45,8 @@
       "Bash(vercel projects *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://vendix-app.vercel.app/api/health\")",
       "Bash(curl -s \"https://vendix-app.vercel.app/api/health\")",
-      "Bash(node --check server/routes/transactions.js)"
+      "Bash(node --check server/routes/transactions.js)",
+      "Bash(timeout 8 node -e \"const app=require\\('./server/app'\\); console.log\\('app loaded OK, type:', typeof app\\);\")"
     ]
   }
 }

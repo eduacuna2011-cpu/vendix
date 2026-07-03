@@ -3,29 +3,10 @@ const router  = require('express').Router();
 const bcrypt  = require('bcryptjs');
 const db      = require('../db');
 const { authMiddleware, requireSuperAdmin } = require('../middleware/auth');
+const { ensureMigrated } = require('../migrations');
 
-// ─── Ensure leads table exists ───────────────────────────────────────────────
-const CREATE_SQL = `
-    CREATE TABLE IF NOT EXISTS leads (
-        id              SERIAL PRIMARY KEY,
-        full_name       TEXT NOT NULL,
-        business_name   TEXT NOT NULL,
-        email           TEXT NOT NULL,
-        phone           TEXT NOT NULL,
-        plan            TEXT NOT NULL DEFAULT 'negocio',
-        biz_type        TEXT,
-        status          TEXT NOT NULL DEFAULT 'pending',
-        paid            BOOLEAN NOT NULL DEFAULT FALSE,
-        account_created BOOLEAN NOT NULL DEFAULT FALSE,
-        created_user_id INTEGER,
-        notes           TEXT,
-        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-`;
-
-async function ensureTable() {
-    await db.query(CREATE_SQL);
-}
+// La tabla `leads` y las columnas de plan las crea server/migrations.js.
+const ensureTable = ensureMigrated;
 
 // POST /api/leads  — PUBLIC, no auth (called from checkout.html)
 router.post('/', async (req, res) => {
@@ -116,19 +97,12 @@ router.patch('/:id/notes', async (req, res) => {
 router.post('/:id/create-account', async (req, res) => {
     const client = await db.getClient();
     try {
+        await ensureMigrated(); // columnas trial/plan garantizadas
         const { rows: [lead] } = await db.query('SELECT * FROM leads WHERE id = $1', [req.params.id]);
         if (!lead) return res.status(404).json({ error: 'Lead not found' });
         if (lead.account_created) return res.status(400).json({ error: 'Account already created' });
 
         await client.query('BEGIN');
-
-        // Ensure trial/plan columns exist
-        await client.query(`
-            ALTER TABLE businesses
-                ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMPTZ,
-                ADD COLUMN IF NOT EXISTS is_paid BOOLEAN NOT NULL DEFAULT FALSE,
-                ADD COLUMN IF NOT EXISTS plan VARCHAR(20) NOT NULL DEFAULT 'basico'
-        `);
 
         // Plan elegido en el checkout (basico | premium).
         const bizPlan = lead.plan === 'premium' ? 'premium' : 'basico';

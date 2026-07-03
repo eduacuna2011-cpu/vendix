@@ -13,6 +13,9 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));  // 10mb for product images (base64)
 app.use(express.urlencoded({ extended: true }));
 
+// ─── Migraciones idempotentes (autoreparación en cada arranque de instancia) ──
+require('./migrations').ensureMigrated().catch(err => console.error('migrations:', err));
+
 // ─── API Routes ───────────────────────────────────────────────────────────────
 const { trialCheck } = require('./middleware/trialCheck');
 

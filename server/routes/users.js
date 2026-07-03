@@ -3,6 +3,7 @@ const router  = require('express').Router();
 const bcrypt  = require('bcryptjs');
 const db      = require('../db');
 const { authMiddleware, requireSuperAdmin } = require('../middleware/auth');
+const { ensureMigrated } = require('../migrations');
 
 router.use(authMiddleware, requireSuperAdmin);
 
@@ -257,7 +258,7 @@ router.patch('/:id/mark-paid', async (req, res) => {
             [req.params.id, 'Business Admin']
         );
         if (!u || !u.business_id) return res.status(404).json({ error: 'Not found' });
-        await db.query(`ALTER TABLE businesses ADD COLUMN IF NOT EXISTS plan VARCHAR(20) NOT NULL DEFAULT 'basico'`);
+        await ensureMigrated(); // columna plan garantizada
         await db.query(
             'UPDATE businesses SET is_paid = TRUE, plan = $2 WHERE id = $1',
             [u.business_id, plan]

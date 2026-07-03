@@ -1,16 +1,10 @@
 const router = require('express').Router();
 const db     = require('../db');
 const { authMiddleware, requireBusinessAdmin } = require('../middleware/auth');
+const { ensureMigrated } = require('../migrations');
 
-// Auto-migrate: add IGV columns to businesses if they don't exist
-async function ensureColumns() {
-    await db.query(`
-        ALTER TABLE businesses
-        ADD COLUMN IF NOT EXISTS igv_enabled BOOLEAN DEFAULT false,
-        ADD COLUMN IF NOT EXISTS igv_rate    NUMERIC(5,2) DEFAULT 18
-    `).catch(() => {});
-}
-ensureColumns();
+// Las columnas IGV (igv_enabled, igv_rate) las crea server/migrations.js.
+ensureMigrated().catch(() => {});
 
 router.use(authMiddleware);
 

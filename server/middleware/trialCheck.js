@@ -1,18 +1,9 @@
 const db = require('../db');
+const { ensureMigrated } = require('../migrations');
 
-// Run once at startup to add columns if missing
-let columnsReady = false;
-async function ensureTrialColumns() {
-    if (columnsReady) return;
-    await db.query(`
-        ALTER TABLE businesses
-            ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMPTZ,
-            ADD COLUMN IF NOT EXISTS is_paid BOOLEAN NOT NULL DEFAULT FALSE,
-            ADD COLUMN IF NOT EXISTS plan VARCHAR(20) NOT NULL DEFAULT 'basico'
-    `);
-    columnsReady = true;
-}
-ensureTrialColumns().catch(console.error);
+// Migraciones centralizadas (ver server/migrations.js). Se mantiene el nombre
+// `ensureTrialColumns` por compatibilidad con quien lo importe.
+const ensureTrialColumns = ensureMigrated;
 
 // Middleware — blocks expired trials for non-SuperAdmin users
 async function trialCheck(req, res, next) {

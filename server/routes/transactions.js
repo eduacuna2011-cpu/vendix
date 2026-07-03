@@ -1,20 +1,13 @@
 const router = require('express').Router();
 const db     = require('../db');
 const { authMiddleware, requireBusinessAdmin } = require('../middleware/auth');
+const { ensureMigrated } = require('../migrations');
 
 router.use(authMiddleware);
 
 // Estado de pago: 'paid' (venta confirmada / POS) | 'pending' (pedido web por
-// confirmar) | 'cancelled'. Columna idempotente; las ventas antiguas (NULL) se
-// tratan como 'paid'.
-let _payColReady = false;
-async function ensurePaymentStatus() {
-    if (_payColReady) return;
-    await db.query(`ALTER TABLE transactions
-        ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) NOT NULL DEFAULT 'paid'`);
-    _payColReady = true;
-}
-ensurePaymentStatus().catch(console.error);
+// confirmar) | 'cancelled'. La columna la crea server/migrations.js.
+const ensurePaymentStatus = ensureMigrated;
 
 function bizScope(req) {
     if (req.user.role === 'Super Admin') return { where: '', params: [] };

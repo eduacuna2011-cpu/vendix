@@ -8,26 +8,11 @@
 const router = require('express').Router();
 const crypto = require('crypto');
 const db     = require('../db');
+const { ensureMigrated } = require('../migrations');
 
-// ── Columnas de sincronización (idempotente, se autorepara en cada arranque) ──
-let _columnsReady = false;
-async function ensureSyncColumns() {
-    if (_columnsReady) return;
-    await db.query(`
-        ALTER TABLE businesses
-            ADD COLUMN IF NOT EXISTS vercel_store_id VARCHAR(255),
-            ADD COLUMN IF NOT EXISTS sync_api_key    VARCHAR(64),
-            ADD COLUMN IF NOT EXISTS sync_enabled    BOOLEAN NOT NULL DEFAULT TRUE
-    `);
-    await db.query(
-        'CREATE INDEX IF NOT EXISTS idx_businesses_sync_key ON businesses(sync_api_key)'
-    );
-    // Estado de pago de los pedidos web (pending/paid/cancelled)
-    await db.query(`ALTER TABLE transactions
-        ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) NOT NULL DEFAULT 'paid'`);
-    _columnsReady = true;
-}
-ensureSyncColumns().catch(console.error);
+// Las columnas de sincronización las crea server/migrations.js. Se mantiene el
+// nombre `ensureSyncColumns` por compatibilidad con businesses.js.
+const ensureSyncColumns = ensureMigrated;
 
 function generateSyncKey() {
     return 'vx_' + crypto.randomBytes(24).toString('hex'); // 51 chars, cabe en VARCHAR(64)
@@ -41,10 +26,14 @@ async function storeAuth(req, res, next) {
         if (!key) return res.status(401).json({ error: 'missing_store_key' });
 
         const { rows: [biz] } = await db.query(
-            'SELECT id, name, sync_enabled FROM businesses WHERE sync_api_key = $1',
+            `SELECT id, name, sync_enabled, COALESCE(plan, 'basico') AS plan
+             FROM businesses WHERE sync_api_key = $1`,
             [key]
         );
         if (!biz) return res.status(401).json({ error: 'invalid_store_key' });
+        // La tienda online es una función del plan Premium. Un negocio Básico
+        // (aunque tenga llave de una época anterior) no puede sincronizar.
+        if (biz.plan !== 'premium') return res.status(403).json({ error: 'plan_not_premium' });
         if (!biz.sync_enabled) return res.status(403).json({ error: 'sync_disabled' });
 
         req.business = biz;
