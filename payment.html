@@ -12,16 +12,16 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-        --primary:   #00d46a;
-        --primary-d: #00b85c;
-        --text-1:    #f3f4f8;
-        --text-2:    #9aa3b4;
-        --text-3:    #5c6477;
-        --border:    rgba(255,255,255,.07);
-        --border-2:  rgba(255,255,255,.12);
-        --bg:        #08080c;
-        --card:      #0f0f15;
-        --card-2:    #16161f;
+        --primary:   #2563EB;
+        --primary-d: #1D4ED8;
+        --text-1:    #1F2937;
+        --text-2:    #6B7280;
+        --text-3:    #9CA3AF;
+        --border:    #E5E7EB;
+        --border-2:  #D1D5DB;
+        --bg:        #F3F4F6;
+        --card:      #FFFFFF;
+        --card-2:    #F9FAFB;
         --serif:     'Fraunces', Georgia, serif;
         --sans:      'Plus Jakarta Sans', system-ui, sans-serif;
     }
@@ -33,7 +33,7 @@
         min-height: 100vh;
         -webkit-font-smoothing: antialiased;
         background-image:
-            radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,212,106,.06), transparent 70%);
+            radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37,99,235,.05), transparent 70%);
     }
 
     /* ── TOP BAR ── */
@@ -80,7 +80,7 @@
     }
     .step-item.done .step-circle,
     .step-item.active .step-circle {
-        background: var(--primary); border-color: var(--primary); color: #03120a;
+        background: var(--primary); border-color: var(--primary); color: #fff;
     }
     .step-line { width: 52px; height: 1.5px; background: var(--border-2); margin: 0 12px; transition: background .3s; }
     .step-line.done { background: var(--primary); }
@@ -139,21 +139,21 @@
 
     .pay-btn {
         width: 100%; padding: 17px;
-        background: var(--primary); color: #03120a;
+        background: var(--primary); color: #fff;
         border: none; border-radius: 13px;
         font-family: var(--sans);
         font-size: 15.5px; font-weight: 700; letter-spacing: .01em;
         cursor: pointer; transition: all .2s;
         display: flex; align-items: center; justify-content: center; gap: 9px;
-        box-shadow: 0 6px 24px rgba(0,212,106,.18);
+        box-shadow: 0 6px 24px rgba(37,99,235,.22);
     }
-    .pay-btn:hover { background: var(--primary-d); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(0,212,106,.26); }
+    .pay-btn:hover { background: var(--primary-d); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(37,99,235,.3); }
     .pay-btn:active { transform: translateY(0); }
     .pay-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
 
     .status { font-size: 13.5px; text-align: center; margin-top: 16px; min-height: 20px; font-weight: 600; letter-spacing: .01em; }
     .status.ok  { color: var(--primary); }
-    .status.err { color: #ff6b6b; }
+    .status.err { color: #DC2626; }
 
     .card-logos {
         display: flex; align-items: center; justify-content: center; gap: 9px;
@@ -161,7 +161,7 @@
     }
     .card-logo {
         height: 30px; padding: 0 11px;
-        background: rgba(255,255,255,.04);
+        background: #F9FAFB;
         border: 1px solid var(--border);
         border-radius: 7px;
         display: flex; align-items: center;
@@ -198,8 +198,8 @@
     }
     .plan-icon {
         width: 46px; height: 46px; border-radius: 12px;
-        background: rgba(0,212,106,.1);
-        border: 1px solid rgba(0,212,106,.2);
+        background: rgba(37,99,235,.1);
+        border: 1px solid rgba(37,99,235,.2);
         display: flex; align-items: center; justify-content: center;
         color: var(--primary); flex-shrink: 0;
     }
@@ -213,7 +213,7 @@
     }
     .feat-check {
         width: 19px; height: 19px; border-radius: 50%;
-        background: rgba(0,212,106,.12); color: var(--primary);
+        background: rgba(37,99,235,.12); color: var(--primary);
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
     }
@@ -233,8 +233,8 @@
 
     .guarantee {
         display: flex; align-items: flex-start; gap: 10px;
-        background: rgba(0,212,106,.04);
-        border: 1px solid rgba(0,212,106,.14);
+        background: rgba(37,99,235,.05);
+        border: 1px solid rgba(37,99,235,.15);
         border-radius: 12px; padding: 14px;
         margin-top: 22px;
         font-size: 12px; color: var(--text-2); line-height: 1.55;
@@ -247,7 +247,7 @@
 <div class="topbar">
     <div class="logo">
         <div class="logo-mark">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#03120a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
         </div>
         La Tiendota
     </div>

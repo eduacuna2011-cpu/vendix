@@ -11,16 +11,16 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --primary:   #00d46a;
-            --primary-d: #00b85c;
-            --success:   #00d46a;
-            --text-1:    #f3f4f8;
-            --text-2:    #9aa3b4;
-            --text-3:    #5c6477;
-            --border:    rgba(255,255,255,0.07);
-            --border-2:  rgba(255,255,255,0.12);
-            --surface:   #0f0f15;
-            --bg:        #08080c;
+            --primary:   #2563EB;
+            --primary-d: #1D4ED8;
+            --success:   #16A34A;
+            --text-1:    #1F2937;
+            --text-2:    #6B7280;
+            --text-3:    #9CA3AF;
+            --border:    #E5E7EB;
+            --border-2:  #D1D5DB;
+            --surface:   #FFFFFF;
+            --bg:        #F3F4F6;
             --serif:     'Fraunces', Georgia, serif;
             --sans:      'Plus Jakarta Sans', system-ui, sans-serif;
         }
@@ -32,14 +32,14 @@
             min-height: 100vh;
             display: flex; flex-direction: column;
             -webkit-font-smoothing: antialiased;
-            background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,212,106,.06), transparent 70%);
+            background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37,99,235,.05), transparent 70%);
         }
 
         h1, h2, h3, .logo { font-family: var(--serif); letter-spacing: -.01em; font-weight: 600; }
 
         /* ── TOP BAR ── */
         .topbar {
-            background: rgba(15,15,21,.85);
+            background: rgba(255,255,255,.85);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             height: 64px;
@@ -55,7 +55,7 @@
 
         .logo-icon {
             width: 32px; height: 32px; border-radius: 8px;
-            background: linear-gradient(135deg, #00C864, #059669);
+            background: linear-gradient(135deg, #2563EB, #1D4ED8);
             display: flex; align-items: center; justify-content: center;
         }
 
@@ -77,8 +77,8 @@
 
         .check-circle {
             width: 80px; height: 80px; border-radius: 50%;
-            background: linear-gradient(135deg, rgba(16,185,129,.15), rgba(16,185,129,.05));
-            border: 2px solid rgba(16,185,129,.3);
+            background: linear-gradient(135deg, rgba(22,163,74,.15), rgba(22,163,74,.05));
+            border: 2px solid rgba(22,163,74,.3);
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 20px;
             animation: popIn .5s cubic-bezier(.175,.885,.32,1.275);
@@ -162,8 +162,8 @@
         /* ── PLAN BADGE ── */
         .plan-tag {
             display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(0,200,100,.12);
-            border: 1px solid rgba(0,200,100,.12);
+            background: rgba(37,99,235,.1);
+            border: 1px solid rgba(37,99,235,.2);
             color: var(--primary);
             padding: 4px 12px; border-radius: 20px;
             font-size: 13px; font-weight: 700;
@@ -189,7 +189,7 @@
 
         .step-num {
             width: 24px; height: 24px; border-radius: 50%;
-            background: linear-gradient(135deg, #00C864, #059669);
+            background: linear-gradient(135deg, #2563EB, #1D4ED8);
             color: #fff; font-size: 11px; font-weight: 800;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0; margin-top: 1px;
@@ -290,7 +290,7 @@
         <!-- YOUR DETAILS -->
         <div class="details-card">
             <div class="card-header">
-                <div class="card-header-icon" style="background:rgba(0,212,106,.12);color:var(--primary);">
+                <div class="card-header-icon" style="background:rgba(37,99,235,.12);color:var(--primary);">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 </div>
                 <div>
