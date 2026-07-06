@@ -90,7 +90,8 @@
       "Bash(curl -s -H \"X-Store-Key: vx_a9eaab9cf1bb1b651ba9941a8e0d35f76a788694bdf3356d\" \"https://vendix-app.vercel.app/api/integration/ping\")",
       "Bash(vercel env *)",
       "Bash(curl -s https://latiendota.com/login.html)",
-      "Bash(git commit -q -m ' *)"
+      "Bash(git commit -q -m ' *)",
+      "Bash(curl -s https://latiendota.com/landing.html)"
     ]
   }
 }

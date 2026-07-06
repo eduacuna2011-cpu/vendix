@@ -22,7 +22,7 @@
   --g:#2563EB;--gl:#3B82F6;--gd:#1D4ED8;--g2:#F97316;
   --navy:#FFFFFF;--navy2:#F3F4F6;--navy3:#E5E7EB;
   --amber:#F59E0B;--red:#EF4444;--blue:#2563EB;
-  --t1:#1F2937;--t2:#6B7280;--t3:#9CA3AF;
+  --t1:#1F2937;--t2:#4B5563;--t3:#6B7280;
   --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.05);
   --surface:rgba(255,255,255,.85);--card:#FFFFFF;
 }
@@ -48,7 +48,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;ali
 .nav-links{display:flex;align-items:center;gap:32px}
 .nav-links a{font-size:14px;font-weight:500;color:var(--t2);text-decoration:none;transition:color .2s}
 .nav-links a:hover{color:#1F2937}
-.nav-tg{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#229ED9;text-decoration:none;transition:opacity .2s}
+.nav-links .nav-tg{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#229ED9;text-decoration:none;transition:opacity .2s}
 .nav-tg:hover{opacity:.8}
 .nav-actions{display:flex;align-items:center;gap:10px}
 .btn-ghost{padding:9px 20px;border-radius:9px;font-size:14px;font-weight:600;color:var(--t2);text-decoration:none;border:1px solid var(--border);transition:all .2s}
@@ -59,10 +59,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;ali
 
 /* ── HERO ── */
 .hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:0;padding:120px 48px 80px;position:relative;overflow:hidden}
-.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(37,99,235,.07),transparent),radial-gradient(ellipse 60% 80% at 90% 50%,rgba(59,130,246,.03),transparent);pointer-events:none}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(37,99,235,.14),transparent),radial-gradient(ellipse 55% 70% at 88% 40%,rgba(249,115,22,.12),transparent);pointer-events:none}
 .hero-grid{position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
 .hero-left{position:relative;z-index:2;max-width:580px}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.25);color:var(--gl);padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:28px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.3);color:#1D4ED8;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:28px}
 .hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--g);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .hero h1{font-size:clamp(42px,5.5vw,78px);font-weight:900;line-height:1.04;letter-spacing:-3px;margin-bottom:24px;color:#1F2937}
@@ -149,7 +149,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;ali
 /* ── SECTIONS ── */
 .section{padding:100px 48px}
 .container{max-width:1100px;margin:0 auto}
-.sec-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.18);color:var(--gl);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:18px}
+.sec-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.28);color:#1D4ED8;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:18px}
 .sec-title{font-size:clamp(30px,4vw,50px);font-weight:900;letter-spacing:-1.8px;line-height:1.1;margin-bottom:16px;color:#1F2937}
 .sec-sub{font-size:17px;color:var(--t2);max-width:520px;line-height:1.7}
 .text-center{text-align:center}.mx-auto{margin-left:auto;margin-right:auto}
@@ -163,7 +163,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;ali
 .feat-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
 .feat-card h3{font-size:17px;font-weight:700;color:#1F2937;margin-bottom:8px}
 .feat-card p{font-size:14px;color:var(--t2);line-height:1.7}
-.feat-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(37,99,235,.1);color:var(--gl);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:14px}
+.feat-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(37,99,235,.12);color:#1D4ED8;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:14px}
 
 /* ── SHOWCASE ── */
 .showcase-section{background:var(--navy2);padding:100px 48px;position:relative;overflow:hidden}
@@ -275,7 +275,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;ali
 .pricing-card{max-width:500px;margin:60px auto 0;background:var(--card);border:1px solid rgba(37,99,235,.18);border-radius:28px;padding:44px;position:relative;overflow:hidden;backdrop-filter:blur(16px)}
 .pricing-card::before{content:'';position:absolute;top:-100px;right:-100px;width:300px;height:300px;background:radial-gradient(circle,rgba(37,99,235,.12),transparent 65%)}
 .pricing-glow{position:absolute;bottom:-60px;left:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(37,99,235,.08),transparent 65%)}
-.pricing-badge{display:inline-block;background:rgba(37,99,235,.12);color:var(--gl);border:1px solid rgba(37,99,235,.25);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;margin-bottom:20px}
+.pricing-badge{display:inline-block;background:rgba(37,99,235,.12);color:#1D4ED8;border:1px solid rgba(37,99,235,.25);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;margin-bottom:20px}
 .pricing-plan{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
 .pricing-price{display:flex;align-items:flex-start;gap:4px;margin-bottom:6px}
 .pricing-currency{font-size:26px;font-weight:700;color:#1F2937;padding-top:12px}
@@ -306,7 +306,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;ali
 
 /* ── CTA ── */
 .cta-section{padding:100px 48px;text-align:center;position:relative;overflow:hidden}
-.cta-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:500px;background:radial-gradient(ellipse,rgba(37,99,235,.1),transparent 65%);pointer-events:none}
+.cta-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:500px;background:radial-gradient(ellipse,rgba(37,99,235,.16),transparent 65%);pointer-events:none}
 .cta-section::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,.035) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
 .cta-section .sec-title{color:#1F2937;max-width:600px;margin:0 auto 16px}
 .cta-section .sec-sub{max-width:460px;margin:0 auto 40px}
@@ -446,7 +446,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
 <!-- ── NAV ── -->
 <nav id="nav">
   <a href="landing.html" class="nav-logo">
-    <div class="nav-logo-mark">V</div>La Tiendota
+    <div class="nav-logo-mark">T</div>La Tiendota
   </a>
   <div class="nav-links">
     <a href="#funciones">Funciones</a>
@@ -473,7 +473,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
   <a href="#faq" onclick="closeMenu()">FAQ</a>
   <a href="https://t.me/vendixadmin_bot" target="_blank">🤖 Bot de Telegram</a>
   <div class="mobile-menu-ctas">
-    <a href="login.html" style="text-align:center;padding:13px;border-radius:10px;border:1px solid var(--border);color:#fff;font-size:15px;font-weight:600;text-decoration:none">Iniciar sesión</a>
+    <a href="login.html" style="text-align:center;padding:13px;border-radius:10px;border:1px solid var(--border);color:#1F2937;font-size:15px;font-weight:600;text-decoration:none">Iniciar sesión</a>
     <a href="checkout.html" style="text-align:center;padding:13px;border-radius:10px;background:var(--g);color:#fff;font-size:15px;font-weight:700;text-decoration:none">Empezar ahora →</a>
   </div>
 </div>
@@ -520,7 +520,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
     <div class="hero-browser">
       <div class="browser-bar">
         <div class="browser-dot r"></div><div class="browser-dot y"></div><div class="browser-dot g"></div>
-        <div class="browser-url">vendix-app.vercel.app/dashboard</div>
+        <div class="browser-url">latiendota.com/dashboard</div>
       </div>
       <div class="browser-body">
         <div class="db-sidebar">
@@ -570,7 +570,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
         <div class="phone-screen">
           <div class="tg-top">
             <span class="tg-back">‹</span>
-            <div class="tg-ava">V</div>
+            <div class="tg-ava">T</div>
             <div>
               <div class="tg-info-name">La Tiendota Bot</div>
               <div class="tg-info-status">● en línea</div>
@@ -629,40 +629,40 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
     </div>
     <div class="features-grid">
       <div class="feat-card reveal-l">
-        <div class="feat-icon" style="background:rgba(37,99,235,.1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+        <div class="feat-icon" style="background:rgba(37,99,235,.14)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
         <h3>Inventario en tiempo real</h3>
         <p>Controla cada producto al instante. Alertas automáticas de stock bajo. Nunca más pierdas una venta por falta de mercadería.</p>
         <div class="feat-badge">⚡ Tiempo real</div>
       </div>
       <div class="feat-card reveal">
-        <div class="feat-icon" style="background:rgba(16,185,129,.1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+        <div class="feat-icon" style="background:rgba(16,185,129,.14)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
         <h3>Punto de venta rápido</h3>
         <p>Registra ventas en segundos con carrito intuitivo, múltiples métodos de pago y recibos listos para compartir por WhatsApp.</p>
-        <div class="feat-badge" style="background:rgba(16,185,129,.1);color:#3B82F6">🛒 POS intuitivo</div>
+        <div class="feat-badge" style="background:rgba(16,185,129,.14);color:#047857">🛒 POS intuitivo</div>
       </div>
       <div class="feat-card reveal-r">
-        <div class="feat-icon" style="background:rgba(139,92,246,.1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="feat-icon" style="background:rgba(139,92,246,.14)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <h3>Gestión de vendedores</h3>
         <p>Cada vendedor tiene su cuenta. Ve el ranking automático de quién vende más, cuánto y cuándo. Sin reportes manuales.</p>
-        <div class="feat-badge" style="background:rgba(139,92,246,.1);color:#A78BFA">👥 Multi-usuario</div>
+        <div class="feat-badge" style="background:rgba(139,92,246,.14);color:#6D28D9">👥 Multi-usuario</div>
       </div>
       <div class="feat-card reveal-l">
-        <div class="feat-icon" style="background:rgba(245,158,11,.1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg></div>
+        <div class="feat-icon" style="background:rgba(245,158,11,.14)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg></div>
         <h3>Dashboard con reportes</h3>
         <p>Gráficas de ventas, top productos, ranking de vendedores y alertas de stock. Toma decisiones con datos reales cada día.</p>
-        <div class="feat-badge" style="background:rgba(245,158,11,.1);color:#FCD34D">📊 Reportes auto</div>
+        <div class="feat-badge" style="background:rgba(245,158,11,.16);color:#B45309">📊 Reportes auto</div>
       </div>
       <div class="feat-card reveal">
-        <div class="feat-icon" style="background:rgba(34,158,217,.1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color:#229ED9"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></div>
+        <div class="feat-icon" style="background:rgba(34,158,217,.14)"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color:#229ED9"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></div>
         <h3>Bot de Telegram</h3>
         <p>Registra ventas, consulta inventario y recibe alertas directamente en Telegram. Sin abrir el navegador, desde tu celular.</p>
-        <div class="feat-badge" style="background:rgba(34,158,217,.1);color:#38BDF8">🤖 @vendixadmin_bot</div>
+        <div class="feat-badge" style="background:rgba(34,158,217,.14);color:#0369A1">🤖 @vendixadmin_bot</div>
       </div>
       <div class="feat-card reveal-r">
-        <div class="feat-icon" style="background:rgba(239,68,68,.1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <div class="feat-icon" style="background:rgba(239,68,68,.14)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
         <h3>Export a Excel / CSV</h3>
         <p>Descarga todas tus ventas e inventario en Excel con un click. Perfecto para tu contador o para análisis avanzados propios.</p>
-        <div class="feat-badge" style="background:rgba(239,68,68,.1);color:#FCA5A5">📄 Excel & CSV</div>
+        <div class="feat-badge" style="background:rgba(239,68,68,.14);color:#B91C1C">📄 Excel & CSV</div>
       </div>
     </div>
   </div>
@@ -680,25 +680,25 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
       <div class="showcase-browser">
         <div class="sc-bar">
           <div class="browser-dot r"></div><div class="browser-dot y"></div><div class="browser-dot g"></div>
-          <div class="sc-bar-url" id="scUrl">🔒 vendix-app.vercel.app/dashboard</div>
+          <div class="sc-bar-url" id="scUrl">🔒 latiendota.com/dashboard</div>
         </div>
         <div class="sc-body">
           <!-- Sidebar nav -->
           <div class="sc-sidebar">
             <div class="sc-logo-row"><div class="sc-logo-icon"></div><span class="sc-logo-txt">La Tiendota</span></div>
-            <div class="sc-nav on" data-screen="dashboard" data-url="vendix-app.vercel.app/dashboard">
+            <div class="sc-nav on" data-screen="dashboard" data-url="latiendota.com/dashboard">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
             </div>
-            <div class="sc-nav" data-screen="inventario" data-url="vendix-app.vercel.app/inventory">
+            <div class="sc-nav" data-screen="inventario" data-url="latiendota.com/inventory">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Inventario
             </div>
-            <div class="sc-nav" data-screen="ventas" data-url="vendix-app.vercel.app/sales">
+            <div class="sc-nav" data-screen="ventas" data-url="latiendota.com/sales">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Ventas
             </div>
-            <div class="sc-nav" data-screen="vendedores" data-url="vendix-app.vercel.app/sellers">
+            <div class="sc-nav" data-screen="vendedores" data-url="latiendota.com/sellers">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Vendedores
             </div>
-            <div class="sc-nav" data-screen="ajustes" data-url="vendix-app.vercel.app/settings">
+            <div class="sc-nav" data-screen="ajustes" data-url="latiendota.com/settings">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Ajustes
             </div>
           </div>
@@ -984,7 +984,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
   <div class="container">
     <div class="reveal text-center">
       <div class="sec-tag" style="background:rgba(37,99,235,.08);color:var(--gl)">🚀 Proceso</div>
-      <h2 class="sec-title mx-auto" style="color:#fff">Empieza en 3 pasos</h2>
+      <h2 class="sec-title mx-auto" style="color:#1F2937">Empieza en 3 pasos</h2>
       <p class="sec-sub mx-auto" style="color:var(--t2)">Sin instalaciones, sin técnicos. En menos de 10 minutos tu negocio está operando en La Tiendota.</p>
     </div>
     <div class="steps-row">
@@ -1021,8 +1021,8 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
 <section class="tg-section" id="telegram">
   <div class="tg-inner">
     <div class="reveal-l">
-      <div class="sec-tag" style="background:rgba(34,158,217,.1);border-color:rgba(34,158,217,.2);color:#38BDF8">🤖 Bot de Telegram</div>
-      <h2 class="sec-title" style="color:#fff">Gestiona tu negocio<br>desde el celular</h2>
+      <div class="sec-tag" style="background:rgba(34,158,217,.14);border-color:rgba(34,158,217,.3);color:#0369A1">🤖 Bot de Telegram</div>
+      <h2 class="sec-title" style="color:#1F2937">Gestiona tu negocio<br>desde el celular</h2>
       <p style="font-size:16px;color:var(--t2);line-height:1.7;margin-bottom:8px">Sin abrir el navegador. Directamente desde Telegram, en segundos.</p>
       <div class="tg-pills">
         <div class="tg-pill">
@@ -1054,7 +1054,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
         <div class="big-screen">
           <div class="btg-header">
             <span class="btg-back">‹</span>
-            <div class="btg-avatar">V</div>
+            <div class="btg-avatar">T</div>
             <div>
               <div class="btg-name">La Tiendota Bot</div>
               <div class="btg-status">● en línea</div>
@@ -1085,7 +1085,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
   <div class="container">
     <div class="reveal text-center">
       <div class="sec-tag">⭐ Testimonios</div>
-      <h2 class="sec-title mx-auto" style="color:#fff">Lo que dicen nuestros clientes</h2>
+      <h2 class="sec-title mx-auto" style="color:#1F2937">Lo que dicen nuestros clientes</h2>
     </div>
     <div class="test-grid">
       <div class="test-card reveal-l">
@@ -1121,7 +1121,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
   <div class="container">
     <div class="reveal text-center">
       <div class="sec-tag">💳 Precio</div>
-      <h2 class="sec-title mx-auto" style="color:#fff">Simple y sin sorpresas</h2>
+      <h2 class="sec-title mx-auto" style="color:#1F2937">Simple y sin sorpresas</h2>
       <p class="sec-sub mx-auto" style="color:var(--t2)">Dos planes simples. Elige el que le queda a tu negocio. Sin contratos, sin costos ocultos. Cancela cuando quieras.</p>
     </div>
     <div class="reveal" style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;align-items:stretch;margin-top:60px;">
@@ -1180,7 +1180,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
   <div class="container">
     <div class="reveal text-center">
       <div class="sec-tag">❓ FAQ</div>
-      <h2 class="sec-title mx-auto" style="color:#fff">Preguntas frecuentes</h2>
+      <h2 class="sec-title mx-auto" style="color:#1F2937">Preguntas frecuentes</h2>
     </div>
     <div class="faq-list">
       <div class="faq-item">
@@ -1216,7 +1216,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
   <div class="container" style="position:relative;z-index:1">
     <div class="reveal">
       <div class="sec-tag mx-auto" style="background:rgba(37,99,235,.08);color:var(--gl)">¿Listo para empezar?</div>
-      <h2 class="sec-title mx-auto" style="color:#fff">Empieza hoy.<br>Todo incluido, sin sorpresas.</h2>
+      <h2 class="sec-title mx-auto" style="color:#1F2937">Empieza hoy.<br>Todo incluido, sin sorpresas.</h2>
       <p class="sec-sub mx-auto" style="color:var(--t2)">Únete a los negocios peruanos que ya controlan su inventario y ventas con La Tiendota.</p>
     </div>
     <div class="cta-actions reveal">
@@ -1238,7 +1238,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
     <div class="footer-top">
       <div class="footer-brand">
         <a href="landing.html" class="nav-logo" style="display:inline-flex">
-          <div class="nav-logo-mark">V</div>La Tiendota
+          <div class="nav-logo-mark">T</div>La Tiendota
         </a>
         <p>Sistema de inventario y ventas diseñado para negocios peruanos. Simple, rápido y accesible desde cualquier dispositivo.</p>
       </div>
@@ -1263,7 +1263,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
     </div>
     <div class="footer-bottom">
       <p>© 2026 La Tiendota · Hecho con ❤️ en Perú 🇵🇪</p>
-      <span class="footer-flag">vendix-app.vercel.app</span>
+      <span class="footer-flag">latiendota.com</span>
     </div>
   </div>
 </footer>
