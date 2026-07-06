@@ -6,10 +6,14 @@ const path    = require('path');
 const app = express();
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
-app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
-    credentials: true
-}));
+// CORS de tiendas externas (/api/integration): cualquier origen, sin cookies —
+// se autentican con el header X-Store-Key, así que cada storefront (su propio
+// dominio *.vercel.app o custom) puede leer productos y registrar ventas.
+app.use('/api/integration', cors());
+// CORS del panel/app: restringido a FRONTEND_URL y con credenciales (JWT).
+const corsAdmin = cors({ origin: process.env.FRONTEND_URL || '*', credentials: true });
+app.use((req, res, next) =>
+    req.path.startsWith('/api/integration') ? next() : corsAdmin(req, res, next));
 app.use(express.json({ limit: '10mb' }));  // 10mb for product images (base64)
 app.use(express.urlencoded({ extended: true }));
 
