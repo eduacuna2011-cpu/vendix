@@ -409,7 +409,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   nav{padding:0 24px;height:60px}
-  .nav-links,.nav-tg{display:none}
+  .nav-links,.nav-tg,.nav-actions{display:none}
   .nav-ham{display:block}
   .hero{grid-template-columns:1fr;padding:100px 24px 60px;text-align:center}
   .hero-sub{margin:0 auto 32px}
@@ -1274,7 +1274,7 @@ function toggleMenu(){const m=document.getElementById('mobileMenu');m.classList.
 function closeMenu(){document.getElementById('mobileMenu').classList.remove('open')}
 window.addEventListener('scroll',()=>{
   const n=document.getElementById('nav');
-  n.style.background=window.scrollY>50?'rgba(9,9,15,.98)':'rgba(9,9,15,.85)';
+  n.style.background=window.scrollY>50?'rgba(255,255,255,.98)':'rgba(255,255,255,.85)';
 },{passive:true});
 
 // Reveal
