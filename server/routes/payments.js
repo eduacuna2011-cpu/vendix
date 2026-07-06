@@ -22,8 +22,8 @@ router.post('/charge', async (req, res) => {
         const amountCents = Math.round(parseFloat(amount) * 100);
 
         // description debe tener entre 5 y 80 caracteres
-        let desc = (description || 'Suscripcion mensual Vendix').trim();
-        if (desc.length < 5)  desc = 'Suscripcion mensual Vendix';
+        let desc = (description || 'Suscripcion mensual La Tiendota').trim();
+        if (desc.length < 5)  desc = 'Suscripcion mensual La Tiendota';
         if (desc.length > 80) desc = desc.slice(0, 80);
 
         const charge = {

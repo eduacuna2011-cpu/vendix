@@ -126,7 +126,7 @@
     // ── Step 7: URL + history + document title + active nav ───────────────
     _currentPage = pageName;
     if (pushState) history.pushState({ pageName: pageName }, '', pageName);
-    document.title = 'Vendix — ' + (route.title || pageName);
+    document.title = 'La Tiendota — ' + (route.title || pageName);
     updateActiveNav(pageName);
 
     // ── Step 8: Enter animation ───────────────────────────────────────────

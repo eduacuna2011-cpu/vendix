@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const BASE = 'https://vendix-app.vercel.app';
+const BASE = 'https://latiendota.com';
 const OUT = path.join(__dirname, 'screenshots');
 if (!fs.existsSync(OUT)) fs.mkdirSync(OUT, { recursive: true });
 
@@ -24,7 +24,7 @@ async function shot(page, name) {
 
     // Get auth token via API
     const res = await page.evaluate(async () => {
-        const r = await fetch('https://vendix-app.vercel.app/api/auth/login', {
+        const r = await fetch('https://latiendota.com/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: 'takethebite200', password: 'fqcj$SCFuJy5' })

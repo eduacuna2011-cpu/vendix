@@ -6,7 +6,7 @@ const PLANS = {
 function planPrice(p) { return (PLANS[p] || PLANS.basico).price; }
 function planLabel(p) { return (PLANS[p] || PLANS.basico).label; }
 const PLAN_PRICE = PLANS.basico.price; // compat
-const PLAN_LABEL = 'Plan Vendix';
+const PLAN_LABEL = 'Plan La Tiendota';
 
 function _esc(s) {
     if (!s) return '—';

@@ -373,7 +373,7 @@ async function sendCredsWhatsApp(id) {
         const phone = user.phone.replace(/\D/g, '');
         const number = phone.startsWith('51') ? phone : '51' + phone;
         const msg = encodeURIComponent(
-            `Hola ${user.full_name}! 🎉 Aquí están tus credenciales de Vendix.\n\n` +
+            `Hola ${user.full_name}! 🎉 Aquí están tus credenciales de La Tiendota.\n\n` +
             `🏪 Negocio: ${user.business_name}\n` +
             `👤 Usuario: ${result.username}\n` +
             `🔑 Contraseña: ${result.temporaryPassword}\n\n` +
@@ -468,7 +468,7 @@ if (!_usersSession) {
 let _leadsCache = [];
 let _leadCredsData = null;
 
-const PLAN_LABELS = { vendix: 'Vendix S/.15.99', starter: 'Vendix S/.15.99', negocio: 'Vendix S/.15.99', pro: 'Vendix S/.15.99' };
+const PLAN_LABELS = { vendix: 'La Tiendota S/.15.99', starter: 'La Tiendota S/.15.99', negocio: 'La Tiendota S/.15.99', pro: 'La Tiendota S/.15.99' };
 
 async function loadLeads() {
     try {
@@ -612,7 +612,7 @@ function openLeadWA() {
     const d = _leadCredsData;
     const loginLink = generateLoginLink(d.username, d.password);
     const msg = encodeURIComponent(
-        `Hola ${d.fullName}! 🎉 Tu cuenta de Vendix está lista.\n\n` +
+        `Hola ${d.fullName}! 🎉 Tu cuenta de La Tiendota está lista.\n\n` +
         `🏪 Negocio: ${d.bizName}\n` +
         `📦 Plan: ${d.plan}\n` +
         `👤 Usuario: ${d.username}\n` +

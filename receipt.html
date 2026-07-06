@@ -7,9 +7,9 @@
     <meta name="theme-color" content="#00C864">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Vendix">
+    <meta name="apple-mobile-web-app-title" content="La Tiendota">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-<title>Recibo — Vendix</title>
+<title>Recibo — La Tiendota</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Courier New', monospace; background: #f4f4f4; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 24px 16px; }
@@ -83,7 +83,7 @@ if (!id) {
         <div class="payment">Método de pago: <b>${tx.payment_method || 'Efectivo'}</b></div>
         <div class="seller">Vendedor: ${tx.seller_name || '—'}</div>
         <hr class="divider">
-        <div class="footer">Gracias por su compra · Powered by Vendix</div>
+        <div class="footer">Gracias por su compra · Powered by La Tiendota</div>
         <button class="print-btn" onclick="window.print()">🖨️ Imprimir recibo</button>
       `;
     })

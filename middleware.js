@@ -2,7 +2,7 @@ export default function middleware(request) {
     const host = request.headers.get('host') || '';
     if (host.startsWith('inventory-sales-dashboard-postgres.vercel.app')) {
         const url = new URL(request.url);
-        url.host = 'vendix-app.vercel.app';
+        url.host = 'latiendota.com';
         return Response.redirect(url.toString(), 301);
     }
 }

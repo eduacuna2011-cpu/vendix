@@ -6,6 +6,18 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "waterpolo-store",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-l", "4599", "C:/Users/eduac/CascadeProjects/peru-waterpolo"],
+      "port": 4599
+    },
+    {
+      "name": "urban-masters",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-l", "4601", "C:/Users/eduac/CascadeProjects/urban-masters"],
+      "port": 4601
     }
   ]
 }

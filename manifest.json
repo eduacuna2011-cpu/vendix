@@ -1,6 +1,6 @@
-{
-  "name": "Vendix — Inventario y Ventas",
-  "short_name": "Vendix",
+﻿{
+  "name": "La Tiendota — Inventario y Ventas",
+  "short_name": "La Tiendota",
   "description": "Sistema de inventario y ventas para negocios peruanos",
   "start_url": "/index.html",
   "display": "standalone",

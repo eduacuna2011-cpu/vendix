@@ -74,7 +74,7 @@ async function getUser(session) {
     return u || null;
 }
 
-const BASE_URL = 'https://vendix-app.vercel.app';
+const BASE_URL = 'https://latiendota.com';
 const magicLink = (username, pw) => {
     const token = Buffer.from(JSON.stringify({ u: username, p: pw })).toString('base64');
     return `${BASE_URL}/login.html?auto=${token}`;
@@ -138,7 +138,7 @@ async function showMenu(chatId, user) {
 async function handleLogin(chatId, text, session) {
     if (!session.state || session.state === 'idle' || session.state === 'login_start') {
         await saveSession(chatId, { state: 'login_user' });
-        return send(chatId, `👋 <b>Bienvenido a Vendix Bot!</b>\n\nEscribe tu <b>usuario</b>:`, { reply_markup: CANCEL_KB });
+        return send(chatId, `👋 <b>Bienvenido a La Tiendota Bot!</b>\n\nEscribe tu <b>usuario</b>:`, { reply_markup: CANCEL_KB });
     }
     if (session.state === 'login_user') {
         await saveSession(chatId, { state: 'login_pass', data: { username: text } });
@@ -837,7 +837,7 @@ async function handleSAWhatsApp(chatId, userId) {
     await q('UPDATE users SET password_hash=$1 WHERE id=$2', [hash, userId]);
     const link = magicLink(u.username, tempPw);
     const msg = encodeURIComponent(
-        `Hola ${u.full_name}! 👋\n\nAquí están tus credenciales de Vendix:\n\n` +
+        `Hola ${u.full_name}! 👋\n\nAquí están tus credenciales de La Tiendota:\n\n` +
         `🔗 Acceso directo: ${link}\n\n` +
         `👤 Usuario: ${u.username}\n🔑 Contraseña: ${tempPw}\n\n` +
         `¡Bienvenido! 🚀`
@@ -1159,7 +1159,7 @@ router.post('/webhook', async (req, res) => {
 // ─── Setup webhook ────────────────────────────────────────────────────────────
 router.get('/setup', async (req, res) => {
     // Always use the canonical domain — VERCEL_URL changes every deploy
-    const host = process.env.WEBHOOK_HOST || 'vendix-app.vercel.app';
+    const host = process.env.WEBHOOK_HOST || 'latiendota.com';
     const url  = `https://${host}/api/telegram/webhook`;
     const r    = await tg('setWebhook', { url, allowed_updates: ['message', 'callback_query'] });
     res.json({ url, result: r });
