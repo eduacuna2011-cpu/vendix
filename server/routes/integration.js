@@ -62,7 +62,7 @@ router.get('/products', async (req, res) => {
         const onlyInStock = req.query.inStock === '1' || req.query.inStock === 'true';
         const { rows } = await db.query(
             `SELECT id, sku, name, category, color, size, model,
-                    stock, sale_price, image, barcode
+                    stock, sizes, size_mode, sale_price, image, barcode
              FROM products
              WHERE business_id = $1 ${onlyInStock ? 'AND stock > 0' : ''}
              ORDER BY name`,
@@ -200,11 +200,11 @@ router.post('/sales', async (req, res) => {
         for (const item of items) {
             await client.query(
                 `INSERT INTO transaction_items
-                   (transaction_id, product_id, product_name, quantity, unit_price, cost_price, total)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+                   (transaction_id, product_id, product_name, quantity, unit_price, cost_price, total, size)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
                 [tx.id, item._product.id, item._product.name,
                  item.quantity, item._unitPrice, item._product.cost_price,
-                 item._unitPrice * item.quantity]
+                 item._unitPrice * item.quantity, item.size || null]
             );
         }
 
@@ -214,6 +214,108 @@ router.post('/sales', async (req, res) => {
         await client.query('ROLLBACK');
         console.error('integration/sales error:', err);
         res.status(500).json({ error: 'Server error' });
+    } finally {
+        client.release();
+    }
+});
+
+// ── GET /api/integration/culqi/config ─────────────────────────────────────────
+// La tienda pide la llave PÚBLICA de Culqi para abrir el formulario de tarjeta.
+// (Por ahora, una sola cuenta Culqi a nivel plataforma vía env. Cuando sea por
+// tienda, aquí se devolvería la pública guardada en el negocio.)
+router.get('/culqi/config', (req, res) => {
+    res.json({ publicKey: process.env.CULQI_PUBLIC_KEY || '' });
+});
+
+// ── POST /api/integration/culqi/charge ────────────────────────────────────────
+// La tienda manda el TOKEN de Culqi (generado en el navegador con la llave
+// pública) + los items. El servidor calcula el monto (NO confía en el navegador),
+// cobra con la llave SECRETA, y si aprueba: registra la venta como PAGADA y
+// descuenta stock atómicamente. Devuelve el id del cargo y de la transacción.
+router.post('/culqi/charge', async (req, res) => {
+    const sk = process.env.CULQI_SECRET_KEY;
+    if (!sk || sk === 'sk_test_REEMPLAZAR') {
+        return res.status(503).json({ error: 'Culqi no configurado.' });
+    }
+    const { token, email, items, customer, shipping } = req.body;
+    if (!token || !email) return res.status(400).json({ error: 'Faltan token o email.' });
+    if (!items || !items.length) return res.status(400).json({ error: 'Carrito vacío.' });
+
+    const bizId = req.business.id;
+    // Nombre del cliente: el explícito, o el del envío.
+    const custName = customer || (shipping && shipping.name) || null;
+    const shipJson = shipping ? JSON.stringify(shipping) : null;
+    const client = await db.getClient();
+    try {
+        await client.query('BEGIN');
+
+        // 1) Resolver items y calcular el monto en el SERVIDOR (precio real de la BD).
+        let total = 0, profit = 0;
+        for (const it of items) {
+            let p = null;
+            if (it.sku) {
+                const { rows } = await client.query(
+                    'SELECT id, name, stock, cost_price, sale_price FROM products WHERE LOWER(sku)=LOWER($1) AND business_id=$2 LIMIT 1',
+                    [it.sku, bizId]);
+                p = rows[0] || null;
+            } else if (it.productId) {
+                const { rows } = await client.query(
+                    'SELECT id, name, stock, cost_price, sale_price FROM products WHERE id=$1 AND business_id=$2',
+                    [it.productId, bizId]);
+                p = rows[0] || null;
+            }
+            if (!p) { await client.query('ROLLBACK'); return res.status(400).json({ error: `Producto no encontrado: ${it.sku || it.productId}` }); }
+            const qty = parseInt(it.quantity) || 1;
+            it._p = p; it._qty = qty; it._unit = parseFloat(p.sale_price);
+            total  += it._unit * qty;
+            profit += (it._unit - parseFloat(p.cost_price)) * qty;
+        }
+        const amountCents = Math.round(total * 100);
+        if (amountCents < 300) { await client.query('ROLLBACK'); return res.status(400).json({ error: 'Monto mínimo S/. 3.00' }); }
+
+        // 2) Cobrar en Culqi con la llave secreta (server↔Culqi, no falseable).
+        let desc = `Pedido ${req.business.name}`.slice(0, 80);
+        if (desc.length < 5) desc = 'Pedido tienda online';
+        const resp = await fetch('https://api.culqi.com/v2/charges', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${sk}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: amountCents, currency_code: 'PEN', email, source_id: token, description: desc })
+        });
+        const charge = await resp.json();
+        if (!resp.ok) {
+            await client.query('ROLLBACK');
+            const msg = charge?.user_message || charge?.merchant_message || 'Pago rechazado';
+            return res.status(400).json({ error: msg });
+        }
+
+        // 3) Pago aprobado → registrar venta PAGADA + descontar stock atómico.
+        const { rows: [tx] } = await client.query(
+            `INSERT INTO transactions
+               (business_id, seller_id, seller_name, customer, payment_method, subtotal, total, profit, date, payment_status, shipping)
+             VALUES ($1, NULL, 'Tienda Online', $2, 'Culqi', $3, $3, $4, NOW(), 'paid', $5)
+             RETURNING id`,
+            [bizId, custName, total, profit, shipJson]);
+
+        for (const it of items) {
+            const upd = await client.query(
+                'UPDATE products SET stock = stock - $1 WHERE id = $2 AND business_id = $3 AND stock >= $1',
+                [it._qty, it._p.id, bizId]);
+            if (!upd.rowCount) { // stock insuficiente: se revierte TODO (incluido evitar registrar pagado sin stock)
+                await client.query('ROLLBACK');
+                return res.status(409).json({ error: `Sin stock suficiente de ${it._p.name}`, chargeId: charge.id, refundNeeded: true });
+            }
+            await client.query(
+                `INSERT INTO transaction_items (transaction_id, product_id, product_name, quantity, unit_price, cost_price, total)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+                [tx.id, it._p.id, it._p.name, it._qty, it._unit, it._p.cost_price, it._unit * it._qty]);
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, chargeId: charge.id, transactionId: tx.id, total });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('culqi/charge error:', err);
+        res.status(500).json({ error: 'Error interno al procesar el pago.' });
     } finally {
         client.release();
     }

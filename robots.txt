@@ -1,0 +1,21 @@
+# La Tiendota — solo indexar páginas públicas (landing, checkout, pago).
+# Las páginas internas de la app (panel) NO deben salir en Google.
+User-agent: *
+Allow: /
+Disallow: /index.html
+Disallow: /users.html
+Disallow: /settings.html
+Disallow: /settings-sa.html
+Disallow: /platform-sa.html
+Disallow: /sellers.html
+Disallow: /inventory.html
+Disallow: /sales.html
+Disallow: /labels.html
+Disallow: /customer-details.html
+Disallow: /onboarding.html
+Disallow: /trial-expired.html
+Disallow: /account-deleted.html
+Disallow: /receipt.html
+Disallow: /api/
+
+Sitemap: https://latiendota.com/sitemap.xml

@@ -42,7 +42,7 @@ body{font-family:'Plus Jakarta Sans','Inter',-apple-system,sans-serif;color:var(
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;background:rgba(255,255,255,.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:84px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;background:rgba(255,255,255,.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
 .nav-logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:900;color:#1F2937;text-decoration:none;letter-spacing:-.4px}
 .nav-logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.35)}
 .nav-links{display:flex;align-items:center;gap:32px}
@@ -400,7 +400,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
 .reveal-r.visible{opacity:1;transform:none}
 
 /* ── MOBILE NAV ── */
-.mobile-menu{display:none;position:fixed;top:66px;left:0;right:0;z-index:190;background:rgba(255,255,255,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);flex-direction:column;padding:16px 24px 24px}
+.mobile-menu{display:none;position:fixed;top:84px;left:0;right:0;z-index:190;background:rgba(255,255,255,.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);flex-direction:column;padding:16px 24px 24px}
 .mobile-menu.open{display:flex}
 .mobile-menu a{display:block;padding:13px 0;font-size:16px;font-weight:600;color:var(--t2);text-decoration:none;border-bottom:1px solid var(--border2)}
 .mobile-menu a:last-child{border-bottom:none}
@@ -408,7 +408,8 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
-  nav{padding:0 24px;height:60px}
+  nav{padding:0 24px;height:72px}
+  .mobile-menu{top:72px}
   .nav-links,.nav-tg,.nav-actions{display:none}
   .nav-ham{display:block}
   .hero{grid-template-columns:1fr;padding:100px 24px 60px;text-align:center}
@@ -446,7 +447,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
 <!-- ── NAV ── -->
 <nav id="nav">
   <a href="landing.html" class="nav-logo">
-    <div class="nav-logo-mark">T</div>La Tiendota
+    <img src="/logo.png" alt="La Tiendota" style="width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0">La Tiendota
   </a>
   <div class="nav-links">
     <a href="#funciones">Funciones</a>
@@ -1238,7 +1239,7 @@ footer{background:#06060a;padding:56px 48px 32px;border-top:1px solid var(--bord
     <div class="footer-top">
       <div class="footer-brand">
         <a href="landing.html" class="nav-logo" style="display:inline-flex">
-          <div class="nav-logo-mark">T</div>La Tiendota
+          <img src="/logo.png" alt="La Tiendota" style="width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0">La Tiendota
         </a>
         <p>Sistema de inventario y ventas diseñado para negocios peruanos. Simple, rápido y accesible desde cualquier dispositivo.</p>
       </div>

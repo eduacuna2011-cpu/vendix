@@ -16,6 +16,20 @@ let cart        = [];
 let allProducts = [];
 let _taxSettings = { igv_enabled: false, igv_rate: 18 };
 
+// Estilos de las tallas en el POS (una sola vez).
+if (!document.getElementById('posSizeStyles')) {
+    const _s = document.createElement('style');
+    _s.id = 'posSizeStyles';
+    _s.textContent = `
+        .pos-sizes{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+        .pos-size{min-width:32px;padding:4px 8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:6px;font-size:12px;cursor:pointer;transition:var(--ease)}
+        .pos-size:hover:not(.out){border-color:var(--primary,#6366f1);color:var(--text)}
+        .pos-size.out{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+        .cart-item-size{display:inline-block;margin-left:6px;padding:1px 7px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--primary,#6366f1);vertical-align:middle}
+    `;
+    document.head.appendChild(_s);
+}
+
 async function loadTaxSettings() {
     try { _taxSettings = await getTaxSettings(); } catch {}
 }
@@ -60,8 +74,16 @@ async function loadProducts(searchQuery = '') {
         }
 
         productsEmptyState.classList.remove('show');
-        productsGrid.innerHTML = products.map(p => `
-            <div class="product-card ${p.stock === 0 ? 'out-of-stock' : ''}" onclick="${p.stock > 0 ? `addToCart(${p.id})` : ''}">
+        productsGrid.innerHTML = products.map(p => {
+            const sized = posHasSizes(p);
+            const chips = sized ? `<div class="pos-sizes" onclick="event.stopPropagation()">${p.sizes.map(s => {
+                const st = p.size_mode === 'per_size' ? (Number(s.stock) || 0) : Number(p.stock) || 0;
+                return `<button class="pos-size${st <= 0 ? ' out' : ''}" ${st <= 0 ? 'disabled' : `onclick="addToCart(${p.id},'${escapeHtml(s.size)}')"`}>${escapeHtml(s.size)}</button>`;
+            }).join('')}</div>` : '';
+            // Con tallas: se agrega eligiendo un chip (la card no agrega directo).
+            const cardClick = (!sized && p.stock > 0) ? `addToCart(${p.id})` : '';
+            return `
+            <div class="product-card ${p.stock === 0 ? 'out-of-stock' : ''}" data-pid="${p.id}" onclick="${cardClick}">
                 <div class="product-image">
                     ${p.has_image
                         ? lazyThumb(p.id, '', p.name)
@@ -78,8 +100,9 @@ async function loadProducts(searchQuery = '') {
                     <div class="product-stock ${p.stock === 0 ? 'out' : p.stock < 5 ? 'low' : ''}">
                         ${p.stock === 0 ? 'Out of Stock' : p.stock < 5 ? `Low: ${p.stock}` : `Stock: ${p.stock}`}
                     </div>
+                    ${chips}
                 </div>
-            </div>`).join('');
+            </div>`; }).join('');
         observeLazyImages(productsGrid);
     } catch (err) {
         console.error('loadProducts error:', err);
@@ -87,45 +110,66 @@ async function loadProducts(searchQuery = '') {
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────
-window.addToCart = function(productId) {
+function posHasSizes(p) { return !!(p && p.size_mode && Array.isArray(p.sizes) && p.sizes.length); }
+function posSizeStock(p, size) {
+    if (p.size_mode === 'per_size') { const s = (p.sizes || []).find(x => String(x.size).toLowerCase() === String(size).toLowerCase()); return s ? Number(s.stock) || 0 : 0; }
+    return Number(p.stock) || 0; // shared o sin tallas → pote único
+}
+function posProductCartQty(id) { return cart.filter(i => i.id === id).reduce((a, i) => a + i.quantity, 0); }
+
+window.addToCart = function(productId, size) {
     const product = allProducts.find(p => p.id === productId);
     if (!product || product.stock === 0) return;
+    const sized = posHasSizes(product);
+    if (sized && !size) { showNotification('Elige la talla del producto', true); return; }
+    if (!sized) size = null;
 
-    const existing = cart.find(i => i.id === productId);
+    const key = size ? `${productId}::${size}` : String(productId);
+    const shared = product.size_mode === 'shared';
+    const max = sized ? posSizeStock(product, size) : Number(product.stock) || 0;
+    const existing = cart.find(i => i.key === key);
+
+    if (shared) {
+        // Pote compartido: la suma de todas las tallas del producto no supera el stock.
+        if (posProductCartQty(productId) + 1 > (Number(product.stock) || 0)) { showNotification('Stock insuficiente', true); return; }
+    }
     if (existing) {
-        if (existing.quantity < product.stock) existing.quantity++;
-        else { showNotification('Stock insuficiente', true); return; }
+        if (!shared && existing.quantity >= max) { showNotification('Stock insuficiente', true); return; }
+        existing.quantity++;
     } else {
         cart.push({
-            id:        product.id,
+            key, id: product.id, size,
             sku:       product.sku || '',
             name:      product.name,
             price:     parseFloat(product.sale_price || 0),
             costPrice: parseFloat(product.cost_price || 0),
             quantity:  1,
-            maxStock:  product.stock
+            maxStock:  max,
+            shared
         });
     }
     renderCart();
-    // Micro-feedback: bump del contador + pulso en la tarjeta
     const badge = document.getElementById('cartBadge');
     if (badge) { badge.classList.remove('cart-bump'); void badge.offsetWidth; badge.classList.add('cart-bump'); }
-    const card = document.querySelector(`.product-card[onclick*="addToCart(${productId})"]`);
+    const card = document.querySelector(`.product-card[data-pid="${productId}"]`);
     if (card) { card.classList.remove('added'); void card.offsetWidth; card.classList.add('added'); }
 };
 
-window.updateQuantity = function(productId, change) {
-    const item = cart.find(i => i.id === productId);
+window.updateQuantity = function(key, change) {
+    const item = cart.find(i => i.key === key);
     if (!item) return;
     const newQty = item.quantity + change;
-    if (newQty <= 0)              { removeFromCart(productId); return; }
-    if (newQty > item.maxStock)   { showNotification('Stock insuficiente', true); return; }
+    if (newQty <= 0) { removeFromCart(key); return; }
+    if (item.shared) {
+        const others = cart.filter(i => i.id === item.id && i.key !== key).reduce((a, i) => a + i.quantity, 0);
+        if (others + newQty > item.maxStock) { showNotification('Stock insuficiente', true); return; }
+    } else if (newQty > item.maxStock) { showNotification('Stock insuficiente', true); return; }
     item.quantity = newQty;
     renderCart();
 };
 
-window.removeFromCart = function(productId) {
-    cart = cart.filter(i => i.id !== productId);
+window.removeFromCart = function(key) {
+    cart = cart.filter(i => i.key !== key);
     renderCart();
 };
 
@@ -139,26 +183,31 @@ function renderCart() {
     cartEmptyState.classList.remove('show');
     cartSummary.style.display = 'block';
 
-    cartItems.innerHTML = cart.map(item => `
+    cartItems.innerHTML = cart.map(item => {
+        const plusDisabled = item.shared
+            ? (posProductCartQty(item.id) >= item.maxStock)
+            : (item.quantity >= item.maxStock);
+        const sizeTag = item.size ? ` <span class="cart-item-size">${escapeHtml(item.size)}</span>` : '';
+        return `
         <div class="cart-item">
             <div class="cart-item-info">
-                <h4>${escapeHtml(item.name)}</h4>
+                <h4>${escapeHtml(item.name)}${sizeTag}</h4>
                 <div class="cart-item-sku">${escapeHtml(item.sku)}</div>
                 <div class="cart-item-price">S/. ${item.price.toFixed(2)}</div>
             </div>
             <div class="cart-item-quantity">
-                <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">
+                <button class="quantity-btn" onclick="updateQuantity('${item.key}', -1)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
                 <span class="quantity-value">${item.quantity}</span>
-                <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)" ${item.quantity >= item.maxStock ? 'disabled' : ''}>
+                <button class="quantity-btn" onclick="updateQuantity('${item.key}', 1)" ${plusDisabled ? 'disabled' : ''}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
             </div>
-            <button class="cart-item-remove" onclick="removeFromCart(${item.id})">
+            <button class="cart-item-remove" onclick="removeFromCart('${item.key}')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
-        </div>`).join('');
+        </div>`; }).join('');
 
     const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     const tax      = subtotal * getTaxRate();
@@ -203,7 +252,8 @@ async function completeSale(paymentMethod) {
             items: cart.map(item => ({
                 productId: item.id,
                 quantity:  item.quantity,
-                unitPrice: item.price
+                unitPrice: item.price,
+                size:      item.size || undefined
             }))
         });
 
@@ -362,7 +412,15 @@ async function loadRecentSales() {
             const items       = Array.isArray(t.items) ? t.items : [];
             const itemCount   = items.length;
             const itemLabel   = itemCount ? `<span class="sale-items-toggle" onclick="toggleSaleItems(${t.id})" title="Ver productos">${itemCount} producto${itemCount !== 1 ? 's' : ''} ▾</span>` : '—';
-            const itemsHtml   = itemCount ? `
+            let ship = t.shipping;
+            if (ship && typeof ship === 'string') { try { ship = JSON.parse(ship); } catch (e) { ship = null; } }
+            const shipHtml = ship ? `
+                            <div class="sale-ship" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border,#3334);font-size:12.5px;line-height:1.6;">
+                                <b>📦 Envío a:</b> ${escapeHtml(ship.name || '')} · ${escapeHtml(ship.phone || '')}<br>
+                                ${escapeHtml(ship.address || '')}${ship.city ? ', ' + escapeHtml(ship.city) : ''}${ship.reference ? ' (' + escapeHtml(ship.reference) + ')' : ''}
+                                ${ship.email ? `<br><span style="color:var(--text-secondary)">${escapeHtml(ship.email)}</span>` : ''}
+                            </div>` : '';
+            const itemsHtml   = (itemCount || shipHtml) ? `
                 <tr class="sale-items-detail" id="sale-items-${t.id}" style="display:none">
                     <td colspan="8">
                         <div class="sale-items-list">
@@ -370,6 +428,7 @@ async function loadRecentSales() {
                                 const connector = i === items.length - 1 ? '└──' : '├──';
                                 return `<span>${connector} ${escapeHtml(it.product_name)} × ${it.quantity} → S/. ${parseFloat(it.total || 0).toFixed(2)}</span>`;
                             }).join('')}
+                            ${shipHtml}
                         </div>
                     </td>
                 </tr>` : '';

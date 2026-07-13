@@ -73,6 +73,7 @@ function openModal(mode, product = null) {
         modalTitle.textContent = 'Add New Product';
         productForm.reset();
         document.getElementById('productId').value = '';
+        resetSizesUI();
         currentImageData = null;
         imagePreview.innerHTML = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>No image selected</span>`;
         removeImageBtn.style.display = 'none';
@@ -88,6 +89,7 @@ function openModal(mode, product = null) {
         document.getElementById('costPrice').value    = product.cost_price ?? 0;
         document.getElementById('salePrice').value    = product.sale_price ?? 0;
         document.getElementById('barcode').value      = product.barcode || '';
+        populateSizesUI(product);
         if (product.image) {
             currentImageData = product.image;
             imagePreview.innerHTML = `<img src="${product.image}" alt="Product image">`;
@@ -102,6 +104,88 @@ function openModal(mode, product = null) {
 
 function closeModal() { productModal.classList.remove('show'); productForm.reset(); }
 
+// ── Tallas por producto ───────────────────────────────────────────────────────
+const hasSizesCb       = document.getElementById('hasSizes');
+const singleSizeRow    = document.getElementById('singleSizeRow');
+const sizesBlock       = document.getElementById('sizesBlock');
+const sizeRowsEl       = document.getElementById('sizeRows');
+const addSizeRowBtn    = document.getElementById('addSizeRow');
+const sharedStockGroup = document.getElementById('sharedStockGroup');
+const sizeModeHintEl   = document.getElementById('sizeModeHint');
+
+function currentSizeMode() {
+    const r = document.querySelector('input[name="sizeMode"]:checked');
+    return r ? r.value : 'per_size';
+}
+function addSizeRow(size = '', stock = '') {
+    const perSize = currentSizeMode() === 'per_size';
+    const row = document.createElement('div');
+    row.className = 'size-row';
+    row.style.cssText = 'display:flex;gap:8px;align-items:center';
+    const name = document.createElement('input');
+    name.type = 'text'; name.className = 'sz-name'; name.placeholder = 'Talla (ej. M)';
+    name.setAttribute('list', 'sizeList'); name.style.flex = '1'; name.value = size;
+    const st = document.createElement('input');
+    st.type = 'number'; st.className = 'sz-stock'; st.min = '0'; st.placeholder = 'Stock';
+    st.style.width = '90px'; st.value = stock === '' ? '' : stock;
+    st.style.display = perSize ? '' : 'none';
+    const del = document.createElement('button');
+    del.type = 'button'; del.className = 'sz-del'; del.textContent = '✕';
+    del.style.cssText = 'width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text-3);cursor:pointer;flex-shrink:0';
+    del.addEventListener('click', () => row.remove());
+    row.append(name, st, del);
+    sizeRowsEl.appendChild(row);
+}
+function updateSizeModeUI() {
+    const perSize = currentSizeMode() === 'per_size';
+    sharedStockGroup.style.display = perSize ? 'none' : 'block';
+    sizeModeHintEl.textContent = perSize
+        ? 'Cada talla tiene su propio stock (ej. XS: 5, S: 10).'
+        : 'Un solo pote de stock para todas las tallas (ej. 20 de cualquier talla).';
+    sizeRowsEl.querySelectorAll('.sz-stock').forEach(i => i.style.display = perSize ? '' : 'none');
+}
+function updateHasSizesUI() {
+    const on = hasSizesCb.checked;
+    sizesBlock.style.display = on ? 'block' : 'none';
+    singleSizeRow.style.display = on ? 'none' : 'flex';
+    document.getElementById('size').required  = !on;
+    document.getElementById('stock').required = !on;
+    if (on && !sizeRowsEl.children.length) addSizeRow('', '');
+}
+function resetSizesUI() {
+    hasSizesCb.checked = false;
+    sizeRowsEl.innerHTML = '';
+    const perSizeRadio = document.querySelector('input[name="sizeMode"][value="per_size"]');
+    if (perSizeRadio) perSizeRadio.checked = true;
+    document.getElementById('sharedStock').value = '';
+    updateSizeModeUI(); updateHasSizesUI();
+}
+function populateSizesUI(product) {
+    resetSizesUI();
+    if (product && product.size_mode && Array.isArray(product.sizes) && product.sizes.length) {
+        hasSizesCb.checked = true;
+        const radio = document.querySelector(`input[name="sizeMode"][value="${product.size_mode}"]`);
+        if (radio) radio.checked = true;
+        if (product.size_mode === 'shared') document.getElementById('sharedStock').value = product.stock ?? 0;
+        sizeRowsEl.innerHTML = '';
+        product.sizes.forEach(s => addSizeRow(s.size || '', s.stock ?? ''));
+        updateSizeModeUI(); updateHasSizesUI();
+    }
+}
+function collectSizes() {
+    if (!hasSizesCb.checked) return { sizeMode: null, sizes: null };
+    const rows = [...sizeRowsEl.querySelectorAll('.size-row')].map(r => ({
+        size: (r.querySelector('.sz-name').value || '').trim(),
+        stock: parseInt(r.querySelector('.sz-stock').value) || 0
+    })).filter(s => s.size);
+    return { sizeMode: currentSizeMode(), sizes: rows };
+}
+if (hasSizesCb) {
+    hasSizesCb.addEventListener('change', updateHasSizesUI);
+    document.querySelectorAll('input[name="sizeMode"]').forEach(r => r.addEventListener('change', updateSizeModeUI));
+    addSizeRowBtn.addEventListener('click', () => addSizeRow('', ''));
+}
+
 addProductBtn.addEventListener('click', () => openModal('add'));
 modalClose.addEventListener('click', closeModal);
 cancelBtn.addEventListener('click', closeModal);
@@ -110,13 +194,25 @@ productModal.addEventListener('click', e => { if (e.target === productModal) clo
 productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('productId').value;
+    const sd = collectSizes();
+    // Validación en modo tallas
+    if (sd.sizeMode) {
+        if (!sd.sizes.length) { showNotification('Agrega al menos una talla.', true); return; }
+        if (sd.sizeMode === 'shared' && !(parseInt(document.getElementById('sharedStock').value) >= 0)) {
+            showNotification('Ingresa el stock total (compartido).', true); return;
+        }
+    }
     const productData = {
         sku:       document.getElementById('sku').value,
         name:      document.getElementById('name').value,
         category:  document.getElementById('category').value,
         color:     document.getElementById('color').value,
-        size:      document.getElementById('size').value,
-        stock:     parseInt(document.getElementById('stock').value) || 0,
+        size:      sd.sizeMode ? null : document.getElementById('size').value,
+        stock:     sd.sizeMode === 'shared'
+                     ? (parseInt(document.getElementById('sharedStock').value) || 0)
+                     : (parseInt(document.getElementById('stock').value) || 0),
+        sizeMode:  sd.sizeMode,   // null = una sola talla (clásico)
+        sizes:     sd.sizes,      // null o [{size,stock}]
         costPrice: parseFloat(document.getElementById('costPrice').value) || 0,
         salePrice: parseFloat(document.getElementById('salePrice').value) || 0,
         image:     currentImageData,
@@ -145,6 +241,19 @@ function getStockBadge(stock) {
     return `<span class="stock-badge in-stock">${stock}</span>`;
 }
 
+// Etiqueta de tallas para la tabla. Producto con tallas → nombres (con desglose de
+// stock en el tooltip si es por talla); producto clásico → su única talla.
+function sizesLabel(p) {
+    if (p.size_mode && Array.isArray(p.sizes) && p.sizes.length) {
+        const names = p.sizes.map(s => escapeHtml(s.size)).join(' · ');
+        const title = p.size_mode === 'per_size'
+            ? p.sizes.map(s => `${s.size}: ${s.stock ?? 0}`).join(', ')
+            : 'Stock compartido';
+        return `<span title="${escapeHtml(title)}" style="cursor:help">${names}</span>`;
+    }
+    return escapeHtml(p.size || '—');
+}
+
 let _invLoaded = false, _invLimit = 50, _invLoadingMore = false, _invScrollWired = false;
 
 function _invRowHtml(p, isUserSeller) {
@@ -159,7 +268,7 @@ function _invRowHtml(p, isUserSeller) {
                 </td>
                 <td>${escapeHtml(p.category || '—')}</td>
                 <td>${escapeHtml(p.color || '—')}</td>
-                <td>${escapeHtml(p.size || '—')}</td>
+                <td>${sizesLabel(p)}</td>
                 <td>
                     ${p.barcode
                         ? `<span style="font-family:monospace;font-size:12px;color:var(--text-2)">${escapeHtml(p.barcode)}</span>`

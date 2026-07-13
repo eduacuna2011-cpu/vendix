@@ -77,3 +77,95 @@ Product images are base64 in `products.image`. The list endpoint `GET /api/produ
 - Stock decrement on a sale must stay **atomic** (`UPDATE ... SET stock = stock - $1 WHERE id = $2 AND stock >= $1` + check `rowCount`) to avoid overselling under concurrency — see `transactions.js`.
 - After editing `server/` code, restart `npm run dev`. After committing, deploy with `vercel --prod --yes` (git push does **not** auto-deploy).
 - The `.pptx` files and `make-ppt*.js` / `vendix-ppt.js` scripts generate onboarding guides via `pptxgenjs` — unrelated to the running app.
+
+## Storefronts (tiendas online) — el "edificio" `latiendota-tiendas`
+
+Cada negocio Premium puede tener una **tienda online pública** que lee su catálogo en vivo desde Vendix vía `/api/integration` (auth por `X-Store-Key` = `businesses.sync_api_key`, hardcodeado en el `CONFIG` de cada tienda). Las tiendas leen productos/precios reales pero **nunca** `cost_price`/`profit`.
+
+**Diseño por tienda = 100% libre.** No hay plantilla/molde compartido: cada tienda tiene su `index.html` totalmente a medida (Urban Masters streetwear oscuro, HypePods azul claro, etc.). La decisión de producto es que cada tienda se vea como quiera.
+
+### Arquitectura "edificio" (carpeta/repo aparte `latiendota-tiendas`)
+Un **único** proyecto Vercel aloja a **TODAS** las tiendas, cada una en su subcarpeta con su diseño propio:
+```
+latiendota-tiendas/
+  vercel.json            <- el "portero": rewrites por Host
+  index.html             <- portada de la plataforma (noindex)
+  hypepods-peru/index.html
+  urban-masters/index.html   (+ logo.png y assets)
+  olivia-dips/index.html
+  peru-waterpolo/index.html
+```
+El **portero** (`vercel.json` → `rewrites` con `has: [{type:"host"}]`) reparte según la dirección con que entró el visitante. **⚠️ Config CRÍTICA (jul 2026 — costó horas de debug, NO cambiar sin entender):**
+
+```json
+{ "rewrites": [
+  { "source": "/", "has": [{"type":"host","value":"^(?<sub>[^.]+)\\.latiendota\\.com$"}], "destination": "/:sub/index.html" },
+  { "source": "/:path+", "has": [{"type":"host","value":"^(?<sub>[^.]+)\\.latiendota\\.com$"}], "destination": "/:sub/:path+" }
+] }
+```
+
+Tres reglas de oro que hacen que funcione (si faltan, el subdominio muestra 404 o la portada, NO la tienda):
+1. **La raíz va SEPARADA** (`source:"/"` → `/:sub/index.html`) de las subrutas (`source:"/:path+"` → `/:sub/:path+`). Un solo `/:path*` → `/:sub/:path*` **NO funciona**: en la raíz genera `/:sub/` (con `/` final) y Vercel no resuelve el `index.html` de esa carpeta al venir de un rewrite → 404.
+2. **NADA de `index.html` en la raíz del edificio.** Vercel sirve los archivos existentes ANTES que los rewrites, así que un `index.html` raíz TAPA el ruteo de todos los subdominios (cada `<sub>.latiendota.com/` mostraría esa portada). Por eso la portada se renombró a `_portada.html`.
+3. **NADA de `cleanUrls: true`** en el edificio — rompe los rewrites por host (mismo bug que rompió el `/api` de la app principal).
+
+Se puede probar el ruteo sin cert por **ruta**: `latiendota-tiendas.vercel.app/urban-masters/`, o por host ignorando cert: `curl -k --resolve sub.latiendota.com:443:76.76.21.21 https://sub.latiendota.com/`.
+
+### Pasos para tienda nueva
+
+**Común a ambos casos:**
+1. En Vendix: crear el negocio (Premium, con `sync_api_key`) y cargar sus productos.
+2. Crear la carpeta `latiendota-tiendas/<slug>/index.html` con su diseño a medida (patrón: copiar una tienda existente y cambiar `CONFIG` — `brandName`, `whatsapp`, `storeKey`, colores/diseño).
+3. `vercel --prod --yes` para redeploy del edificio.
+
+**🅱️ SIN dominio propio (subdominio — el camino normal):**
+- El nombre de la carpeta (`<slug>`) **debe** ser el subdominio deseado.
+- **Colgar el subdominio al edificio para su certificado:** `cd latiendota-tiendas && vercel domains add <slug>.latiendota.com`. ⚠️ Esto SÍ es necesario (la doc vieja decía "no se toca Vercel domains" — era FALSO). El wildcard DNS `A * 76.76.21.21` solo hace que el subdominio *resuelva*, pero con el DNS en GoDaddy **Vercel NO emite el certificado wildcard automáticamente** (necesitaría un TXT de validación DNS-01 que no está puesto). Sin `vercel domains add`, el subdominio falla por SSL. Al agregarlo explícito, Vercel le emite cert por HTTP-01 usando el registro A (sin tocar GoDaddy). Es escalable: son dominios sobre UN solo proyecto, no cuenta contra el límite de proyectos.
+- No se toca el registrador. El `vercel.json` solo se toca si agregas un dominio propio (caso 🅰️); para subdominios la regla genérica ya los cubre a todos.
+- **Alternativa "cero config"** (si algún día quieres que baste crear carpeta + deploy): emitir el cert **wildcard** `*.latiendota.com` agregando en GoDaddy el TXT de validación que pida Vercel (`_acme-challenge...`). Una vez emitido, ningún subdominio necesita `vercel domains add`. Hoy NO está hecho.
+
+**🅰️ CON dominio propio (ej. `tienda.com`) — pasos extra:**
+4. Agregar en `vercel.json` una regla `has host` para `tienda\.com` (y `www\.tienda\.com`) → `/<slug>/:path*`.
+5. Colgar el dominio al proyecto `latiendota-tiendas` en Vercel.
+6. Configurar el dominio en su registrador (una vez), con el registro que indique Vercel (`A 76.76.21.21` o cambiar nameservers).
+
+| Paso | SIN dominio (subdominio) | CON dominio propio |
+|---|---|---|
+| Carpeta `latiendota-tiendas/<slug>/index.html` | ✅ | ✅ |
+| `vercel domains add <host>` (para el cert) | ✅ (`<slug>.latiendota.com`) | ✅ (el dominio propio) |
+| Regla en `vercel.json` | ❌ (la genérica ya cubre) | ✅ (1 línea `has host`) |
+| `vercel --prod --yes` (deploy edificio) | ✅ | ✅ |
+| Config en registrador | ❌ (ya está el `A * 76.76.21.21`) | ✅ (1 vez) |
+
+### DNS / dominios (infra, fuera del código — lo hace el dueño)
+- **Wildcard** `*.latiendota.com` está colgado del proyecto `latiendota-tiendas` y el registro `A * 76.76.21.21` está en GoDaddy (hecho jul 2026). Eso hace que **todos los subdominios RESUELVAN** a Vercel. ⚠️ PERO **no emite certificado SSL**: con el DNS en GoDaddy (no en Vercel), el cert wildcard necesitaría un TXT de validación que no está puesto. Por eso hoy **cada subdominio necesita `vercel domains add <slug>.latiendota.com`** para obtener su propio cert (HTTP-01, sin tocar GoDaddy). Subdominios ya activos con cert: `sabores`, `hypepods-peru`, `peru-waterpolo` (jul 2026).
+- **Dominios propios** (ej. `urbanmasters.co`): colgar el dominio a este proyecto y configurarlo en su registrador (uno por dominio). Los links `<proyecto>.vercel.app` no se pueden borrar; para "matarlos" se usa un rewrite/redirect al dominio real o Deployment Protection.
+
+### Directorio automático de tiendas — `tiendas.latiendota.com`
+Página que lista TODAS las tiendas del edificio con tarjetas (link + botón copiar). Vive en `latiendota-tiendas/tiendas/index.html` y se **auto-genera**: `build-stores.js` escanea las carpetas del edificio, saca nombre/descripción del `<title>` de cada tienda, y escribe `tiendas/stores.json` (que el directorio lee vía fetch). Corre en cada deploy vía `package.json` → `"build": "node build-stores.js"`. ⚠️ **Como el edificio ahora tiene build, el `vercel.json` DEBE tener `"outputDirectory": "."`** (si no, el deploy falla con "No Output Directory named public"). Overrides opcionales (dominio propio, emoji, color de acento) van en el objeto `OVERRIDES` de `build-stores.js`; carpetas a NO listar (ej. `tienda-demo`) van en `SKIP`. **Flujo tienda nueva:** crear carpeta + `vercel domains add <sub>.latiendota.com` + `vercel --prod` → aparece sola en el directorio (con emoji/color por defecto; para personalizar, 1 línea en OVERRIDES).
+
+### Migración COMPLETADA (jul 2026)
+Todas las tiendas que antes eran proyectos Vercel sueltos (`hypepods-peru`, `urban-masters`, `olivia-dips`/`sabores-de-la-abuela`, `peru-waterpolo`) ya están **consolidadas** dentro de `latiendota-tiendas/` y sus proyectos sueltos fueron **BORRADOS** (sus `.vercel.app` dan 404 a propósito). Activas: `sabores.latiendota.com`, `hypepods-peru.latiendota.com`, `peru-waterpolo.latiendota.com`, y `urbanmasters.co`(+www, dominio propio servido desde la carpeta `urban-masters/`). Ya NO queda ningún proyecto Vercel suelto de tiendas. **Al mover un dominio propio que ya está en otro proyecto Vercel: `--force` no basta — hay que borrar el proyecto viejo (eso libera el dominio) y luego `vercel domains add <dominio>` al edificio. Antes de mover, sincroniza la carpeta del edificio a la versión EXACTA que el cliente ve en vivo (descargar el HTML live) para que no vea ningún cambio.**
+
+## Pagos con Culqi por tienda (función Premium)
+
+Hoy el pago es **manual** (Yape QR + captura + el admin marca pagado en Vendix). Culqi está integrado pero **apagado** (`initCulqi` comentado). Activarlo permite **pago con tarjeta/Yape en la propia página**, con confirmación **automática** — buen gancho para el plan Premium.
+
+### Modelo: llaves POR tienda (el dinero cae a la cuenta del dueño)
+Culqi liquida a **una cuenta bancaria**. Cada tienda usa **sus propias llaves** (no las del operador de la plataforma), así HypePods cobra a HypePods y Lumé a Lumé. Se guardan **por negocio** (columnas nuevas en `businesses` o filas en `settings`, ej. `culqi_public_key`; la **secreta** solo en lugar seguro — ver abajo).
+
+### Qué pide cada dueño de tienda
+1. Cuenta **Culqi verificada** (RUC + datos del negocio).
+2. **Llave pública** `pk_live_...` → **no es secreta**, va en el frontend de su tienda.
+3. **Llave secreta** `sk_live_...` → es como una **contraseña**. NUNCA hardcodear en el `index.html` ni pegar en el chat. Va como **variable de entorno / config privada del servidor** (por tienda) y se lee **solo en el backend**.
+
+### Flujo de confirmación (por qué es confiable)
+1. El cliente paga con `Culqi.js` en la página (usa la **llave pública**) → Culqi devuelve un **token** + código de operación.
+2. El **backend** de Vendix recibe ese token y **cobra/verifica contra Culqi con la llave secreta** de ESA tienda. La confirmación válida viene del **servidor↔Culqi**, no del navegador (no se puede falsear).
+3. Si Culqi aprueba → marcar la `transaction` como `paid` (equivalente al `mark-paid` manual) y **descontar stock atómicamente** (mismo patrón que `transactions.js`).
+4. Respaldo: **webhook** de Culqi → endpoint en Vendix que confirma aunque el cliente cierre la página. Idempotente (no duplicar por código de operación).
+
+### Seguridad (obligatorio)
+- La **secreta** solo en env/config del servidor, por tienda; jamás en el repo del storefront ni en el cliente.
+- Validar el pago **siempre** en el backend (monto y estado); nunca confiar en lo que reporta el navegador.
+- Casos borde: pago rechazado, cliente cierra la página (lo cubre el webhook), devoluciones (refund vía API con la secreta → revertir estado/stock).

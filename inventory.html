@@ -23,10 +23,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <rect width="32" height="32" rx="6" fill="#00C864"/>
-                        <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                    <img src="/logo.png" alt="La Tiendota" style="width:65px;height:65px;border-radius:50%;object-fit:cover;flex-shrink:0">
                     <span>La Tiendota</span>
                 </div>
             </div>
@@ -269,23 +266,50 @@
                     </div>
                 </div>
                 
-                <div class="form-row">
+                <!-- Toggle: producto con varias tallas -->
+                <div class="form-group">
+                    <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-weight:500">
+                        <input type="checkbox" id="hasSizes" style="width:16px;height:16px;accent-color:var(--primary,#6366f1);cursor:pointer">
+                        Este producto tiene varias tallas
+                    </label>
+                    <small style="color:var(--text-3);font-size:11px;margin-top:3px;display:block">Para ropa/calzado. El cliente elige la talla al comprar (S, M, XL…).</small>
+                </div>
+
+                <!-- Modo clásico: una sola talla -->
+                <div class="form-row" id="singleSizeRow">
                     <div class="form-group">
-                        <label for="size">Size *</label>
-                        <input type="text" id="size" name="size" required placeholder="e.g., M" list="sizeList">
+                        <label for="size">Talla *</label>
+                        <input type="text" id="size" name="size" placeholder="Ej: M" list="sizeList">
                         <datalist id="sizeList">
-                            <option value="XS">
-                            <option value="S">
-                            <option value="M">
-                            <option value="L">
-                            <option value="XL">
-                            <option value="One Size">
+                            <option value="XS"><option value="S"><option value="M">
+                            <option value="L"><option value="XL"><option value="One Size">
                         </datalist>
                     </div>
-                    
                     <div class="form-group">
-                        <label for="stock">Stock Quantity *</label>
-                        <input type="number" id="stock" name="stock" required min="0" placeholder="0">
+                        <label for="stock">Stock *</label>
+                        <input type="number" id="stock" name="stock" min="0" placeholder="0">
+                    </div>
+                </div>
+
+                <!-- Modo tallas -->
+                <div id="sizesBlock" style="display:none;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;background:var(--surface-2)">
+                    <div class="form-group" style="margin-bottom:12px">
+                        <label>Modo de stock</label>
+                        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px">
+                            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:400"><input type="radio" name="sizeMode" value="per_size" checked style="accent-color:var(--primary,#6366f1)"> Stock por talla</label>
+                            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:400"><input type="radio" name="sizeMode" value="shared" style="accent-color:var(--primary,#6366f1)"> Stock compartido</label>
+                        </div>
+                        <small id="sizeModeHint" style="color:var(--text-3);font-size:11px;margin-top:4px;display:block">Cada talla tiene su propio stock (ej. XS: 5, S: 10).</small>
+                    </div>
+                    <div class="form-group" id="sharedStockGroup" style="display:none;margin-bottom:12px">
+                        <label for="sharedStock">Stock total (compartido) *</label>
+                        <input type="number" id="sharedStock" min="0" placeholder="0">
+                        <small style="color:var(--text-3);font-size:11px;margin-top:3px;display:block">Un solo pote para todas las tallas (ej. 20 de cualquier talla).</small>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Tallas disponibles</label>
+                        <div id="sizeRows" style="display:flex;flex-direction:column;gap:8px;margin:6px 0"></div>
+                        <button type="button" id="addSizeRow" style="padding:8px 14px;background:var(--surface);border:1px dashed var(--border);border-radius:8px;color:var(--text-2);font-size:13px;cursor:pointer">+ Agregar talla</button>
                     </div>
                 </div>
                 

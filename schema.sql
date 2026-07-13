@@ -51,6 +51,8 @@ CREATE TABLE IF NOT EXISTS products (
     size        VARCHAR(50),
     model       VARCHAR(100),
     stock       INTEGER      NOT NULL DEFAULT 0,
+    sizes       JSONB,                       -- tallas opcionales: [{size,stock}]  (ver size_mode)
+    size_mode   VARCHAR(12),                 -- NULL=una talla | 'shared'=pote único | 'per_size'=stock por talla
     cost_price  NUMERIC(10,2)        DEFAULT 0,
     sale_price  NUMERIC(10,2)        DEFAULT 0,
     image       TEXT,
@@ -70,6 +72,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     total          NUMERIC(10,2) DEFAULT 0,
     profit         NUMERIC(10,2) DEFAULT 0,
     payment_status VARCHAR(20)   NOT NULL DEFAULT 'paid',  -- 'paid' | 'pending' | 'cancelled'
+    shipping       JSONB,                                  -- datos de envío del pedido online
     date           TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
     created_at     TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
@@ -83,7 +86,8 @@ CREATE TABLE IF NOT EXISTS transaction_items (
     quantity       INTEGER       NOT NULL DEFAULT 1,
     unit_price     NUMERIC(10,2) NOT NULL DEFAULT 0,
     cost_price     NUMERIC(10,2)          DEFAULT 0,
-    total          NUMERIC(10,2) NOT NULL DEFAULT 0
+    total          NUMERIC(10,2) NOT NULL DEFAULT 0,
+    size           VARCHAR(50)                          -- talla vendida (NULL si el producto no maneja tallas)
 );
 
 -- ─── Settings (per-user key/value store) ──────────────────────────────────────

@@ -2,6 +2,7 @@ const router = require('express').Router();
 const db     = require('../db');
 const { authMiddleware, requireBusinessAdmin } = require('../middleware/auth');
 const { ensureMigrated } = require('../migrations');
+const { decrementStock } = require('../lib/sizes');
 
 router.use(authMiddleware);
 
@@ -28,7 +29,7 @@ router.get('/', async (req, res) => {
                    json_agg(json_build_object(
                        'id', ti.id, 'product_id', ti.product_id,
                        'product_name', ti.product_name, 'quantity', ti.quantity,
-                       'unit_price', ti.unit_price, 'total', ti.total
+                       'unit_price', ti.unit_price, 'total', ti.total, 'size', ti.size
                    ) ORDER BY ti.id) AS items
             FROM transactions t
             LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
@@ -102,7 +103,7 @@ router.get('/recent', async (req, res) => {
         }
         params.push(parseInt(req.query.limit) || 5);
         const { rows } = await db.query(
-            `SELECT t.id, t.date, t.total, t.profit, t.payment_method, t.seller_name,
+            `SELECT t.id, t.date, t.total, t.profit, t.payment_method, t.seller_name, t.shipping,
                     json_agg(json_build_object(
                         'product_name', ti.product_name,
                         'quantity', ti.quantity,
@@ -138,32 +139,23 @@ router.post('/', async (req, res) => {
         const bizId = req.user.role === 'Super Admin' ? (req.body.businessId || null) : req.user.businessId;
         let subtotal = 0, total = 0, profit = 0;
 
-        // Descuento de stock ATÓMICO: en la misma sentencia validamos y restamos
-        // con la guarda `stock >= cantidad`. Si otra venta concurrente ya bajó el
-        // stock, el rowCount es 0 y abortamos — evita sobreventa (stock negativo).
+        // Descuento de stock bajo FOR UPDATE (helper). Maneja producto sin tallas,
+        // stock compartido y stock por talla. Si no alcanza, aborta (evita sobreventa).
         for (const item of items) {
-            const { rows: [p] } = await client.query(
-                `UPDATE products SET stock = stock - $1
-                 WHERE id = $2 AND stock >= $1
-                 RETURNING id, name, cost_price, sale_price`,
-                [item.quantity, item.productId]
-            );
-            if (!p) {
-                // O el producto no existe, o no alcanza el stock. Distinguimos para el mensaje.
-                const { rows: [exists] } = await client.query(
-                    'SELECT name FROM products WHERE id = $1', [item.productId]
-                );
+            const r = await decrementStock(client, item.productId, item.quantity, item.size);
+            if (r.missing) {
                 await client.query('ROLLBACK');
-                if (!exists) {
-                    return res.status(409).json({ error: 'Uno de los productos ya no existe (fue eliminado). Actualicé la lista, vuelve a intentar.' });
-                }
-                return res.status(409).json({ error: `Stock insuficiente para "${exists.name}"` });
+                return res.status(409).json({ error: 'Uno de los productos ya no existe (fue eliminado). Actualicé la lista, vuelve a intentar.' });
             }
-            item._product = p;
+            if (!r.ok) {
+                await client.query('ROLLBACK');
+                return res.status(409).json({ error: r.error });
+            }
+            item._product = r.product;
             const lineTotal = item.unitPrice * item.quantity;
             subtotal += lineTotal;
             total    += lineTotal;
-            profit   += (item.unitPrice - p.cost_price) * item.quantity;
+            profit   += (item.unitPrice - r.product.cost_price) * item.quantity;
         }
 
         // Insert transaction
@@ -181,11 +173,11 @@ router.post('/', async (req, res) => {
         for (const item of items) {
             await client.query(
                 `INSERT INTO transaction_items
-                   (transaction_id, product_id, product_name, quantity, unit_price, cost_price, total)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+                   (transaction_id, product_id, product_name, quantity, unit_price, cost_price, total, size)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
                 [tx.id, item.productId, item._product.name,
                  item.quantity, item.unitPrice, item._product.cost_price,
-                 item.unitPrice * item.quantity]
+                 item.unitPrice * item.quantity, item.size || null]
             );
         }
 
@@ -209,7 +201,8 @@ router.get('/pending', async (req, res) => {
             `SELECT t.*,
                     json_agg(json_build_object(
                         'product_id', ti.product_id, 'product_name', ti.product_name,
-                        'quantity', ti.quantity, 'unit_price', ti.unit_price, 'total', ti.total
+                        'quantity', ti.quantity, 'unit_price', ti.unit_price, 'total', ti.total,
+                        'size', ti.size
                     ) ORDER BY ti.id) AS items
              FROM transactions t
              LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
@@ -247,25 +240,20 @@ router.patch('/:id/confirm', requireBusinessAdmin, async (req, res) => {
             return res.status(409).json({ error: 'El pedido ya no está pendiente' });
         }
 
-        // Verifica y descuenta stock ahora (al confirmar el pago)
+        // Verifica y descuenta stock ahora (al confirmar el pago). El helper maneja
+        // producto sin tallas, stock compartido y stock por talla (usa la talla guardada).
         const { rows: items } = await client.query(
-            'SELECT product_id, product_name, quantity FROM transaction_items WHERE transaction_id = $1',
+            'SELECT product_id, product_name, quantity, size FROM transaction_items WHERE transaction_id = $1',
             [tx.id]
         );
         for (const it of items) {
             if (!it.product_id) continue; // producto borrado; se ignora
-            const { rows: [p] } = await client.query(
-                'SELECT stock, name FROM products WHERE id = $1 FOR UPDATE', [it.product_id]
-            );
-            if (p && p.stock < it.quantity) {
+            const r = await decrementStock(client, it.product_id, it.quantity, it.size);
+            if (r.missing) continue;
+            if (!r.ok) {
                 await client.query('ROLLBACK');
-                return res.status(409).json({ error: `Stock insuficiente para "${p.name || it.product_name}"` });
+                return res.status(409).json({ error: r.error });
             }
-        }
-        for (const it of items) {
-            if (!it.product_id) continue;
-            await client.query('UPDATE products SET stock = stock - $1 WHERE id = $2',
-                [it.quantity, it.product_id]);
         }
 
         const { rows: [updated] } = await client.query(

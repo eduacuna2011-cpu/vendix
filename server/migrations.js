@@ -52,9 +52,23 @@ async function _runMigrations() {
     // transactions — estado de pago de pedidos web (pending/paid/cancelled)
     await db.query(`ALTER TABLE transactions
         ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) NOT NULL DEFAULT 'paid'`);
+    // transactions — datos de envío del pedido online (nombre, tel, dirección, etc.)
+    await db.query(`ALTER TABLE transactions
+        ADD COLUMN IF NOT EXISTS shipping JSONB`);
 
     // products — código de barras (histórico)
     await db.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS barcode VARCHAR(100)');
+
+    // products — tallas opcionales. Si `size_mode` es NULL el producto funciona
+    // como siempre (una sola talla en `size`). Si se activa:
+    //   'shared'   → `sizes` = [{size},...] y el stock es un pote único (products.stock).
+    //   'per_size' → `sizes` = [{size,stock},...] y products.stock = suma (se mantiene sync).
+    await db.query(`ALTER TABLE products
+        ADD COLUMN IF NOT EXISTS sizes     JSONB,
+        ADD COLUMN IF NOT EXISTS size_mode VARCHAR(12)`);
+
+    // transaction_items — talla vendida (NULL si el producto no maneja tallas)
+    await db.query('ALTER TABLE transaction_items ADD COLUMN IF NOT EXISTS size VARCHAR(50)');
 
     // leads — embudo del checkout de la landing
     await db.query(`

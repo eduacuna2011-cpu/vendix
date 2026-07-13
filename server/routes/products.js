@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const db     = require('../db');
 const { authMiddleware, requireBusinessAdmin } = require('../middleware/auth');
+const { computeSizeFields } = require('../lib/sizes');
 
 router.use(authMiddleware);
 
@@ -23,7 +24,7 @@ router.get('/', async (req, res) => {
         const cols = withImages
             ? 'p.*'
             : `p.id, p.business_id, p.sku, p.name, p.category, p.color, p.size, p.model,
-               p.stock, p.cost_price, p.sale_price, p.barcode, p.created_at, p.updated_at,
+               p.stock, p.sizes, p.size_mode, p.cost_price, p.sale_price, p.barcode, p.created_at, p.updated_at,
                (p.image IS NOT NULL AND p.image <> '') AS has_image`;
 
         let sql = `SELECT ${cols} FROM products p WHERE 1=1 ${scope.where}`;
@@ -220,14 +221,16 @@ router.post('/', requireBusinessAdmin, async (req, res) => {
             if (rows.length) return res.status(409).json({ error: 'Barcode already exists for another product' });
         }
 
+        const sz = computeSizeFields(req.body);
         const { rows: [p] } = await db.query(
             `INSERT INTO products
-               (business_id, sku, name, category, color, size, model, stock, cost_price, sale_price, image, barcode)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+               (business_id, sku, name, category, color, size, model, stock, sizes, size_mode, cost_price, sale_price, image, barcode)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
              RETURNING *`,
             [bizId, sku || null, name, category || null, color || null,
              size || null, model || null,
-             parseInt(stock) || 0,
+             sz.stock,
+             sz.sizes ? JSON.stringify(sz.sizes) : null, sz.sizeMode,
              parseFloat(costPrice) || 0,
              parseFloat(salePrice) || 0,
              image || null, barcode || null]
@@ -243,14 +246,21 @@ router.post('/', requireBusinessAdmin, async (req, res) => {
 router.put('/:id', requireBusinessAdmin, async (req, res) => {
     try {
         const { sku, name, category, color, size, model, stock, costPrice, salePrice, image, barcode } = req.body;
+        // Tallas: solo se tocan si el form las envía (sizeMode/sizes presentes).
+        const sizeApplied = req.body.sizeMode !== undefined || req.body.sizes !== undefined;
+        const sz = computeSizeFields(req.body);
+        const stockParam = sizeApplied ? sz.stock : (stock !== undefined ? parseInt(stock) : null);
         // Aislamiento multi-tenant: solo el propio negocio (o el Super Admin) puede editar.
         const params = [sku, name, category, color, size, model,
-            stock !== undefined ? parseInt(stock) : null,
+            stockParam,
             costPrice !== undefined ? parseFloat(costPrice) : null,
             salePrice !== undefined ? parseFloat(salePrice) : null,
             image,
             barcode !== undefined ? (barcode || null) : null,
-            req.params.id];
+            sizeApplied ? (sz.sizes ? JSON.stringify(sz.sizes) : null) : null, // $12 sizes
+            sizeApplied ? sz.sizeMode : null,                                  // $13 size_mode
+            sizeApplied,                                                       // $14 flag
+            req.params.id];                                                    // $15 id
         let scopeWhere = '';
         if (req.user.role !== 'Super Admin') {
             params.push(req.user.businessId);
@@ -268,8 +278,10 @@ router.put('/:id', requireBusinessAdmin, async (req, res) => {
                  cost_price = COALESCE($8,  cost_price),
                  sale_price = COALESCE($9,  sale_price),
                  image      = COALESCE($10, image),
-                 barcode    = $11
-             WHERE id = $12${scopeWhere}
+                 barcode    = $11,
+                 sizes      = CASE WHEN $14 THEN $12::jsonb ELSE sizes END,
+                 size_mode  = CASE WHEN $14 THEN $13 ELSE size_mode END
+             WHERE id = $15${scopeWhere}
              RETURNING *`,
             params
         );

@@ -18,6 +18,30 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["-y", "serve", "-l", "4601", "C:/Users/eduac/CascadeProjects/urban-masters"],
       "port": 4601
+    },
+    {
+      "name": "sabores-tienda",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-l", "4603", "C:/Users/eduac/CascadeProjects/olivia-dips"],
+      "port": 4603
+    },
+    {
+      "name": "hypepods-peru",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-l", "4605", "C:/Users/eduac/CascadeProjects/hypepods-peru"],
+      "port": 4605
+    },
+    {
+      "name": "latiendota-tiendas",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-l", "4607", "C:/Users/eduac/CascadeProjects/latiendota-tiendas"],
+      "port": 4607
+    },
+    {
+      "name": "goat-club",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-l", "4609", "C:/Users/eduac/CascadeProjects/latiendota-tiendas/goat-club"],
+      "port": 4609
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "alias": ["vendix-app.vercel.app"],
+  "alias": ["latiendota.com", "www.latiendota.com"],
   "headers": [
     {
       "source": "/(.*\\.html)",
@@ -20,7 +20,7 @@
     {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "inventory-sales-dashboard-postgres.vercel.app" }],
-      "destination": "https://vendix-app.vercel.app/:path*",
+      "destination": "https://latiendota.com/:path*",
       "permanent": true
     }
   ],
