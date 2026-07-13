@@ -239,7 +239,14 @@
       "Bash(grep -iE \"\\\\.\\(js|json|html\\)$\")",
       "Bash(xargs grep -lEi \"DATABASE_URL|JWT_SECRET|sk_live|pk_live|postgres://|postgresql://\")",
       "Bash(rm -f _tmp-*.js)",
-      "Bash(git commit -q -m 'Facturación: tiendas demo \\(fuera del MRR\\) + cuenta regresiva a próximo pago *)"
+      "Bash(git commit -q -m 'Facturación: tiendas demo \\(fuera del MRR\\) + cuenta regresiva a próximo pago *)",
+      "Bash(npm install *)",
+      "Bash(node -e \"console.log\\(require\\('express-rate-limit/package.json'\\).version\\)\")",
+      "Bash(node -e \"const r=require\\('express-rate-limit'\\); console.log\\('type:', typeof \\(r.rateLimit||r.default||r\\)\\); console.log\\('version:', require\\('./node_modules/express-rate-limit/package.json'\\).version\\)\")",
+      "Bash(node -e \"const app=require\\('./server/app'\\); console.log\\('app.js carga OK, trust proxy =', app.get\\('trust proxy'\\)\\); require\\('./server/routes/auth'\\); console.log\\('auth.js carga OK'\\); const {loginLimiter,credentialsLimiter}=require\\('./server/middleware/rateLimit'\\); console.log\\('limiters:', typeof loginLimiter, typeof credentialsLimiter\\)\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"x\",\"password\":\"y\"}')",
+      "Bash(curl -s -D - -o /dev/null -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"x\",\"password\":\"y\"}')",
+      "Bash(git commit -q -m 'Seguridad: rate limiting anti fuerza bruta en login y cambio de credenciales *)"
     ]
   }
 }

@@ -2,6 +2,7 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const db     = require('../db');
+const { loginLimiter, credentialsLimiter } = require('../middleware/rateLimit');
 
 // Re-emite un JWT fresco con los datos actuales del usuario (tras editar perfil/usuario)
 async function reissueToken(userId) {
@@ -27,7 +28,7 @@ async function reissueToken(userId) {
 }
 
 // POST /api/auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
     try {
         const { username, password } = req.body;
         if (!username || !password) {
@@ -98,7 +99,7 @@ router.put('/profile', async (req, res) => {
 });
 
 // POST /api/auth/change-password  — verify current password, set new one
-router.post('/change-password', async (req, res) => {
+router.post('/change-password', credentialsLimiter, async (req, res) => {
     const header = req.headers['authorization'];
     if (!header || !header.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
     try {
@@ -121,7 +122,7 @@ router.post('/change-password', async (req, res) => {
 });
 
 // POST /api/auth/change-username  — verify password, set new username
-router.post('/change-username', async (req, res) => {
+router.post('/change-username', credentialsLimiter, async (req, res) => {
     const header = req.headers['authorization'];
     if (!header || !header.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
     try {

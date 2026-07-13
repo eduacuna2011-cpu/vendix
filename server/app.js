@@ -5,6 +5,11 @@ const path    = require('path');
 
 const app = express();
 
+// En Vercel/proxy el IP real del cliente viene en X-Forwarded-For. Confiar en 1
+// salto para que req.ip (y el rate-limit) usen el IP real y no agrupen a todos
+// en un solo bucket.
+app.set('trust proxy', 1);
+
 // ─── Middleware ───────────────────────────────────────────────────────────────
 // CORS de tiendas externas (/api/integration): cualquier origen, sin cookies —
 // se autentican con el header X-Store-Key, así que cada storefront (su propio
