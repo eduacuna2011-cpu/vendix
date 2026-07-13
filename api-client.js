@@ -379,6 +379,13 @@ async function extendUserTrial(id, days = 7) {
     return r;
 }
 
+// Marca/desmarca el negocio como "tienda demo" (funciona pero no cuenta en el MRR).
+async function toggleUserDemo(id) {
+    const r = await apiFetch(`/users/${id}/toggle-demo`, { method: 'PATCH' });
+    _bust('/users');
+    return r;
+}
+
 async function getUserStats() {
     return apiFetch('/users/stats');
 }

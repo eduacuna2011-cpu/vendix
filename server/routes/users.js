@@ -15,7 +15,8 @@ router.get('/', async (req, res) => {
             SELECT u.id, u.username, u.full_name, u.email, u.phone,
                    u.role, u.status, u.business_id, u.business_name,
                    u.created_at, b.name AS biz_name, b.status AS biz_status,
-                   b.trial_ends_at, b.is_paid, COALESCE(b.plan, 'basico') AS plan
+                   b.trial_ends_at, b.is_paid, COALESCE(b.is_demo, FALSE) AS is_demo,
+                   b.next_payment_at, COALESCE(b.plan, 'basico') AS plan
             FROM users u
             LEFT JOIN businesses b ON b.id = u.business_id
             WHERE u.role = 'Business Admin'
@@ -258,10 +259,14 @@ router.patch('/:id/mark-paid', async (req, res) => {
             [req.params.id, 'Business Admin']
         );
         if (!u || !u.business_id) return res.status(404).json({ error: 'Not found' });
-        await ensureMigrated(); // columna plan garantizada
-        // Pagado → activo (reactiva si estaba suspendido) y sin restricción de trial.
+        await ensureMigrated(); // columnas plan/is_demo/next_payment_at garantizadas
+        // Pagado → activo (reactiva si estaba suspendido), sin restricción de trial,
+        // deja de ser demo y agenda la próxima fecha de pago (+1 mes = ciclo mensual).
         await db.query(
-            `UPDATE businesses SET is_paid = TRUE, plan = $2, status = 'Active' WHERE id = $1`,
+            `UPDATE businesses
+             SET is_paid = TRUE, plan = $2, status = 'Active', is_demo = FALSE,
+                 next_payment_at = NOW() + INTERVAL '1 month'
+             WHERE id = $1`,
             [u.business_id, plan]
         );
         res.json({ ok: true, plan });
@@ -287,6 +292,28 @@ router.patch('/:id/deactivate', async (req, res) => {
             [u.business_id]
         );
         res.json({ ok: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// PATCH /api/users/:id/toggle-demo  — marca/desmarca el negocio como "tienda demo".
+// Una tienda demo sigue funcionando (no se bloquea) pero NO cuenta en el MRR.
+router.patch('/:id/toggle-demo', async (req, res) => {
+    try {
+        await ensureMigrated();
+        const { rows: [u] } = await db.query(
+            'SELECT business_id FROM users WHERE id = $1 AND role = $2',
+            [req.params.id, 'Business Admin']
+        );
+        if (!u || !u.business_id) return res.status(404).json({ error: 'Not found' });
+        const { rows: [b] } = await db.query(
+            `UPDATE businesses SET is_demo = NOT COALESCE(is_demo, FALSE) WHERE id = $1
+             RETURNING is_demo`,
+            [u.business_id]
+        );
+        res.json({ ok: true, is_demo: b.is_demo });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });

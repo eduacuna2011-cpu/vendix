@@ -237,7 +237,9 @@
       "Bash(curl -s -X POST \"http://localhost:3000/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"username\":\"goatclub\",\"password\":\"goatclub2026\"}')",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(j.token||\\('ERR '+JSON.stringify\\(j\\)\\)\\)}\\)\")",
       "Bash(grep -iE \"\\\\.\\(js|json|html\\)$\")",
-      "Bash(xargs grep -lEi \"DATABASE_URL|JWT_SECRET|sk_live|pk_live|postgres://|postgresql://\")"
+      "Bash(xargs grep -lEi \"DATABASE_URL|JWT_SECRET|sk_live|pk_live|postgres://|postgresql://\")",
+      "Bash(rm -f _tmp-*.js)",
+      "Bash(git commit -q -m 'Facturación: tiendas demo \\(fuera del MRR\\) + cuenta regresiva a próximo pago *)"
     ]
   }
 }

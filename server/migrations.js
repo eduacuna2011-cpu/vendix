@@ -36,7 +36,9 @@ async function _runMigrations() {
             ADD COLUMN IF NOT EXISTS sync_api_key    VARCHAR(64),
             ADD COLUMN IF NOT EXISTS sync_enabled    BOOLEAN NOT NULL DEFAULT TRUE,
             ADD COLUMN IF NOT EXISTS igv_enabled     BOOLEAN DEFAULT FALSE,
-            ADD COLUMN IF NOT EXISTS igv_rate        NUMERIC(5,2) DEFAULT 18
+            ADD COLUMN IF NOT EXISTS igv_rate        NUMERIC(5,2) DEFAULT 18,
+            ADD COLUMN IF NOT EXISTS is_demo         BOOLEAN NOT NULL DEFAULT FALSE,
+            ADD COLUMN IF NOT EXISTS next_payment_at TIMESTAMPTZ
     `);
     await db.query('CREATE INDEX IF NOT EXISTS idx_businesses_sync_key ON businesses(sync_api_key)');
 

@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS businesses (
     status          VARCHAR(50)  NOT NULL DEFAULT 'Active',
     trial_ends_at   TIMESTAMPTZ,
     is_paid         BOOLEAN      NOT NULL DEFAULT FALSE,
+    is_demo         BOOLEAN      NOT NULL DEFAULT FALSE,  -- tienda de vitrina/demo, NO cuenta en el MRR
+    next_payment_at TIMESTAMPTZ,                          -- próxima fecha de pago (cuenta regresiva en el panel)
     plan            VARCHAR(20)  NOT NULL DEFAULT 'basico',  -- 'basico' | 'premium'
     vercel_store_id VARCHAR(255),                            -- integración tienda online
     sync_api_key    VARCHAR(64),                             -- llave X-Store-Key (solo Premium)

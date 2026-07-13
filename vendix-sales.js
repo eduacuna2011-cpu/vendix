@@ -34,18 +34,19 @@ async function loadVendixSales() {
         const [leads, admins] = await Promise.all([getLeads(), getAdminUsers()]);
         const biz = admins || [];
 
-        const paidList        = biz.filter(a => a.is_paid);          // pagando ahora
+        // Las tiendas demo (is_demo) siguen funcionando pero NO cuentan como ingreso.
+        const paidList        = biz.filter(a => a.is_paid && !a.is_demo);  // pagando ahora (excluye demos)
         const paidBusinesses  = paidList.length;
         const activeAccounts  = biz.length;                          // negocios con cuenta
-        const trialBusinesses = biz.filter(a => !a.is_paid).length;  // con cuenta, sin pagar
+        const trialBusinesses = biz.filter(a => !a.is_paid && !a.is_demo).length;  // con cuenta, sin pagar
         const pendingLeads    = (leads || []).filter(l => !l.account_created); // prospectos sin cuenta
         // MRR = suma del precio del plan de cada negocio pagado (Básico/Premium)
         const mrr             = paidList.reduce((s, a) => s + planPrice(a.plan), 0);
-        const mrrPotential    = biz.reduce((s, a) => s + planPrice(a.plan), 0);
+        const mrrPotential    = biz.filter(a => !a.is_demo).reduce((s, a) => s + planPrice(a.plan), 0);
 
-        // Nombres de negocios pagados, para reflejarlo también en la tabla de leads.
+        // Nombres de negocios pagados (no demo), para reflejarlo también en la tabla de leads.
         const paidBizNames = new Set(
-            biz.filter(a => a.is_paid).map(a => (a.business_name || '').trim().toLowerCase())
+            paidList.map(a => (a.business_name || '').trim().toLowerCase())
         );
 
         // ── KPIs ──────────────────────────────────────────────────────────────

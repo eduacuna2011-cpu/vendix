@@ -43,12 +43,12 @@ async function loadAdminUsers() {
         q:      searchInput  ? searchInput.value  : ''
     };
     try {
-        if (!_adminUsersLoaded && adminUsersBody) adminUsersBody.innerHTML = skeletonRows(8, 5);
+        if (!_adminUsersLoaded && adminUsersBody) adminUsersBody.innerHTML = skeletonRows(9, 5);
         const users = await getAdminUsers(filters);
         _usersCache = users || [];
         _adminUsersLoaded = true;
         if (!users || users.length === 0) {
-            adminUsersBody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);">No se encontraron usuarios</td></tr>`;
+            adminUsersBody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text-secondary);">No se encontraron usuarios</td></tr>`;
             return;
         }
         adminUsersBody.innerHTML = users.map(user => {
@@ -64,6 +64,7 @@ async function loadAdminUsers() {
                     <td>${escapeHtml(user.email || '—')}</td>
                     <td><span class="status-badge ${status}">${user.status === 'Active' ? 'Activo' : 'Deshabilitado'}</span></td>
                     <td>${trialBadge}</td>
+                    <td>${renderNextPayment(user)}</td>
                     <td>${date}</td>
                     <td>
                         <div class="action-buttons">
@@ -87,6 +88,9 @@ async function loadAdminUsers() {
                             </button>
                             <button class="btn-icon" onclick="handleDeactivateUser(${user.id})" title="Marcar NO pagado y desactivar (bloquea la cuenta)" style="color:#dc2626;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                            </button>
+                            <button class="btn-icon" onclick="handleToggleDemo(${user.id})" title="${user.is_demo ? 'Quitar de tiendas demo (contará en el MRR)' : 'Marcar como tienda demo (no cuenta en el MRR)'}" style="color:${user.is_demo ? '#64748b' : '#94a3b8'};">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="${user.is_demo ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                             </button>
                             <button class="btn-icon" onclick="handleExtendTrial(${user.id})" title="Extender +3 días" style="color:#6366f1;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -339,6 +343,10 @@ if (adminUserForm) {
 
 // ─── Trial helpers ────────────────────────────────────────────────────────────
 function renderTrialBadge(user) {
+    // Tienda demo/vitrina: funciona pero no cuenta como ingreso.
+    if (user.is_demo) {
+        return `<span class="status-badge" style="background:rgba(100,116,139,.14);color:#64748b;white-space:nowrap;">🏷️ Tienda demo</span>`;
+    }
     if (user.is_paid) {
         return `<span class="status-badge status-active" style="white-space:nowrap;">✓ Pagado</span>`;
     }
@@ -356,6 +364,30 @@ function renderTrialBadge(user) {
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         ${daysLeft}d restante${daysLeft !== 1 ? 's' : ''}
     </span>`;
+}
+
+// Cuenta regresiva a la próxima fecha de pago (solo negocios pagados no-demo).
+function renderNextPayment(user) {
+    if (user.is_demo || !user.is_paid || !user.next_payment_at) {
+        return `<span style="color:var(--text-secondary);">—</span>`;
+    }
+    const due     = new Date(user.next_payment_at);
+    const msLeft  = due - Date.now();
+    const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+    const fecha   = due.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+    if (daysLeft < 0) {
+        return `<span style="display:inline-flex;flex-direction:column;line-height:1.3;">
+            <span class="status-badge status-disabled" style="white-space:nowrap;">⚠ Vencido</span>
+            <span style="font-size:10px;color:var(--text-secondary);">${fecha}</span></span>`;
+    }
+    const color = daysLeft > 7 ? '#16a34a' : daysLeft > 2 ? '#d97706' : '#dc2626';
+    const bg    = daysLeft > 7 ? 'rgba(22,163,74,.1)' : daysLeft > 2 ? 'rgba(217,119,6,.1)' : 'rgba(220,38,38,.1)';
+    return `<span style="display:inline-flex;flex-direction:column;gap:2px;line-height:1.3;">
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:${bg};color:${color};white-space:nowrap;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${daysLeft === 0 ? 'Hoy' : daysLeft + 'd'}
+        </span>
+        <span style="font-size:10px;color:var(--text-secondary);">${fecha}</span></span>`;
 }
 
 async function sendCredsWhatsApp(id) {
@@ -383,6 +415,23 @@ async function sendCredsWhatsApp(id) {
         tab.location.href = `https://wa.me/${number}?text=${msg}`;
     } catch (err) {
         tab.close();
+        showNotification('Error: ' + err.message, true);
+    }
+}
+
+async function handleToggleDemo(id) {
+    const user = _usersCache.find(u => u.id === id);
+    const goingDemo = !(user && user.is_demo);
+    const msg = goingDemo
+        ? `¿Marcar "${user?.business_name || 'este negocio'}" como TIENDA DEMO?\n\nSeguirá funcionando normalmente, pero NO contará en el MRR.`
+        : `¿Quitar "${user?.business_name || 'este negocio'}" de las tiendas demo?\n\nVolverá a contar en el MRR.`;
+    if (!confirm(msg)) return;
+    try {
+        const r = await toggleUserDemo(id);
+        showNotification(r.is_demo ? 'Marcado como tienda demo (fuera del MRR)' : 'Ya no es tienda demo (cuenta en el MRR)');
+        await loadAdminUsers();
+        if (typeof loadVendixSales === 'function') loadVendixSales();
+    } catch (err) {
         showNotification('Error: ' + err.message, true);
     }
 }
