@@ -356,8 +356,11 @@ async function toggleAdminUserStatus(id) {
     return r;
 }
 
-async function resetAdminPassword(id) {
-    return apiFetch(`/users/${id}/reset-password`, { method: 'POST' });
+async function resetAdminPassword(id, newPassword) {
+    return apiFetch(`/users/${id}/reset-password`, {
+        method: 'POST',
+        body: newPassword ? { newPassword } : {}
+    });
 }
 
 async function markUserPaid(id, plan = 'basico') {

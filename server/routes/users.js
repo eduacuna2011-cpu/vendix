@@ -233,16 +233,24 @@ router.get('/:id/credentials', async (req, res) => {
 });
 
 // POST /api/users/:id/reset-password
+// body opcional { newPassword }: si el SA manda una contraseña la usa; si no,
+// genera una aleatoria. Devuelve la contraseña resultante (única vez que se ve
+// en claro — luego queda encriptada e irrecuperable).
 router.post('/:id/reset-password', async (req, res) => {
     try {
-        const newPassword = generatePassword();
+        const custom = req.body && typeof req.body.newPassword === 'string'
+            ? req.body.newPassword.trim() : '';
+        if (custom && custom.length < 6) {
+            return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+        }
+        const newPassword = custom || generatePassword();
         const hash = await bcrypt.hash(newPassword, 10);
         const { rows: [u] } = await db.query(
             'UPDATE users SET password_hash = $1 WHERE id = $2 RETURNING username, full_name',
             [hash, req.params.id]
         );
         if (!u) return res.status(404).json({ error: 'Not found' });
-        res.json({ username: u.username, temporaryPassword: newPassword });
+        res.json({ username: u.username, full_name: u.full_name, temporaryPassword: newPassword });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });

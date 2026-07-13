@@ -68,7 +68,7 @@ async function loadAdminUsers() {
                     <td>${date}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-icon" onclick="showAdminPassword(${user.id})" title="Ver credenciales">
+                            <button class="btn-icon" onclick="showAdminPassword(${user.id})" title="Cambiar contraseña">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                             </button>
                             <button class="btn-icon" onclick="viewBusinessProfile(${user.id})" title="Ver perfil">
@@ -125,14 +125,57 @@ function showCredentialsModal(data) {
     credentialsModal.classList.add('show');
 }
 
+// Genera una contraseña aleatoria legible (sin caracteres ambiguos)
+function genRandomPassword() {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let p = '';
+    for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)];
+    return p;
+}
+
+// Abre el modal para que el SA defina/genere la contraseña del business admin.
+// Al guardar, llama al backend y muestra las credenciales resultantes.
 async function showAdminPassword(id) {
-    try {
-        const result = await resetAdminPassword(id);
-        showQuickCredPopup(result.full_name || '', result.username, result.temporaryPassword,
-            generateLoginLink(result.username, result.temporaryPassword));
-    } catch {
-        showNotification('No se pudo restablecer la contraseña', true);
-    }
+    const u = _usersCache.find(x => x.id === id) || {};
+    const existing = document.getElementById('setPwPopup');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.id = 'setPwPopup';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    el.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:Inter,sans-serif;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--text-1);">Cambiar contraseña</h3>
+            <button onclick="document.getElementById('setPwPopup').remove()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:18px;">&times;</button>
+        </div>
+        <p style="margin:0 0 16px;font-size:12px;color:var(--text-3);">${escapeHtml(u.full_name || '')} — usuario <code style="color:var(--text-1);font-weight:600;">${escapeHtml(u.username || '')}</code></p>
+        <label style="display:block;font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:6px;">Nueva contraseña</label>
+        <div style="display:flex;gap:8px;margin-bottom:6px;">
+            <input id="setPwInput" type="text" autocomplete="off" placeholder="Escribe o genera una" style="flex:1;padding:10px;font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:9px;color:var(--text-1);outline:none;">
+            <button id="setPwGenerate" type="button" style="padding:0 14px;font-size:12px;font-weight:600;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;color:var(--text-2);cursor:pointer;white-space:nowrap;">Generar</button>
+        </div>
+        <div id="setPwError" style="font-size:12px;color:#ef4444;min-height:16px;margin-bottom:10px;"></div>
+        <button id="setPwSave" type="button" style="width:100%;padding:11px;background:#6366f1;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">Guardar contraseña</button>
+    </div>`;
+    document.body.appendChild(el);
+    el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+
+    const input = document.getElementById('setPwInput');
+    const errEl = document.getElementById('setPwError');
+    input.focus();
+    document.getElementById('setPwGenerate').onclick = () => { input.value = genRandomPassword(); errEl.textContent = ''; };
+    document.getElementById('setPwSave').onclick = async () => {
+        const pw = input.value.trim();
+        if (pw.length < 6) { errEl.textContent = 'Mínimo 6 caracteres.'; return; }
+        try {
+            const result = await resetAdminPassword(id, pw);
+            el.remove();
+            showQuickCredPopup(result.full_name || u.full_name || '', result.username, result.temporaryPassword,
+                generateLoginLink(result.username, result.temporaryPassword));
+        } catch (err) {
+            errEl.textContent = (err && err.message) || 'No se pudo guardar la contraseña.';
+        }
+    };
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('setPwSave').click(); });
 }
 
 function showQuickCredPopup(fullName, username, password, link) {
