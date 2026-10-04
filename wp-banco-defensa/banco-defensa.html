@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banco de defensa · Waterpolo</title>
+<!-- Sin Vite (servidor estático) three se carga del CDN; con Vite (npm run dev / wp-web) se usa node_modules. -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+<link rel="stylesheet" href="./banco-defensa/estilo.css">
+</head>
+<body>
+<aside id="panelLista">
+  <header>
+    <h1>🤽 Banco de defensa</h1>
+    <p><span id="total">…</span> · modelo: <b id="modelo">…</b></p>
+    <input id="buscar" type="search" placeholder="Buscar (bloqueo, boya, robo…)">
+  </header>
+  <nav id="lista"></nav>
+</aside>
+
+<main>
+  <canvas id="lienzo"></canvas>
+  <button id="menu" title="Lista">☰</button>
+  <div id="camaras">
+    <button data-cam="lado">Lado</button><button data-cam="frente">Frente</button><button data-cam="atras">Desde el arco</button>
+    <button data-cam="arriba">Arriba</button><button data-cam="bajoAgua">Bajo el agua</button><button data-cam="tribuna">Tribuna</button>
+  </div>
+  <div id="barra">
+    <button id="prev" title="Frame anterior (←)">⏮</button>
+    <button id="play" title="Play/Pausa (espacio)">⏸</button>
+    <button id="next" title="Frame siguiente (→)">⏭</button>
+    <button id="loop" title="Repetir en bucle">⟲</button>
+    <input id="tiempo" type="range" min="0" max="1" step="0.001" value="0">
+    <span id="tLabel">0.00 s</span>
+    <label class="vel">vel <input id="vel" type="range" min="0.25" max="2" step="0.25" value="1"><span id="velLabel">1.00x</span></label>
+    <label class="chk"><input id="autoRepetir" type="checkbox" checked> auto</label>
+    <label class="chk"><input id="verAgua" type="checkbox" checked> agua</label>
+    <label class="chk"><input id="verAtacante" type="checkbox" checked> atacante</label>
+    <button id="exportar" title="Descarga el AnimationClip (JSON) de esta animación para el juego">⬇ JSON</button>
+    <button id="exportarTodo" title="Descarga todas las animaciones en un solo JSON">⬇ Todo</button>
+  </div>
+</main>
+
+<aside id="info"></aside>
+
+<script type="module" src="./banco-defensa/app.js"></script>
+</body>
+</html>
