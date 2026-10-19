@@ -34,6 +34,19 @@ def srgb(x):
     return np.where(x <= 0.0031308, 12.92 * x, 1.055 * np.power(np.maximum(x, 0), 1 / 2.4) - 0.055)
 
 
+def textura_web(src, dst, clase):
+    """Albedo a resolución completa; rugosidad y normal a la mitad (bastan en pantalla y
+    reducen el peso del visor a la mitad)."""
+    im = bpy.data.images.load(src)
+    w, h = im.size
+    if clase != 'albedo' and w > 256:
+        im.scale(w // 2, h // 2)
+    im.filepath_raw = dst
+    im.file_format = 'JPEG'
+    im.save(filepath=dst, quality=88 if clase == 'albedo' else 85)
+    bpy.data.images.remove(im)
+
+
 def lightmap_jpg(img, path):
     w, h = img.size
     px = np.empty(w * h * 4, dtype=np.float32)
@@ -173,7 +186,7 @@ def main():
     for t in sorted(tex):
         for k in ('albedo', 'rough', 'normal'):
             src = os.path.join(blend_dir, MT.DIR_TEX, f'{t}_{k}.jpg')
-            shutil.copy(src, os.path.join(WEB, 'tex', f'{t}_{k}.jpg'))
+            textura_web(src, os.path.join(WEB, 'tex', f'{t}_{k}.jpg'), k)
     man['texturas'] = sorted(tex)
 
     # cámaras (coordenadas Blender Z-arriba; el visor convierte)
