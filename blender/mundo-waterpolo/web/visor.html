@@ -1,0 +1,406 @@
+<title>Mundo Waterpolo 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: lienzo 3D a pantalla completa; HUD flotante (barra superior, lista de vistas a la izquierda, ayuda abajo). Aspecto único oscuro de "sala de control" del club. */
+:root {
+  --noche: #0a1428;          /* fondo / azul marino del club */
+  --panel: rgba(10, 20, 40, 0.84);
+  --tinta: #e8eef7;
+  --gris: #9db0c9;
+  --balon: #f2c618;          /* amarillo balón de waterpolo */
+  --linea: rgba(232, 238, 247, 0.14);
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --texto: "Barlow", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--noche); color: var(--tinta); font-family: var(--texto); overflow: hidden; }
+#lienzo { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+.hud { position: fixed; z-index: 5; }
+.barra {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; pointer-events: none;
+}
+.marca { pointer-events: auto; background: var(--panel); border: 1px solid var(--linea); border-radius: 10px;
+  padding: 8px 14px; display: flex; flex-direction: column; gap: 1px; backdrop-filter: blur(8px); }
+.marca small { font: 600 11px/1.2 var(--texto); letter-spacing: .12em; text-transform: uppercase; color: var(--balon); }
+.marca h1 { margin: 0; font: 700 22px/1.05 var(--display); letter-spacing: .02em; text-wrap: balance; }
+.modos { pointer-events: auto; margin-left: auto; display: flex; background: var(--panel); border: 1px solid var(--linea);
+  border-radius: 999px; padding: 3px; backdrop-filter: blur(8px); }
+.modos button { font: 600 14px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--gris);
+  background: transparent; border: 0; border-radius: 999px; padding: 9px 16px; cursor: pointer; }
+.modos button[aria-pressed="true"] { background: var(--balon); color: var(--noche); }
+.modos button:focus-visible, .vista:focus-visible, .plegar:focus-visible { outline: 2px solid var(--balon); outline-offset: 2px; }
+
+.vistas {
+  top: calc(86px + env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  width: 236px; max-height: calc(100% - 170px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto; background: var(--panel); border: 1px solid var(--linea); border-radius: 12px;
+  padding-block: 10px; backdrop-filter: blur(8px);
+}
+.vistas h2 { margin: 10px 14px 4px; font: 600 11px/1.2 var(--texto); letter-spacing: .14em; text-transform: uppercase; color: var(--gris); }
+.vistas h2:first-of-type { margin-top: 2px; }
+.vista { display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left; background: none; border: 0;
+  color: var(--tinta); font: 500 15px/1.25 var(--texto); padding: 7px 14px; cursor: pointer; }
+.vista span { font: 600 12px/1 var(--display); color: var(--gris); min-width: 18px; font-variant-numeric: tabular-nums; }
+.vista:hover { background: rgba(242, 198, 24, 0.08); }
+.vista[aria-current="true"] { color: var(--balon); }
+.vista[aria-current="true"] span { color: var(--balon); }
+.plegar { display: none; }
+
+.ayuda {
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px);
+  background: var(--panel); border: 1px solid var(--linea); border-radius: 999px; padding: 8px 16px;
+  font: 500 13px/1.3 var(--texto); color: var(--gris); text-align: center; backdrop-filter: blur(8px);
+}
+.ayuda b { color: var(--tinta); font-weight: 600; }
+.zona { position: fixed; z-index: 5; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  font: 600 12px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--balon);
+  background: var(--panel); border: 1px solid var(--linea); border-radius: 8px; padding: 7px 10px; }
+
+#joy { position: fixed; z-index: 6; left: max(24px, env(safe-area-inset-left, 0px)); bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--linea); background: rgba(10, 20, 40, 0.45); touch-action: none; }
+#joy i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: var(--balon); opacity: .85; }
+
+#carga { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: var(--noche); }
+.carga-caja { width: min(360px, calc(100% - 48px)); display: grid; gap: 12px; }
+.carga-caja h2 { margin: 0; font: 700 34px/1 var(--display); letter-spacing: .02em; }
+.carga-caja p { margin: 0; color: var(--gris); font-size: 14px; line-height: 1.45; }
+.carril { height: 6px; background: var(--linea); border-radius: 3px; overflow: hidden; }
+.carril i { display: block; height: 100%; width: 0%; background: var(--balon); transition: width .2s; }
+#estado { font: 600 13px/1 var(--display); letter-spacing: .08em; color: var(--balon); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 720px) {
+  .marca h1 { font-size: 18px; }
+  .vistas { top: auto; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px)); max-height: 42%; }
+  .vistas.plegada .lista { display: none; }
+  .plegar { display: block; width: 100%; background: none; border: 0; color: var(--balon); font: 600 13px/1 var(--display);
+    letter-spacing: .1em; text-transform: uppercase; padding: 4px 14px 8px; text-align: left; cursor: pointer; }
+  .ayuda { border-radius: 10px; font-size: 12px; }
+  .zona { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .carril i { transition: none; } }
+</style>
+
+<canvas id="lienzo" aria-label="Vista 3D del mundo de waterpolo"></canvas>
+
+<div class="hud barra">
+  <div class="marca"><small>Centro de alto rendimiento</small><h1>Mundo Waterpolo 3D</h1></div>
+  <div class="modos" role="group" aria-label="Modo de cámara">
+    <button id="m-orbitar" aria-pressed="true">Orbitar</button>
+    <button id="m-caminar" aria-pressed="false">Caminar</button>
+  </div>
+</div>
+
+<nav class="hud vistas plegada" id="vistas" aria-label="Vistas">
+  <button class="plegar" id="plegar" aria-expanded="false">Vistas ▾</button>
+  <div class="lista" id="lista"></div>
+</nav>
+
+<div class="hud ayuda" id="ayuda"></div>
+<div class="zona" id="zona">Exterior</div>
+<div id="joy" hidden><i></i></div>
+
+<div id="carga">
+  <div class="carga-caja">
+    <h2>Mundo Waterpolo</h2>
+    <p>Barrio europeo, gimnasio de alto rendimiento y centro de waterpolo con iluminación horneada en Cycles. La parcela del pool deck queda libre (56 × 36 m).</p>
+    <div class="carril"><i id="barra"></i></div>
+    <div id="estado">Cargando…</div>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { Sky } from 'three/addons/objects/Sky.js';
+
+const $ = (id) => document.getElementById(id);
+const B2T = (p) => new THREE.Vector3(p[0], p[2], -p[1]);          // Blender Z-arriba -> three Y-arriba
+const T2B = (v) => [v.x, -v.z, v.y];
+const NOMBRES = {
+  CAM_01_Aerea: 'Vista aérea', CAM_02_Plaza: 'Plaza y fuente', CAM_03_Calle_Centro: 'Llegada al centro',
+  CAM_04_Calle_Haussmann: 'Calle haussmanniana', CAM_05_Gimnasio: 'Sala de fuerza', CAM_06_Gimnasio_Racks: 'Pasillo de racks',
+  CAM_07_Gimnasio_Mancuernas: 'Mancuernas y césped', CAM_08_Recepcion: 'Recepción', CAM_09_Vestuario_Local: 'Vestuario local',
+  CAM_10_Vestuario_Visitante: 'Vestuario visitante', CAM_11_Sala_Video: 'Sala de vídeo', CAM_12_Fisioterapia: 'Fisioterapia',
+  CAM_13_Almacen: 'Almacén de material', CAM_14_Pasillo: 'Pasillo', CAM_15_Parcela_PoolDeck: 'Parcela del pool deck',
+  CAM_16_Patio: 'Patio entre edificios', CAM_17_Aerea_Centro: 'Aérea del complejo'
+};
+const GRUPOS = [['Ciudad', [1, 2, 3, 4]], ['Gimnasio', [5, 6, 7]], ['Centro de waterpolo', [8, 9, 10, 11, 12, 13, 14]],
+                ['Exterior del complejo', [15, 16, 17]]];
+
+// ---------------------------------------------------------------- render
+const canvas = $('lienzo');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.AgXToneMapping;
+renderer.toneMappingExposure = 1.0;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, 1, 0.05, 1500);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(hfovActual) / 2) / camera.aspect));
+  camera.updateProjectionMatrix();
+}
+let hfovActual = 70;
+window.addEventListener('resize', resize);
+
+// ---------------------------------------------------------------- carga
+const manager = new THREE.LoadingManager();
+let pGlb = 0, pTex = 0;
+function progreso() {
+  const p = Math.round((pGlb * 0.55 + pTex * 0.45) * 100);
+  $('barra').style.width = p + '%';
+  $('estado').textContent = p < 100 ? `Cargando ${p} %` : 'Preparando la escena…';
+}
+manager.onProgress = (_u, a, b) => { pTex = b ? a / b : 1; progreso(); };
+const texLoader = new THREE.TextureLoader(manager);
+const cache = {};
+function tex(path, srgb) {
+  if (cache[path]) return cache[path];
+  const t = texLoader.load(path);
+  t.flipY = false;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+  t.anisotropy = aniso;
+  return (cache[path] = t);
+}
+
+const man = await (await fetch('mundo.json')).json();
+
+function material(nombre, tieneColor) {
+  const [base, grupo] = nombre.split('@');
+  const s = man.materiales[base] || { tipo: 'pbr', tex: 'pintura', tinte: [1, 1, 1], rough: 1, nrm: 1, metal: 0 };
+  if (s.tipo === 'pbr') {
+    const m = new THREE.MeshStandardMaterial({
+      map: tex(`tex/${s.tex}_albedo.jpg`, true),
+      roughnessMap: tex(`tex/${s.tex}_rough.jpg`, false),
+      normalMap: tex(`tex/${s.tex}_normal.jpg`, false),
+      normalScale: new THREE.Vector2(s.nrm, -s.nrm),
+      color: new THREE.Color().setRGB(...s.tinte, THREE.SRGBColorSpace),
+      // el lightmap sólo ilumina la parte difusa: los metales conservan algo de difuso
+      // para recibir la luz horneada y reflejan el entorno con el resto
+      metalness: Math.min(s.metal, 0.55), roughness: s.rough, vertexColors: tieneColor,
+      envMapIntensity: s.metal > 0.5 ? 1.0 : 0.12,
+    });
+    const lm = grupo && man.lightmaps[grupo];
+    if (lm) {
+      const t = tex(lm.archivo, true);
+      t.channel = 1;
+      t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+      t.anisotropy = 1;
+      m.lightMap = t;
+      m.lightMapIntensity = Math.PI * lm.escala;
+    }
+    return m;
+  }
+  if (s.tipo === 'emision') {
+    const k = Math.min(s.fuerza / 4, 4);
+    return new THREE.MeshBasicMaterial({ color: new THREE.Color(s.color[0] * k, s.color[1] * k, s.color[2] * k) });
+  }
+  if (s.tipo === 'vidrio' || s.tipo === 'vidrio_esmerilado') {
+    const esm = s.tipo === 'vidrio_esmerilado';
+    return new THREE.MeshPhysicalMaterial({ color: esm ? 0xdfe6e8 : 0xcfe2e4, metalness: 0, roughness: esm ? 0.45 : 0.04,
+      transparent: true, opacity: esm ? 0.62 : 0.16, depthWrite: false, envMapIntensity: 1.0 });
+  }
+  if (s.tipo === 'espejo') return new THREE.MeshStandardMaterial({ color: 0xf2f4f4, metalness: 1, roughness: 0.02, envMapIntensity: 1 });
+  if (s.tipo === 'agua') return new THREE.MeshStandardMaterial({ color: 0x0a1b1d, metalness: 0, roughness: 0.04, envMapIntensity: 1 });
+  return new THREE.MeshStandardMaterial({ color: 0x05080b, metalness: 0, roughness: 0.06, envMapIntensity: 1 });   // vidrio oscuro / pantalla apagada
+}
+
+const draco = new DRACOLoader().setDecoderPath('./draco/').setDecoderConfig({ type: 'wasm' });
+const gltf = await new GLTFLoader(manager).setDRACOLoader(draco)
+  .loadAsync('mundo.glb', (e) => { pGlb = e.total ? e.loaded / e.total : 0.5; progreso(); });
+pGlb = 1; progreso();
+const mats = {};
+gltf.scene.traverse((o) => {
+  if (!o.isMesh) return;
+  const n = o.material.name;
+  const conColor = !!o.geometry.attributes.color;
+  const k = n + (conColor ? '|c' : '');
+  o.material = mats[k] || (mats[k] = material(n, conColor));
+  o.matrixAutoUpdate = false;
+  o.updateMatrix();
+});
+scene.add(gltf.scene);
+
+// cielo físico con el mismo sol del horneado
+const sky = new Sky();
+sky.scale.setScalar(1200);
+const su = sky.material.uniforms;
+su.turbidity.value = 2.5; su.rayleigh.value = 2.2; su.mieCoefficient.value = 0.003; su.mieDirectionalG.value = 0.8;
+const e = THREE.MathUtils.degToRad(man.sol.elevacion), a = THREE.MathUtils.degToRad(man.sol.azimut);
+su.sunPosition.value.copy(B2T([Math.sin(a) * Math.cos(e), Math.cos(a) * Math.cos(e), Math.sin(e)]));
+scene.add(sky);
+scene.fog = new THREE.Fog(0xb9c9d8, 120, 420);
+
+// ---------------------------------------------------------------- controles
+const orbit = new OrbitControls(camera, canvas);
+orbit.enableDamping = true;
+orbit.dampingFactor = 0.08;
+orbit.maxPolarAngle = Math.PI * 0.495;
+orbit.minDistance = 0.5;
+orbit.maxDistance = 260;
+
+let modo = 'orbitar';
+const teclas = new Set();
+let yaw = 0, pitch = 0;
+const joy = { x: 0, y: 0 };
+const ALTURA_OJO = 1.72;
+
+function ponerModo(m) {
+  modo = m;
+  $('m-orbitar').setAttribute('aria-pressed', m === 'orbitar');
+  $('m-caminar').setAttribute('aria-pressed', m === 'caminar');
+  orbit.enabled = m === 'orbitar';
+  const tactil = matchMedia('(pointer: coarse)').matches;
+  $('joy').hidden = !(m === 'caminar' && tactil);
+  if (m === 'caminar') {
+    const d = new THREE.Vector3(); camera.getWorldDirection(d);
+    yaw = Math.atan2(-d.x, -d.z); pitch = Math.asin(THREE.MathUtils.clamp(d.y, -1, 1));
+    if (camera.position.y > 6) camera.position.y = ALTURA_OJO + 0.16;
+  } else {
+    const d = new THREE.Vector3(); camera.getWorldDirection(d);
+    orbit.target.copy(camera.position).addScaledVector(d, 6);
+  }
+  $('ayuda').innerHTML = m === 'caminar'
+    ? (tactil ? '<b>Joystick</b> para andar · <b>arrastra</b> para mirar'
+              : '<b>W A S D</b> o flechas para andar · <b>arrastra</b> para mirar · <b>Shift</b> corre')
+    : (tactil ? '<b>Arrastra</b> para girar · <b>pellizca</b> para acercar · elige una vista'
+              : '<b>Arrastra</b> para girar · <b>rueda</b> para acercar · <b>clic derecho</b> desplaza');
+}
+$('m-orbitar').onclick = () => ponerModo('orbitar');
+$('m-caminar').onclick = () => ponerModo('caminar');
+addEventListener('keydown', (ev) => { teclas.add(ev.code); if (ev.code === 'KeyC') ponerModo(modo === 'caminar' ? 'orbitar' : 'caminar'); });
+addEventListener('keyup', (ev) => teclas.delete(ev.code));
+addEventListener('blur', () => teclas.clear());
+
+let arrastre = null;
+canvas.addEventListener('pointerdown', (ev) => { if (modo === 'caminar') { arrastre = { x: ev.clientX, y: ev.clientY, id: ev.pointerId }; canvas.setPointerCapture(ev.pointerId); } });
+canvas.addEventListener('pointermove', (ev) => {
+  if (!arrastre || ev.pointerId !== arrastre.id) return;
+  yaw -= (ev.clientX - arrastre.x) * 0.0042; pitch -= (ev.clientY - arrastre.y) * 0.0042;
+  pitch = THREE.MathUtils.clamp(pitch, -1.35, 1.35);
+  arrastre.x = ev.clientX; arrastre.y = ev.clientY;
+});
+canvas.addEventListener('pointerup', () => { arrastre = null; });
+canvas.addEventListener('pointercancel', () => { arrastre = null; });
+
+const jEl = $('joy'), jPom = jEl.querySelector('i');
+let jId = null;
+jEl.addEventListener('pointerdown', (ev) => { jId = ev.pointerId; jEl.setPointerCapture(jId); mover(ev); });
+jEl.addEventListener('pointermove', (ev) => { if (ev.pointerId === jId) mover(ev); });
+const soltar = () => { jId = null; joy.x = joy.y = 0; jPom.style.transform = ''; };
+jEl.addEventListener('pointerup', soltar); jEl.addEventListener('pointercancel', soltar);
+function mover(ev) {
+  const r = jEl.getBoundingClientRect();
+  let x = (ev.clientX - r.left - r.width / 2) / (r.width / 2), y = (ev.clientY - r.top - r.height / 2) / (r.height / 2);
+  const l = Math.hypot(x, y); if (l > 1) { x /= l; y /= l; }
+  joy.x = x; joy.y = y;
+  jPom.style.transform = `translate(${x * 36}px, ${y * 36}px)`;
+}
+
+// ---------------------------------------------------------------- vistas
+let vuelo = null;
+function irA(cam, inmediato = false) {
+  const p = B2T(cam.pos), t = B2T(cam.obj);
+  document.querySelectorAll('.vista').forEach((b) => b.setAttribute('aria-current', b.dataset.n === cam.nombre));
+  const desde = { p: camera.position.clone(), t: orbit.target.clone(), f: hfovActual };
+  if (inmediato || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    camera.position.copy(p); orbit.target.copy(t); hfovActual = cam.hfov; resize(); camera.lookAt(t);
+  } else {
+    vuelo = { desde, p, t, f: cam.hfov, t0: performance.now(), dur: 1300 };
+  }
+  if (modo === 'caminar') ponerModo('orbitar');
+}
+const lista = $('lista');
+for (const [titulo, nums] of GRUPOS) {
+  const h = document.createElement('h2'); h.textContent = titulo; lista.appendChild(h);
+  for (const n of nums) {
+    const cam = man.camaras.find((c) => c.nombre.startsWith(`CAM_${String(n).padStart(2, '0')}`));
+    if (!cam) continue;
+    const b = document.createElement('button');
+    b.className = 'vista'; b.dataset.n = cam.nombre;
+    b.innerHTML = `<span>${String(n).padStart(2, '0')}</span>${NOMBRES[cam.nombre] || cam.nombre}`;
+    b.onclick = () => irA(cam);
+    lista.appendChild(b);
+  }
+}
+$('plegar').onclick = () => {
+  const v = $('vistas'); const p = v.classList.toggle('plegada');
+  $('plegar').setAttribute('aria-expanded', !p); $('plegar').textContent = p ? 'Vistas ▾' : 'Vistas ▴';
+};
+
+// ---------------------------------------------------------------- exposición por zona (interior / exterior)
+function zona(v) {
+  const b = T2B(v);
+  for (const z of man.interiores) {
+    if (b[0] > z.min[0] && b[0] < z.max[0] && b[1] > z.min[1] && b[1] < z.max[1] && b[2] < z.max[2]) return z;
+  }
+  return null;
+}
+let zonaPrev = '';
+
+// ---------------------------------------------------------------- bucle
+const reloj = new THREE.Clock();
+const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+function frame() {
+  const dt = Math.min(reloj.getDelta(), 0.05);
+  if (vuelo) {
+    const k = ease(Math.min(1, (performance.now() - vuelo.t0) / vuelo.dur));
+    camera.position.lerpVectors(vuelo.desde.p, vuelo.p, k);
+    orbit.target.lerpVectors(vuelo.desde.t, vuelo.t, k);
+    hfovActual = vuelo.desde.f + (vuelo.f - vuelo.desde.f) * k; resize();
+    if (k >= 1) vuelo = null;
+  }
+  if (modo === 'caminar') {
+    const v = (teclas.has('ShiftLeft') || teclas.has('ShiftRight')) ? 7.5 : 2.6;
+    let f = (teclas.has('KeyW') || teclas.has('ArrowUp') ? 1 : 0) - (teclas.has('KeyS') || teclas.has('ArrowDown') ? 1 : 0) - joy.y;
+    let s = (teclas.has('KeyD') || teclas.has('ArrowRight') ? 1 : 0) - (teclas.has('KeyA') || teclas.has('ArrowLeft') ? 1 : 0) + joy.x;
+    const fw = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)), rt = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+    camera.position.addScaledVector(fw, f * v * dt).addScaledVector(rt, s * v * dt);
+    camera.position.y += ((ALTURA_OJO + 0.16) - camera.position.y) * Math.min(1, dt * 6);
+    camera.rotation.set(pitch, yaw, 0, 'YXZ');
+  } else {
+    orbit.update();
+  }
+  const z = zona(camera.position);
+  const objetivo = Math.pow(2, z ? z.expo : 0);
+  renderer.toneMappingExposure += (objetivo - renderer.toneMappingExposure) * Math.min(1, dt * 2.5);
+  const nz = z ? z.nombre : 'Exterior';
+  if (nz !== zonaPrev) { $('zona').textContent = nz; zonaPrev = nz; }
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+ponerModo('orbitar');
+irA(man.camaras.find((c) => c.nombre.startsWith('CAM_17')) || man.camaras[0], true);
+resize();
+$('carga').hidden = true;
+requestAnimationFrame(frame);
+</script>

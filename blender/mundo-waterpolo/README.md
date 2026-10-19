@@ -53,6 +53,24 @@ blender -b -P generar_mundo.py -- --calidad borrador --render   # prueba rápida
 | `--sin-hornear` | sólo geometría y materiales PBR (iluminación dinámica) |
 | `--render` | renderiza todas las cámaras en `renders/` (`--solo CAM_05` para una) |
 
+## Ver en el navegador (web/)
+
+`web/` es un visor three.js estático listo para subir a cualquier hosting:
+
+```
+web/index.html     visor (orbitar / caminar con WASD o joystick en móvil, 17 vistas, exposición automática)
+web/mundo.glb      geometría Draco (~6 MB) con UV de textura + UV de lightmap + color 'Tinte'
+web/lm/  web/tex/  lightmaps (JPEG) y texturas tileables
+web/mundo.json     materiales, escala de cada lightmap, cámaras, zonas interiores, sol
+web/draco/         decodificador Draco (three.js 0.160)
+```
+
+Regenerar tras volver a hornear: `blender -b mundo_waterpolo.blend -P exportar_web.py`.
+Probar en local: `cd web && python3 -m http.server` y abrir `http://localhost:8000`.
+
+El visor usa `MeshStandardMaterial` con `map` (UV 0, tileable) + `lightMap` (UV 1,
+`lightMapIntensity = π × escala`), sin luces dinámicas ni sombras: corre fluido en móvil.
+
 ### Cambiar entre horneado y dinámico
 
 Todos los materiales leen el grupo de nodos **`MW_Modo`** (valor `k`):

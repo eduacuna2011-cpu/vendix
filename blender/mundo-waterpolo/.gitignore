@@ -1,0 +1,11 @@
+# Salidas generadas (se regeneran con generar_mundo.py / exportar_web.py)
+*.blend
+*.blend1
+texturas/
+lightmaps/
+renders/
+web/mundo.glb
+web/mundo.json
+web/lm/
+web/tex/
+__pycache__/
