@@ -11,6 +11,7 @@ proyección de caja escalada en metros / tamaño de tile del material, de modo
 que las texturas tienen la misma densidad en todo el mundo.
 """
 import math
+from contextlib import contextmanager
 import bpy
 from mathutils import Matrix, Vector
 
@@ -107,6 +108,12 @@ class Builder:
         self.FT = []
         self.mats = []
         self._mi = {}
+        # piezas: cada cara recuerda a qué objeto lógico pertenece (rack, barra, disco...)
+        # para poder separarlo después en objetos independientes sin perder el lightmap
+        self.FP = []
+        self.piezas = [name]
+        self._pi = {name: 0}
+        self.cur = 0
 
     # ------------------------------------------------------------------
     def mi(self, mat):
@@ -117,6 +124,22 @@ class Builder:
 
     def nfaces(self):
         return len(self.F)
+
+    def pieza(self, nombre):
+        """Fija la pieza actual; devuelve la anterior (índice) para restaurarla."""
+        prev = self.cur
+        # cada llamada crea una instancia nueva (dos discos de 25 kg = dos objetos)
+        self.piezas.append(nombre)
+        self.cur = len(self.piezas) - 1
+        return prev
+
+    @contextmanager
+    def p(self, nombre):
+        prev = self.pieza(nombre)
+        try:
+            yield self
+        finally:
+            self.cur = prev
 
     def add(self, verts, faces, M=None, mat='pintura', uvs=None, tint=(1, 1, 1),
             tile=None, uvoff=(0.0, 0.0)):
@@ -129,6 +152,7 @@ class Builder:
         tint = tuple(tint)
         for fi, f in enumerate(faces):
             self.F.append([base + i for i in f])
+            self.FP.append(self.cur)
             self.FM.append(m)
             self.FT.append(tint)
             if uvs is not None:
@@ -289,6 +313,8 @@ class Builder:
         me = bpy.data.meshes.new(self.name)
         me.from_pydata(self.V, [], self.F)
         me.polygons.foreach_set('material_index', self.FM)
+        at = me.attributes.new('pieza', 'INT', 'FACE')
+        at.data.foreach_set('value', self.FP)
         uvl = me.uv_layers.new(name='UVMap')
         flat = [c for f in self.FUV for uv in f for c in uv]
         uvl.data.foreach_set('uv', flat)
@@ -302,6 +328,7 @@ class Builder:
             me.materials.append(get_material(m, self.name if self.bake else None))
         me.validate(clean_customdata=False)
         ob = bpy.data.objects.new(self.name, me)
+        ob['piezas'] = list(self.piezas)
         coll.objects.link(ob)
         # suavizado por ángulo (cajas planas, cilindros suaves)
         _select_only(ob)
@@ -454,3 +481,75 @@ def lightmap_uv(ob, res, margen_px=1, angulo=45.0):
     me.uv_layers['UVMap'].active_render = True
     ob['lightmap_px_por_metro'] = s_
     print(f'   UV lightmap {ob.name}: {len(charts)} cartas, {s_:.1f} px/m', flush=True)
+
+
+def separar_piezas(ob, coll, prefijo=''):
+    """Divide un objeto de grupo en un objeto por pieza (atributo de cara 'pieza'),
+    conservando materiales, UVMap, Lightmap y el color 'Tinte'. Devuelve los objetos nuevos."""
+    import numpy as np
+    me = ob.data
+    nombres = list(ob.get('piezas', [ob.name]))
+    nf, nl = len(me.polygons), len(me.loops)
+    pz = np.empty(nf, dtype=np.int64)
+    me.attributes['pieza'].data.foreach_get('value', pz)
+    ls = np.empty(nf, dtype=np.int64)
+    lt = np.empty(nf, dtype=np.int64)
+    me.polygons.foreach_get('loop_start', ls)
+    me.polygons.foreach_get('loop_total', lt)
+    mi = np.empty(nf, dtype=np.int64)
+    me.polygons.foreach_get('material_index', mi)
+    lv = np.empty(nl, dtype=np.int64)
+    me.loops.foreach_get('vertex_index', lv)
+    co = np.empty(len(me.vertices) * 3)
+    me.vertices.foreach_get('co', co)
+    co = co.reshape(-1, 3)
+    uvs = {}
+    for uvl in me.uv_layers:
+        a = np.empty(nl * 2)
+        uvl.data.foreach_get('uv', a)
+        uvs[uvl.name] = a.reshape(-1, 2)
+    col = None
+    if 'Tinte' in me.color_attributes:
+        col = np.empty(nl * 4, dtype=np.float32)
+        me.color_attributes['Tinte'].data.foreach_get('color_srgb', col)
+        col = col.reshape(-1, 4)
+    usados = {}
+    nuevos = []
+    for k in np.unique(pz):
+        caras = np.nonzero(pz == k)[0]
+        loops = np.concatenate([np.arange(ls[f], ls[f] + lt[f]) for f in caras])
+        verts, inv = np.unique(lv[loops], return_inverse=True)
+        caras_idx = []
+        i = 0
+        for f in caras:
+            n = lt[f]
+            caras_idx.append(inv[i:i + n].tolist())
+            i += n
+        nombre = prefijo + nombres[k]
+        usados[nombre] = usados.get(nombre, 0) + 1
+        if usados[nombre] > 1:
+            nombre = f'{nombre}_{usados[nombre]:02d}'
+        m2 = bpy.data.meshes.new(nombre)
+        # origen de cada pieza en el centro de su base (útil para moverlas/animarlas)
+        P = co[verts]
+        org = np.array([(P[:, 0].min() + P[:, 0].max()) / 2, (P[:, 1].min() + P[:, 1].max()) / 2, P[:, 2].min()])
+        m2.from_pydata((P - org).tolist(), [], caras_idx)
+        mats_usadas = sorted(set(mi[caras].tolist()))
+        remap = {old: j for j, old in enumerate(mats_usadas)}
+        for old in mats_usadas:
+            m2.materials.append(me.materials[old])
+        m2.polygons.foreach_set('material_index', [remap[x] for x in mi[caras].tolist()])
+        for nomuv, a in uvs.items():
+            l2 = m2.uv_layers.new(name=nomuv)
+            l2.data.foreach_set('uv', a[loops].ravel())
+        if col is not None:
+            ca = m2.color_attributes.new('Tinte', 'BYTE_COLOR', 'CORNER')
+            ca.data.foreach_set('color_srgb', col[loops].ravel())
+        m2.validate(clean_customdata=False)
+        o2 = bpy.data.objects.new(nombre, m2)
+        o2.location = org.tolist()
+        coll.objects.link(o2)
+        _select_only(o2)
+        bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35))
+        nuevos.append(o2)
+    return nuevos

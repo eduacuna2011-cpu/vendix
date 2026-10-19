@@ -137,7 +137,7 @@ def geometria_compacta(glb, destino):
     return {'archivo': 'mundo.bin', 'prims': prims}
 
 
-def main():
+def main(destino_html=None):
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
     if argv:   # uso con python+bpy: exportar_web.py -- ruta/al/mundo.blend
         bpy.ops.wm.open_mainfile(filepath=os.path.abspath(argv[0]))
@@ -146,6 +146,7 @@ def main():
     blend_dir = os.path.dirname(bpy.data.filepath) or AQUI
     man = {'materiales': {}, 'lightmaps': {}, 'camaras': [], 'texturas': [],
            'sol': {'elevacion': H.SOL_ELEV, 'azimut': H.SOL_AZIM},
+           'titulo': bpy.context.scene.get('mw_titulo'),
            'interiores': [
                {'nombre': 'Gimnasio', 'min': [-28, -46, 0], 'max': [-6, -24, 6.4], 'expo': 1.0},
                {'nombre': 'Centro de waterpolo', 'min': [2, -48, 0], 'max': [28, -24, 4.4], 'expo': 0.9}]}
@@ -197,7 +198,8 @@ def main():
         tgt = pos + fwd * 12.0
         man['camaras'].append({'nombre': c.name, 'pos': list(pos), 'obj': list(tgt),
                                'hfov': math.degrees(2 * math.atan(18.0 / c.data.lens)),
-                               'expo': float(c.get('exposicion', 0.0))})
+                               'expo': float(c.get('exposicion', 0.0)),
+                               'etiqueta': c.get('etiqueta'), 'grupo': c.get('grupo')})
 
     # GLB: sólo mallas, sin imágenes (el visor monta los materiales con el manifiesto).
     # 1) GLB sin comprimir -> geometría compacta propia (mundo.bin) que usa el visor
@@ -220,7 +222,7 @@ def main():
     with open(os.path.join(WEB, 'mundo.json'), 'w', encoding='utf-8') as fh:
         json.dump(man, fh, ensure_ascii=False, indent=1)
     index_html()
-    html_unico()
+    html_unico(destino_html)
     print('> web exportada en', WEB, flush=True)
 
 

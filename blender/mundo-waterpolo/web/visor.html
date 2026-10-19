@@ -251,7 +251,9 @@ function material(nombre, tieneColor) {
     return new THREE.MeshPhysicalMaterial({ color: esm ? 0xdfe6e8 : 0xcfe2e4, metalness: 0, roughness: esm ? 0.45 : 0.04,
       transparent: true, opacity: esm ? 0.62 : 0.16, depthWrite: false, envMapIntensity: 1.0 });
   }
-  if (s.tipo === 'espejo') return new THREE.MeshStandardMaterial({ color: 0xf2f4f4, metalness: 1, roughness: 0.02, envMapIntensity: 1 });
+  // espejo: sin sonda planar, un metal pulido con el entorno de sala se ve negro; se aclara un poco
+  if (s.tipo === 'espejo') return new THREE.MeshStandardMaterial({ color: 0xe8eef0, metalness: 0.85, roughness: 0.14, envMapIntensity: 2.2,
+    emissive: 0x3a4044 });
   if (s.tipo === 'agua') return new THREE.MeshStandardMaterial({ color: 0x0a1b1d, metalness: 0, roughness: 0.04, envMapIntensity: 1 });
   return new THREE.MeshStandardMaterial({ color: 0x05080b, metalness: 0, roughness: 0.06, envMapIntensity: 1 });   // vidrio oscuro / pantalla apagada
 }
@@ -400,7 +402,24 @@ function irA(cam, inmediato = false) {
   if (modo === 'caminar') ponerModo('orbitar');
 }
 const lista = $('lista');
-for (const [titulo, nums] of GRUPOS) {
+// si las cámaras traen grupo/etiqueta en el manifiesto (p. ej. el gimnasio PRO), se usan esos
+const conEtiquetas = man.camaras.every((c) => c.grupo && c.etiqueta);
+const gruposMan = conEtiquetas ? [...new Set(man.camaras.map((c) => c.grupo))].map((g) => [g, man.camaras.filter((c) => c.grupo === g)]) : [];
+if (conEtiquetas) {
+  let n = 0;
+  for (const [titulo, cams] of gruposMan) {
+    const h = document.createElement('h2'); h.textContent = titulo; lista.appendChild(h);
+    for (const cam of cams) {
+      n++;
+      const b = document.createElement('button');
+      b.className = 'vista'; b.dataset.n = cam.nombre;
+      b.innerHTML = `<span>${String(n).padStart(2, '0')}</span>${cam.etiqueta}`;
+      b.onclick = () => irA(cam);
+      lista.appendChild(b);
+    }
+  }
+}
+for (const [titulo, nums] of (conEtiquetas ? [] : GRUPOS)) {
   const h = document.createElement('h2'); h.textContent = titulo; lista.appendChild(h);
   for (const n of nums) {
     const cam = man.camaras.find((c) => c.nombre.startsWith(`CAM_${String(n).padStart(2, '0')}`));
@@ -461,6 +480,7 @@ function frame() {
 
 ponerModo('orbitar');
 irA(man.camaras.find((c) => c.nombre.startsWith('CAM_17')) || man.camaras[0], true);
+if (man.titulo) { document.querySelector('.marca h1').textContent = man.titulo; document.title = man.titulo; }
 resize();
 $('carga').hidden = true;
 requestAnimationFrame(frame);

@@ -124,6 +124,15 @@ def gimnasio_envolvente(B):
     zt = FZ + C_GYM + 0.6
     x0, y0, x1, y1 = box
     # NORTE (calle): ventanales altos + entrada
+    S = B['Gimnasio_Sala']
+    G = B['Centro_Vidrios']
+
+    def piezas(lado):
+        ext.pieza(f'Gimnasio_Fachada_{lado}')
+        S.pieza(f'Pared_{lado}')
+        G.pieza(f'Ventanas_{lado}')
+    prev = (ext.cur, S.cur, G.cur)
+    piezas('Norte')
     M, L = Mwall('N', box)
     # x local medido desde x1 hacia el oeste
     hN = [(1.0, 3.0, FZ, FZ + 2.6, 'p'),                       # entrada x[-9,-7]
@@ -131,28 +140,40 @@ def gimnasio_envolvente(B):
           (13.4, 16.9, FZ + 2.75, FZ + 5.2, 'v'), (17.9, 21.4, FZ + 2.75, FZ + 5.2, 'v')]
     perimetro(B, ext, M, L, zt, [(0, L, 'Gimnasio_Sala', 'pintura_blanca')], hN, 'ladrillo')
     # SUR (parcela piscina): puerta + ventanas altas
+    piezas('Sur')
     M, L = Mwall('S', box)
     hS = [(9.7, 11.7, FZ, FZ + 2.6, 'p'), (2.0, 5.5, FZ + 3.4, FZ + 5.2, 'v'), (14.5, 18.0, FZ + 3.4, FZ + 5.2, 'v')]
     perimetro(B, ext, M, L, zt, [(0, L, 'Gimnasio_Sala', 'pintura_blanca')], hS, 'ladrillo', recorte=(0, 0))
     # OESTE: ventanales (sol de tarde sobre la zona de remoergómetros)
+    piezas('Oeste')
     M, L = Mwall('O', box)
     hO = [(1.6, 5.0, FZ + 1.0, FZ + 4.8, 'v'), (6.0, 9.4, FZ + 1.0, FZ + 4.8, 'v'),
           (10.4, 13.8, FZ + 1.0, FZ + 4.8, 'v'), (14.8, 18.2, FZ + 1.0, FZ + 4.8, 'v')]
     perimetro(B, ext, M, L, zt, [(0, L, 'Gimnasio_Sala', 'pintura_blanca')], hO, 'ladrillo', recorte=(T_EXT, T_EXT))
     # ESTE: puerta a la pasarela cubierta y[-36,-34] (x local desde y0)
+    piezas('Este')
     M, L = Mwall('E', box)
     hE = [(10.0, 12.0, FZ, FZ + 2.6, 'p'), (2.0, 6.0, FZ + 3.4, FZ + 5.2, 'v')]
     perimetro(B, ext, M, L, zt, [(0, L, 'Gimnasio_Sala', 'pintura_blanca')], hE, 'ladrillo', recorte=(T_EXT, T_EXT))
     # zócalo y bandas de hormigón
+    ext.pieza('Gimnasio_Zocalo_Bandas')
     for lado in 'NSOE':
         M, L = Mwall(lado, box)
         ext.box('concreto', (0, -0.04, 0.0), (L, 0.0, 0.6), M, skip=('bottom', 'back'))
         ext.box('concreto', (0, -0.06, zt - 0.7), (L, 0.0, zt), M, skip=('bottom', 'back'))
-    suelo_techo(B['Gimnasio_Sala'], x0 + T_EXT, y0 + T_EXT, x1 - T_EXT, y1 - T_EXT, 'goma_gym', C_GYM)
+    with S.p('Suelo_Caucho'):
+        S.box('goma_gym', (x0 + T_EXT, y0 + T_EXT, 0.0), (x1 - T_EXT, y1 - T_EXT, FZ), skip=('bottom',))
+    with S.p('Techo_Acustico'):
+        S.box('acustico', (x0 + T_EXT, y0 + T_EXT, FZ + C_GYM), (x1 - T_EXT, y1 - T_EXT, FZ + C_GYM + 0.08), skip=('top',))
+    ext.pieza('Gimnasio_Cubierta')
     cubierta(ext, box, FZ + C_GYM + 0.08, zt)
+    ext.pieza('Climatizadora_1')
     climatizadora(ext, -24, -40, zt, 4.0, 2.0, 1.6)
+    ext.pieza('Climatizadora_2')
     climatizadora(ext, -16, -30, zt, 3.0, 1.6, 1.3)
+    ext.pieza('Extractor')
     ext.cyl('aluminio', 0.35, zt, zt + 1.2, 16, T(-19, -37, 0))
+    ext.pieza('Marquesina_Rotulo')
     # marquesina de entrada + rótulo
     ext.box('concreto', (-11.0, -24.0, FZ + 2.9), (-5.0, -21.6, FZ + 3.2))
     ext.box('aluminio', (-11.05, -21.65, FZ + 2.85), (-4.95, -21.55, FZ + 3.25))
@@ -161,6 +182,7 @@ def gimnasio_envolvente(B):
     ext.text('pintura_club', 'GIMNASIO', 0.9, T(-17.0, -23.97, FZ + 6.0) @ Rz(math.pi), extrude=0.06)
     ext.text('pintura_club', 'ALTO RENDIMIENTO · WATERPOLO', 0.32, T(-17.0, -23.97, FZ + 5.3) @ Rz(math.pi), extrude=0.03)
     # los textos se colocan mirando a +Y (calle): Rz(pi)
+    ext.cur, S.cur, G.cur = prev
 
 
 def centro_envolvente(B):
