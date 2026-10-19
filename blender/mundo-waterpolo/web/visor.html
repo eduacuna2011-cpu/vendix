@@ -81,7 +81,7 @@ body { background: var(--noche); color: var(--tinta); font-family: var(--texto);
 @media (max-width: 720px) {
   .marca h1 { font-size: 18px; }
   .vistas { top: auto; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto;
-    bottom: calc(60px + env(safe-area-inset-bottom, 0px)); max-height: 42%; }
+    bottom: calc(104px + env(safe-area-inset-bottom, 0px)); max-height: 42%; }
   .vistas.plegada .lista { display: none; }
   .plegar { display: block; width: 100%; background: none; border: 0; color: var(--balon); font: 600 13px/1 var(--display);
     letter-spacing: .1em; text-transform: uppercase; padding: 4px 14px 8px; text-align: left; cursor: pointer; }
@@ -126,10 +126,10 @@ body { background: var(--noche); color: var(--tinta); font-family: var(--texto);
   addEventListener('error', (e) => msg('Error: ' + (e.message || 'no se pudo cargar un recurso')));
   addEventListener('unhandledrejection', (e) => msg('Error: ' + ((e.reason && e.reason.message) || e.reason)));
   setTimeout(() => {
-    const c = document.getElementById('carga'), e = document.getElementById('estado');
-    if (c && !c.hidden && e && e.textContent === 'Cargando…')
-      msg('El visor 3D no arrancó. Ábrelo con Chrome, Edge o Safari (no en la vista previa de archivos del móvil).');
-  }, 15000);
+    const c = document.getElementById('carga');
+    if (c && !c.hidden && !window.MW_PASO)
+      msg('El visor no llegó a arrancar: este navegador bloqueó el JavaScript del archivo.');
+  }, 20000);
 })();
 </script>
 <script type="importmap">
@@ -140,13 +140,14 @@ body { background: var(--noche); color: var(--tinta); font-family: var(--texto);
 </script>
 <script type="module">
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 
 const $ = (id) => document.getElementById(id);
+const paso = (t) => { window.MW_PASO = t; $('estado').textContent = t; };
+const espera = () => new Promise((r) => setTimeout(r, 0));   // deja pintar la pantalla de carga
+paso('Iniciando WebGL…');
 const B2T = (p) => new THREE.Vector3(p[0], p[2], -p[1]);          // Blender Z-arriba -> three Y-arriba
 const T2B = (v) => [v.x, -v.z, v.y];
 const NOMBRES = {
@@ -189,7 +190,7 @@ let pGlb = 0, pTex = 0;
 function progreso() {
   const p = Math.round((pGlb * 0.55 + pTex * 0.45) * 100);
   $('barra').style.width = p + '%';
-  $('estado').textContent = p < 100 ? `Cargando ${p} %` : 'Preparando la escena…';
+  paso(p < 100 ? `Cargando texturas ${p} %` : 'Preparando la escena…');
 }
 manager.onProgress = (_u, a, b) => { pTex = b ? a / b : 1; progreso(); };
 const texLoader = new THREE.TextureLoader(manager);
@@ -255,27 +256,59 @@ function material(nombre, tieneColor) {
   return new THREE.MeshStandardMaterial({ color: 0x05080b, metalness: 0, roughness: 0.06, envMapIntensity: 1 });   // vidrio oscuro / pantalla apagada
 }
 
-const draco = new DRACOLoader().setDecoderPath('./draco/').setDecoderConfig({ type: 'wasm' });
-if (EMB) {
-  draco._loadLibrary = async (f, tipo) => {
-    const r = await fetch(EMB['draco/' + f]);
-    return tipo === 'arraybuffer' ? r.arrayBuffer() : r.text();
-  };
+// ---------------------------------------------------------------- geometría compacta (mundo.bin)
+// gzip + cuantización 16 bits; se decodifica en el hilo principal (sin Draco, Workers ni WebAssembly)
+async function bytesDe(nombre) {
+  if (EMB) {
+    const d = EMB[nombre];
+    const bin = atob(d.slice(d.indexOf(',') + 1));
+    const u = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return u;
+  }
+  return new Uint8Array(await (await fetch(nombre)).arrayBuffer());
 }
-const gltf = await new GLTFLoader(manager).setDRACOLoader(draco)
-  .loadAsync(url('mundo.glb'), (e) => { pGlb = e.total ? e.loaded / e.total : 0.5; progreso(); });
-pGlb = 1; progreso();
+async function gunzip(u8) {
+  if (typeof DecompressionStream === 'undefined') throw new Error('este navegador no puede descomprimir el modelo; actualiza Chrome o Safari');
+  const st = new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Response(st).arrayBuffer();
+}
+const LIN = new Float32Array(256).map((_, i) => { const c = i / 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
+paso('Leyendo el modelo 3D…'); await espera();
+const crudo = await bytesDe(man.geo.archivo);
+paso('Descomprimiendo el modelo 3D…'); await espera();
+const buf = await gunzip(crudo);
+pGlb = 0.5;
+paso('Creando mallas…'); await espera();
 const mats = {};
-gltf.scene.traverse((o) => {
-  if (!o.isMesh) return;
-  const n = o.material.name;
-  const conColor = !!o.geometry.attributes.color;
-  const k = n + (conColor ? '|c' : '');
-  o.material = mats[k] || (mats[k] = material(n, conColor));
-  o.matrixAutoUpdate = false;
-  o.updateMatrix();
-});
-scene.add(gltf.scene);
+const mundo = new THREE.Group();
+for (const p of man.geo.prims) {
+  const nv = p.nv, o = p.o, g = new THREE.BufferGeometry();
+  const qp = new Uint16Array(buf, o.pos, nv * 3), pos = new Float32Array(nv * 3);
+  for (let i = 0; i < nv * 3; i += 3) {
+    pos[i] = p.pmin[0] + qp[i] * p.pesc[0]; pos[i + 1] = p.pmin[1] + qp[i + 1] * p.pesc[1]; pos[i + 2] = p.pmin[2] + qp[i + 2] * p.pesc[2];
+  }
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(new Int8Array(buf, o.nrm, nv * 3), 3, true));
+  const qt = new Uint16Array(buf, o.uv0, nv * 2), uv = new Float32Array(nv * 2);
+  for (let i = 0; i < nv * 2; i += 2) { uv[i] = p.tmin[0] + qt[i] * p.tesc[0]; uv[i + 1] = p.tmin[1] + qt[i + 1] * p.tesc[1]; }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  if (o.uv1 !== undefined) g.setAttribute('uv1', new THREE.BufferAttribute(new Uint16Array(buf, o.uv1, nv * 2), 2, true));
+  const conColor = o.col !== undefined;
+  if (conColor) {
+    const qc = new Uint8Array(buf, o.col, nv * 3), col = new Float32Array(nv * 3);
+    for (let i = 0; i < nv * 3; i++) col[i] = LIN[qc[i]];
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  }
+  g.setIndex(new THREE.BufferAttribute(p.i32 ? new Uint32Array(buf, o.idx, p.ni) : new Uint16Array(buf, o.idx, p.ni), 1));
+  g.computeBoundingSphere();
+  const k = p.mat + (conColor ? '|c' : '');
+  const m = new THREE.Mesh(g, mats[k] || (mats[k] = material(p.mat, conColor)));
+  m.matrixAutoUpdate = false;
+  mundo.add(m);
+}
+pGlb = 1; progreso();
+scene.add(mundo);
 
 // cielo físico con el mismo sol del horneado
 const sky = new Sky();

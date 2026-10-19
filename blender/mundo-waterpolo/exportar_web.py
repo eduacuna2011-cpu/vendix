@@ -52,6 +52,78 @@ def lightmap_jpg(img, path):
     return escala, cobertura
 
 
+def geometria_compacta(glb, destino):
+    """GLB sin comprimir -> binario propio gzip (posiciones/UV cuantizadas a 16 bits, normales 8 bits,
+    color sRGB 8 bits). El visor lo descomprime con DecompressionStream: sin Draco, sin Workers,
+    sin WebAssembly ni fetch (funciona abriendo el .html como archivo local, también en móvil)."""
+    import gzip
+    import struct
+    data = open(glb, 'rb').read()
+    jl = struct.unpack('<I', data[12:16])[0]
+    J = json.loads(data[20:20 + jl])
+    o = 20 + jl
+    bl = struct.unpack('<I', data[o:o + 4])[0]
+    BIN = data[o + 8:o + 8 + bl]
+    tipos = {5126: np.float32, 5123: np.uint16, 5125: np.uint32, 5121: np.uint8, 5122: np.int16, 5120: np.int8}
+    comps = {'SCALAR': 1, 'VEC2': 2, 'VEC3': 3, 'VEC4': 4}
+
+    def acc(i):
+        a = J['accessors'][i]
+        bv = J['bufferViews'][a['bufferView']]
+        dt = tipos[a['componentType']]
+        n = comps[a['type']]
+        ini = bv.get('byteOffset', 0) + a.get('byteOffset', 0)
+        arr = np.frombuffer(BIN, dt, a['count'] * n, ini).reshape(a['count'], n)
+        if a.get('normalized'):
+            arr = arr.astype(np.float32) / np.iinfo(dt).max
+        return arr
+
+    out = bytearray()
+
+    def put(arr):
+        while len(out) % 4:
+            out.append(0)
+        ini = len(out)
+        out.extend(np.ascontiguousarray(arr).tobytes())
+        return ini
+
+    prims = []
+    for nd in J['nodes']:
+        if 'mesh' not in nd:
+            continue
+        for p in J['meshes'][nd['mesh']]['primitives']:
+            at = p['attributes']
+            P = acc(at['POSITION']).astype(np.float64)
+            nv = len(P)
+            pmin = P.min(0)
+            pesc = np.maximum(P.max(0) - pmin, 1e-6) / 65535.0
+            d = {'mat': J['materials'][p['material']]['name'] if 'material' in p else 'pintura', 'nv': nv,
+                 'pmin': pmin.tolist(), 'pesc': pesc.tolist(), 'o': {}}
+            d['o']['pos'] = put(np.round((P - pmin) / pesc).astype(np.uint16))
+            N = acc(at['NORMAL'])
+            d['o']['nrm'] = put(np.clip(np.round(N * 127), -127, 127).astype(np.int8))
+            T0 = acc(at['TEXCOORD_0']).astype(np.float64)
+            tmin = T0.min(0)
+            tesc = np.maximum(T0.max(0) - tmin, 1e-6) / 65535.0
+            d['tmin'], d['tesc'] = tmin.tolist(), tesc.tolist()
+            d['o']['uv0'] = put(np.round((T0 - tmin) / tesc).astype(np.uint16))
+            if 'TEXCOORD_1' in at:
+                d['o']['uv1'] = put(np.round(np.clip(acc(at['TEXCOORD_1']), 0, 1) * 65535).astype(np.uint16))
+            if 'COLOR_0' in at:
+                C = np.clip(acc(at['COLOR_0'])[:, :3], 0, 1)
+                d['o']['col'] = put(np.round(srgb(C) * 255).astype(np.uint8))
+            I = acc(p['indices']).ravel()
+            d['i32'] = bool(nv > 65535)
+            d['ni'] = len(I)
+            d['o']['idx'] = put(I.astype(np.uint32 if d['i32'] else np.uint16))
+            prims.append(d)
+    with open(destino, 'wb') as fh:
+        fh.write(gzip.compress(bytes(out), 9))
+    print(f'  geometría compacta: {len(prims)} primitivas, {sum(q["nv"] for q in prims)} vértices, '
+          f'{len(out) / 1e6:.1f} MB -> {os.path.getsize(destino) / 1e6:.1f} MB gzip', flush=True)
+    return {'archivo': 'mundo.bin', 'prims': prims}
+
+
 def main():
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
     if argv:   # uso con python+bpy: exportar_web.py -- ruta/al/mundo.blend
@@ -114,14 +186,21 @@ def main():
                                'hfov': math.degrees(2 * math.atan(18.0 / c.data.lens)),
                                'expo': float(c.get('exposicion', 0.0))})
 
-    # GLB: sólo mallas, sin imágenes (el visor monta los materiales con el manifiesto)
+    # GLB: sólo mallas, sin imágenes (el visor monta los materiales con el manifiesto).
+    # 1) GLB sin comprimir -> geometría compacta propia (mundo.bin) que usa el visor
+    # 2) GLB con Draco (mundo.glb) para importar en motores / otros visores
     for o in bpy.context.view_layer.objects:
         o.select_set(o.type == 'MESH')
+    comun = dict(export_format='GLB', use_selection=True, export_texcoords=True, export_normals=True,
+                 export_materials='EXPORT', export_image_format='NONE', export_vertex_color='NAME',
+                 export_vertex_color_name='Tinte', export_all_vertex_colors=False, export_cameras=False,
+                 export_lights=False, export_yup=True, export_apply=False)
+    tmp = os.path.join(WEB, '_crudo.glb')
+    bpy.ops.export_scene.gltf(filepath=tmp, **comun)
+    man['geo'] = geometria_compacta(tmp, os.path.join(WEB, 'mundo.bin'))
+    os.remove(tmp)
     bpy.ops.export_scene.gltf(
-        filepath=os.path.join(WEB, 'mundo.glb'), export_format='GLB', use_selection=True,
-        export_texcoords=True, export_normals=True, export_materials='EXPORT', export_image_format='NONE',
-        export_vertex_color='NAME', export_vertex_color_name='Tinte', export_all_vertex_colors=False,
-        export_cameras=False, export_lights=False, export_yup=True, export_apply=False,
+        filepath=os.path.join(WEB, 'mundo.glb'), **comun,
         export_draco_mesh_compression_enable=True, export_draco_mesh_compression_level=7,
         export_draco_position_quantization=16, export_draco_normal_quantization=10,
         export_draco_texcoord_quantization=14, export_draco_color_quantization=8)
@@ -140,6 +219,11 @@ def index_html():
             '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
             '<style>html,body{margin:0}[hidden]{display:none!important}</style>\n'
             + frag[:i] + '\n</head>\n<body>\n' + frag[i:] + '\n</body>\n</html>\n')
+    if os.path.exists(os.path.join(WEB, 'visor.bundle.js')):
+        # usa el visor empaquetado (three.js incluido): no depende de ningún CDN
+        a = html.index('<script type="importmap">')
+        b = html.index('</script>', html.index('<script type="module">')) + len('</script>')
+        html = html[:a] + '<script src="visor.bundle.js"></script>' + html[b:]
     with open(os.path.join(WEB, 'index.html'), 'w', encoding='utf-8') as fh:
         fh.write(html)
 
@@ -150,10 +234,10 @@ def html_unico(destino=None):
     Si existe web/visor.bundle.js, three.js va dentro; si no, se carga del CDN."""
     import base64
     destino = destino or os.path.join(AQUI, 'mundo_waterpolo_3d.html')
-    tipos = {'.jpg': 'image/jpeg', '.glb': 'model/gltf-binary', '.wasm': 'application/wasm', '.js': 'text/javascript'}
+    tipos = {'.jpg': 'image/jpeg', '.bin': 'application/octet-stream'}
     datos = {}
     man = json.load(open(os.path.join(WEB, 'mundo.json'), encoding='utf-8'))
-    rutas = ['mundo.glb', 'draco/draco_wasm_wrapper.js', 'draco/draco_decoder.wasm']
+    rutas = ['mundo.bin']
     rutas += [lm['archivo'] for lm in man['lightmaps'].values() if not lm.get('uniforme')]
     rutas += [f'tex/{t}_{k}.jpg' for t in man['texturas'] for k in ('albedo', 'rough', 'normal')]
     for r in rutas:
@@ -163,12 +247,11 @@ def html_unico(destino=None):
     html = open(os.path.join(WEB, 'index.html'), encoding='utf-8').read()
     carga = '<script>window.MW_DATOS = ' + json.dumps(datos, ensure_ascii=False) + ';</script>\n'
     paquete = os.path.join(WEB, 'visor.bundle.js')
-    if os.path.exists(paquete):
-        # three.js + visor empaquetados (web/empaquetar.mjs): sin CDN, funciona sin internet
-        i = html.index('<script type="importmap">')
-        f = html.index('</script>', html.index('<script type="module">')) + len('</script>')
+    etiqueta = '<script src="visor.bundle.js"></script>'
+    if etiqueta in html:
+        # three.js + visor empaquetados (web/empaquetar.mjs) dentro del archivo: sin CDN, funciona sin internet
         js = open(paquete, encoding='utf-8').read().replace('</script', '<\\/script')
-        html = html[:i] + carga + '<script type="module">\n' + js + '\n</script>' + html[f:]
+        html = html.replace(etiqueta, carga + '<script>\n' + js + '\n</script>', 1)
     else:
         html = html.replace('<script type="importmap">', carga + '<script type="importmap">', 1)
     with open(destino, 'w', encoding='utf-8') as fh:

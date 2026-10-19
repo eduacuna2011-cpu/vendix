@@ -9,7 +9,11 @@ const aqui = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(join(aqui, 'visor.html'), 'utf8');
 const ini = html.indexOf('<script type="module">') + '<script type="module">'.length;
 const codigo = html.slice(ini, html.indexOf('</script>', ini));
+// los import van arriba; el resto se envuelve en una función async (script clásico, sin top-level await)
+const lineas = codigo.split('\n');
+const imports = lineas.filter((l) => l.startsWith('import ')).join('\n');
+const cuerpo = lineas.filter((l) => !l.startsWith('import ')).join('\n');
 const entrada = join(aqui, '.visor-entrada.mjs');
-writeFileSync(entrada, codigo);
-await build({ entryPoints: [entrada], bundle: true, format: 'esm', minify: true, target: 'es2022',
+writeFileSync(entrada, `${imports}\n(async () => {\n${cuerpo}\n})().catch((e) => { const s = document.getElementById('estado'); if (s) s.textContent = 'Error: ' + (e && e.message || e); });\n`);
+await build({ entryPoints: [entrada], bundle: true, format: 'iife', minify: true, target: 'es2019',
   outfile: join(aqui, 'visor.bundle.js'), legalComments: 'eof', logLevel: 'info' });
