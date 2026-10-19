@@ -4,3 +4,4 @@ server/dev.js
 migrate.js
 migration-data.json
 schema.sql
+blender/
