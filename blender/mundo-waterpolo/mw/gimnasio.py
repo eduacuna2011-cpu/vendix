@@ -3,7 +3,7 @@
 
 Distribución de sala de fuerza de centro olímpico:
   - 8 estaciones rack + plataforma integrada en dos filas enfrentadas (barra y discos de
-    competición por estación, tablet VBT, 2 con plataformas de fuerza, landmine, barra hexagonal,
+    competición por estación, 2 con plataformas de fuerza, landmine, barra hexagonal,
     safety squat bar, barra EZ) y pasillo central con visión del preparador.
   - Acondicionamiento: remoergómetros, ergómetros de natación (Vasa), cintas curvas, bicis de aire, SkiErg.
   - Mancuernas hexagonales 2.5–50 kg, bancos regulables, soporte de barras y árboles de discos.
@@ -280,11 +280,6 @@ def rack(b, P, M, variante, rnd, n):
                 t = GROSOR[kg]
                 disco(b, M @ T(s * (off + t / 2), 1.16, zh) @ Ry(math.pi / 2), kg)
                 off += t + 0.003
-    with b.p(nom + '_Tablet_VBT'):
-        b.box('acero_negro', (-0.66, -0.25, z0 + 1.6), (-0.64, 0.0, z0 + 1.63), M)
-        b.box('plastico_negro', (-0.78, -0.27, z0 + 1.52), (-0.52, -0.25, z0 + 1.72), M)
-    with P['luz'].p(nom + '_Tablet_VBT_Pantalla'):
-        P['luz'].box('pantalla', (-0.765, -0.2705, z0 + 1.535), (-0.535, -0.2695, z0 + 1.705), M)
     # contenido de la estación
     if variante == 'fuerza':
         barra(b, M @ T(0, -0.07, zj + 0.03))
