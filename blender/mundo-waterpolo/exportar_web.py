@@ -146,8 +146,8 @@ def index_html():
 
 
 def html_unico(destino=None):
-    """Un solo .html con TODO incrustado (abre con doble clic, sin servidor).
-    Sólo three.js y las fuentes se cargan de internet (CDN)."""
+    """Un solo .html con TODO incrustado (abre con doble clic, sin servidor ni internet).
+    Si existe web/visor.bundle.js, three.js va dentro; si no, se carga del CDN."""
     import base64
     destino = destino or os.path.join(AQUI, 'mundo_waterpolo_3d.html')
     tipos = {'.jpg': 'image/jpeg', '.glb': 'model/gltf-binary', '.wasm': 'application/wasm', '.js': 'text/javascript'}
@@ -162,7 +162,15 @@ def html_unico(destino=None):
     datos['mundo.json'] = man
     html = open(os.path.join(WEB, 'index.html'), encoding='utf-8').read()
     carga = '<script>window.MW_DATOS = ' + json.dumps(datos, ensure_ascii=False) + ';</script>\n'
-    html = html.replace('<script type="importmap">', carga + '<script type="importmap">', 1)
+    paquete = os.path.join(WEB, 'visor.bundle.js')
+    if os.path.exists(paquete):
+        # three.js + visor empaquetados (web/empaquetar.mjs): sin CDN, funciona sin internet
+        i = html.index('<script type="importmap">')
+        f = html.index('</script>', html.index('<script type="module">')) + len('</script>')
+        js = open(paquete, encoding='utf-8').read().replace('</script', '<\\/script')
+        html = html[:i] + carga + '<script type="module">\n' + js + '\n</script>' + html[f:]
+    else:
+        html = html.replace('<script type="importmap">', carga + '<script type="importmap">', 1)
     with open(destino, 'w', encoding='utf-8') as fh:
         fh.write(html)
     print(f'> archivo único {destino} ({os.path.getsize(destino) / 1e6:.1f} MB)', flush=True)

@@ -128,6 +128,19 @@ body { background: var(--noche); color: var(--tinta); font-family: var(--texto);
   </div>
 </div>
 
+<script>
+// errores visibles en pantalla (si algo falla, se ve el motivo en lugar de una carga infinita)
+(function () {
+  const msg = (t) => { const e = document.getElementById('estado'); if (e) e.textContent = t; };
+  addEventListener('error', (e) => msg('Error: ' + (e.message || 'no se pudo cargar un recurso')));
+  addEventListener('unhandledrejection', (e) => msg('Error: ' + ((e.reason && e.reason.message) || e.reason)));
+  setTimeout(() => {
+    const c = document.getElementById('carga'), e = document.getElementById('estado');
+    if (c && !c.hidden && e && e.textContent === 'Cargando…')
+      msg('El visor 3D no arrancó. Ábrelo con Chrome, Edge o Safari (no en la vista previa de archivos del móvil).');
+  }, 15000);
+})();
+</script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
