@@ -1,0 +1,392 @@
+<title>Cargador de Barra</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: escena 3D a pantalla completa + panel de carga a la derecha (abajo en móvil). Aspecto oscuro único "sala de fuerza". */
+:root {
+  --noche: #0a1428;
+  --panel: rgba(10, 20, 40, 0.9);
+  --tinta: #e8eef7;
+  --gris: #9db0c9;
+  --balon: #f2c618;
+  --linea: rgba(232, 238, 247, 0.14);
+  --rojo: #ff6b5e;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --texto: "Barlow", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--noche); color: var(--tinta); font-family: var(--texto); overflow: hidden; }
+#lienzo { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.panel {
+  position: fixed; z-index: 5; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  width: 320px; max-height: calc(100% - 28px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--linea); border-radius: 14px; padding-block: 16px; padding-inline: 16px;
+  display: grid; gap: 14px; backdrop-filter: blur(8px);
+}
+.titulo small { display: block; font: 600 11px/1.2 var(--texto); letter-spacing: .14em; text-transform: uppercase; color: var(--balon); }
+.titulo h1 { margin: 2px 0 0; font: 700 24px/1.05 var(--display); letter-spacing: .02em; }
+.total { display: flex; align-items: baseline; gap: 10px; }
+.total b { font: 700 64px/0.9 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.total span { font: 600 18px/1 var(--display); color: var(--gris); }
+.total em { margin-left: auto; font: 500 14px/1 var(--texto); color: var(--gris); font-style: normal; font-variant-numeric: tabular-nums; }
+.fila { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.etq { font: 600 11px/1.2 var(--texto); letter-spacing: .12em; text-transform: uppercase; color: var(--gris); }
+input[type=number] { width: 100%; min-width: 0; flex: 1; background: rgba(255,255,255,0.06); color: var(--tinta); border: 1px solid var(--linea);
+  border-radius: 10px; padding: 10px 12px; font: 600 22px/1 var(--display); font-variant-numeric: tabular-nums; }
+button { font: 600 15px/1 var(--display); letter-spacing: .05em; color: var(--tinta); background: rgba(255,255,255,0.07);
+  border: 1px solid var(--linea); border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+button:hover { background: rgba(255,255,255,0.12); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--balon); outline-offset: 2px; }
+button.prim { background: var(--balon); color: var(--noche); border-color: transparent; }
+.seg { display: flex; background: rgba(255,255,255,0.05); border: 1px solid var(--linea); border-radius: 999px; padding: 3px; }
+.seg button { flex: 1; border: 0; border-radius: 999px; background: transparent; color: var(--gris); padding: 8px 10px; }
+.seg button[aria-pressed="true"] { background: var(--balon); color: var(--noche); }
+.preset { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.preset button { padding: 9px 0; font-variant-numeric: tabular-nums; }
+.discos { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.disco { padding: 10px 0; border-radius: 8px; font-variant-numeric: tabular-nums; border: 0; color: #fff; font-size: 14px; }
+.lado { display: flex; gap: 4px; align-items: center; min-height: 34px; flex-wrap: wrap; }
+.chip { display: grid; place-items: center; min-width: 30px; height: 30px; padding: 0 5px; border-radius: 6px; font: 700 13px/1 var(--display);
+  color: #fff; font-variant-numeric: tabular-nums; }
+.vacio { color: var(--gris); font-size: 13px; }
+label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px; color: var(--tinta); cursor: pointer; }
+#aviso { min-height: 18px; font-size: 13px; line-height: 1.35; color: var(--gris); }
+#aviso.mal { color: var(--rojo); }
+.ayuda { position: fixed; z-index: 4; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  background: var(--panel); border: 1px solid var(--linea); border-radius: 999px; padding: 8px 14px; font-size: 13px; color: var(--gris); }
+.ayuda b { color: var(--tinta); font-weight: 600; }
+#carga { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: var(--noche);
+  font: 600 16px/1 var(--display); letter-spacing: .08em; color: var(--balon); }
+@media (max-width: 720px) {
+  .panel { top: auto; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); width: auto; max-height: 52%; gap: 10px; padding-block: 12px; }
+  .total b { font-size: 46px; }
+  .ayuda { display: none; }
+}
+</style>
+
+<canvas id="lienzo" aria-label="Barra olímpica sobre plataforma con rack"></canvas>
+
+<aside class="panel" aria-label="Carga de la barra">
+  <div class="titulo"><small>Sala de fuerza · waterpolo</small><h1>Cargador de barra</h1></div>
+  <div class="total"><b id="kg">20</b><span>kg</span><em id="lb">44 lb</em></div>
+
+  <div>
+    <div class="etq">Peso objetivo</div>
+    <div class="fila">
+      <button id="menos" aria-label="Restar 2,5 kg">−2,5</button>
+      <input id="objetivo" type="number" min="15" max="400" step="2.5" value="100" aria-label="Peso objetivo en kg">
+      <button id="mas" aria-label="Sumar 2,5 kg">+2,5</button>
+      <button id="cargar" class="prim">Cargar</button>
+    </div>
+  </div>
+  <div class="preset" id="presets"></div>
+
+  <div class="fila">
+    <div class="seg" role="group" aria-label="Barra" style="flex:1">
+      <button id="b20" aria-pressed="true">Barra 20 kg</button>
+      <button id="b15" aria-pressed="false">Barra 15 kg</button>
+    </div>
+  </div>
+  <div class="fila">
+    <div class="seg" role="group" aria-label="Posición" style="flex:1">
+      <button id="psuelo" aria-pressed="true">En el suelo</button>
+      <button id="prack" aria-pressed="false">En el rack</button>
+    </div>
+  </div>
+  <label class="chk"><input type="checkbox" id="comp"> Collarines de competición (2,5 kg c/u)</label>
+
+  <div>
+    <div class="etq">Añadir un par a mano</div>
+    <div class="discos" id="manual"></div>
+    <div class="fila" style="margin-top:8px">
+      <button id="quitar" style="flex:1">Quitar último par</button>
+      <button id="vaciar" style="flex:1">Vaciar barra</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="etq">Cada lado (de dentro a fuera)</div>
+    <div class="lado" id="lado"></div>
+  </div>
+  <div id="aviso" role="status"></div>
+</aside>
+<div class="ayuda"><b>Arrastra</b> para girar · <b>rueda</b> para acercar</div>
+<div id="carga">Cargando…</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const $ = (id) => document.getElementById(id);
+const PLATOS = [25, 20, 15, 10, 5, 2.5, 1.25];
+const INFO = {
+  25: { c: '#c8120f', g: 0.064 }, 20: { c: '#0d3aa6', g: 0.054 }, 15: { c: '#e0ad0a', g: 0.044 },
+  10: { c: '#1a8030', g: 0.034 }, 5: { c: '#d9d9d9', g: 0.026 }, 2.5: { c: '#c8120f', g: 0.019 }, 1.25: { c: '#9aa0a6', g: 0.015 },
+};
+const BARRAS = { 20: { nodo: 'Barra_Olimpica_20kg', manga: 0.415 }, 15: { nodo: 'Barra_Olimpica_15kg', manga: 0.32 } };
+const X0 = 0.70;          // cara interior del collar de la barra (m desde el centro)
+const COLLAR = 0.032;     // grosor del collarín
+const fmt = (n) => (Math.round(n * 100) / 100).toLocaleString('es', { maximumFractionDigits: 2 });
+
+// ---------------------------------------------------------------- escena
+const canvas = $('lienzo');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.AgXToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0e1626);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
+const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 100);
+camera.position.set(3.0, 1.75, 3.9);
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(0, 0.55, 0.7);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.minDistance = 0.6;
+controls.maxDistance = 9;
+scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x262a30, 0.9));
+const sol = new THREE.DirectionalLight(0xfff3e2, 2.4);
+sol.position.set(2.5, 5, 3);
+sol.castShadow = true;
+sol.shadow.mapSize.set(2048, 2048);
+Object.assign(sol.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.5, far: 15 });
+sol.shadow.bias = -0.0004;
+scene.add(sol);
+const relleno = new THREE.DirectionalLight(0xc8d8ff, 0.6);
+relleno.position.set(-3, 2.5, -2);
+scene.add(relleno);
+// suelo de caucho + pared con banda del club
+const suelo = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshStandardMaterial({ color: 0x15171b, roughness: 0.95 }));
+suelo.rotation.x = -Math.PI / 2;
+suelo.receiveShadow = true;
+scene.add(suelo);
+const pared = new THREE.Mesh(new THREE.PlaneGeometry(14, 5), new THREE.MeshStandardMaterial({ color: 0xe9ecef, roughness: 0.9 }));
+pared.position.set(0, 2.5, -1.6);
+pared.receiveShadow = true;
+scene.add(pared);
+const banda = new THREE.Mesh(new THREE.PlaneGeometry(14, 0.5), new THREE.MeshStandardMaterial({ color: 0x0b1f4d, roughness: 0.6 }));
+banda.position.set(0, 0.25, -1.595);
+scene.add(banda);
+
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+// ---------------------------------------------------------------- modelos (biblioteca equipamiento_gym.glb)
+async function bytesGLB() {
+  if (window.MW_GLB) {
+    const bin = atob(window.MW_GLB);
+    const u = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return u.buffer;
+  }
+  return (await fetch('equipamiento_gym.glb')).arrayBuffer();
+}
+const gltf = await new Promise(async (ok, mal) => new GLTFLoader().parse(await bytesGLB(), '', ok, mal));
+const lib = gltf.scene;
+lib.updateMatrixWorld(true);
+const nodo = (n) => lib.getObjectByName(n);
+function sombras(o) { o.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); return o; }
+
+// rack + plataforma: se colocan relativos al origen del rack de la biblioteca (Blender 0,-11.5,0 -> three 0,0,11.5)
+const montaje = new THREE.Group();
+scene.add(montaje);
+const origenRack = new THREE.Vector3(0, 0, 11.5);
+const origenPlat = new THREE.Vector3(3, 0, 11.5);
+for (const o of [...lib.children]) {
+  if (o.name.startsWith('Rack_Potencia')) { const c = sombras(o.clone()); c.position.sub(origenRack); montaje.add(c); }
+  if (o.name === 'Plataforma_Halterofilia') { const c = sombras(o.clone()); c.position.sub(origenPlat); montaje.add(c); }
+}
+const protoDisco = {};
+for (const kg of PLATOS) protoDisco[kg] = nodo(`Disco_${String(kg).replace('.', '_')}kg`);
+const protoCollar = nodo('Collarin');
+const protoBarra = { 20: nodo(BARRAS[20].nodo), 15: nodo(BARRAS[15].nodo) };
+
+// ---------------------------------------------------------------- estado
+const estado = { barra: 20, lado: [], pos: 'suelo', comp: false };
+const barraGrupo = new THREE.Group();
+scene.add(barraGrupo);
+let piezas = [];      // discos y collarines animados
+
+function kgCollares() { return estado.comp ? 5 : 0; }
+function total() { return estado.barra + kgCollares() + 2 * estado.lado.reduce((a, b) => a + b, 0); }
+function grosorLado(lista) { return lista.reduce((a, kg) => a + INFO[kg].g + 0.002, 0); }
+
+function reconstruir(animar = true) {
+  barraGrupo.clear();
+  piezas = [];
+  const bar = sombras(protoBarra[estado.barra].clone());
+  bar.position.set(0, 0, 0);
+  bar.rotation.set(0, 0, 0);
+  barraGrupo.add(bar);
+  for (const s of [-1, 1]) {
+    let x = X0;
+    estado.lado.forEach((kg, i) => {
+      const d = sombras(protoDisco[kg].clone());
+      const fin = s * (x + INFO[kg].g / 2);
+      d.position.set(animar ? s * 1.6 : fin, 0, 0);
+      d.userData = { fin, retraso: i * 0.06 };
+      barraGrupo.add(d);
+      piezas.push(d);
+      x += INFO[kg].g + 0.002;
+    });
+    if (estado.lado.length || estado.comp) {
+      const c = sombras(protoCollar.clone());
+      const fin = s * (x + COLLAR / 2);
+      c.position.set(animar ? s * 1.6 : fin, 0, 0);
+      if (s < 0) c.rotation.y = Math.PI;
+      c.userData = { fin, retraso: estado.lado.length * 0.06 };
+      barraGrupo.add(c);
+      piezas.push(c);
+    }
+  }
+  colocarBarra();
+  t0 = performance.now();
+  pintarPanel();
+}
+const objetivoCam = new THREE.Vector3(0, 0.55, 0.7);
+function colocarBarra() {
+  if (estado.pos === 'rack') {
+    barraGrupo.position.set(0, 1.5, 0.07);          // sobre los ganchos J (z0 + 1.42 + 0.03)
+    objetivoCam.set(0, 1.2, 0.3);
+  } else {
+    objetivoCam.set(0, 0.55, 0.7);
+    const r = estado.lado.length ? Math.max(...estado.lado.map((kg) => (kg >= 10 ? 0.225 : kg === 5 ? 0.163 : 0.105))) : 0.025;
+    barraGrupo.position.set(0, 0.05 + r, 1.25);      // plataforma de 5 cm
+  }
+}
+
+// reparto automático (de mayor a menor, como en competición)
+function cargarObjetivo(obj) {
+  const aviso = $('aviso');
+  aviso.className = '';
+  const base = estado.barra + kgCollares();
+  if (!(obj >= base)) {
+    estado.lado = [];
+    aviso.className = 'mal';
+    aviso.textContent = `El mínimo con esta barra${estado.comp ? ' y collarines' : ''} es ${fmt(base)} kg.`;
+    reconstruir();
+    return;
+  }
+  let resto = (obj - base) / 2;
+  const lado = [];
+  for (const kg of PLATOS) while (resto >= kg - 1e-9) { lado.push(kg); resto -= kg; }
+  const manga = BARRAS[estado.barra].manga - COLLAR;
+  while (lado.length && grosorLado(lado) > manga) lado.pop();
+  estado.lado = lado;
+  const t = total();
+  if (Math.abs(t - obj) > 1e-6) {
+    aviso.className = Math.abs(t - obj) >= 2.5 ? 'mal' : '';
+    aviso.textContent = grosorLado(lado) >= manga - 0.07
+      ? `No caben más discos en la manga: máximo ${fmt(t)} kg con esta barra.`
+      : `Los discos van de 1,25 kg por lado: quedó en ${fmt(t)} kg.`;
+  } else {
+    aviso.textContent = `${fmt((obj - base) / 2)} kg por lado.`;
+  }
+  reconstruir();
+}
+
+function anadirPar(kg) {
+  const aviso = $('aviso');
+  const manga = BARRAS[estado.barra].manga - COLLAR;
+  if (grosorLado([...estado.lado, kg]) > manga) {
+    aviso.className = 'mal';
+    aviso.textContent = `No cabe otro disco de ${fmt(kg)} kg en la manga.`;
+    return;
+  }
+  aviso.className = '';
+  aviso.textContent = '';
+  estado.lado.push(kg);
+  reconstruir();
+}
+
+// ---------------------------------------------------------------- panel
+function pintarPanel() {
+  const t = total();
+  $('kg').textContent = fmt(t);
+  $('lb').textContent = `${fmt(t * 2.20462)} lb`;
+  const lado = $('lado');
+  lado.innerHTML = '';
+  if (!estado.lado.length) {
+    lado.innerHTML = '<span class="vacio">Barra vacía</span>';
+  } else {
+    for (const kg of estado.lado) {
+      const c = document.createElement('span');
+      c.className = 'chip';
+      c.style.background = INFO[kg].c;
+      if (kg === 5) c.style.color = '#1a1a1a';
+      c.textContent = fmt(kg);
+      lado.appendChild(c);
+    }
+  }
+}
+for (const p of [60, 80, 100, 120, 140, 160, 180, 200, 220, 250]) {
+  const b = document.createElement('button');
+  b.textContent = p;
+  b.onclick = () => { $('objetivo').value = p; cargarObjetivo(p); };
+  $('presets').appendChild(b);
+}
+for (const kg of PLATOS) {
+  const b = document.createElement('button');
+  b.className = 'disco';
+  b.style.background = INFO[kg].c;
+  if (kg === 5) b.style.color = '#1a1a1a';
+  b.textContent = fmt(kg);
+  b.setAttribute('aria-label', `Añadir un par de ${fmt(kg)} kg`);
+  b.onclick = () => anadirPar(kg);
+  $('manual').appendChild(b);
+}
+const paso = (d) => { const v = Math.max(0, (parseFloat($('objetivo').value) || 0) + d); $('objetivo').value = v; cargarObjetivo(v); };
+$('menos').onclick = () => paso(-2.5);
+$('mas').onclick = () => paso(2.5);
+$('cargar').onclick = () => cargarObjetivo(parseFloat($('objetivo').value));
+$('objetivo').addEventListener('keydown', (e) => { if (e.key === 'Enter') cargarObjetivo(parseFloat($('objetivo').value)); });
+$('quitar').onclick = () => { estado.lado.pop(); $('aviso').textContent = ''; reconstruir(false); };
+$('vaciar').onclick = () => { estado.lado = []; $('aviso').textContent = ''; reconstruir(false); };
+function seg(a, b, on) { $(a).setAttribute('aria-pressed', on); $(b).setAttribute('aria-pressed', !on); }
+$('b20').onclick = () => { estado.barra = 20; seg('b20', 'b15', true); cargarObjetivo(parseFloat($('objetivo').value)); };
+$('b15').onclick = () => { estado.barra = 15; seg('b20', 'b15', false); cargarObjetivo(parseFloat($('objetivo').value)); };
+$('psuelo').onclick = () => { estado.pos = 'suelo'; seg('psuelo', 'prack', true); colocarBarra(); };
+$('prack').onclick = () => { estado.pos = 'rack'; seg('psuelo', 'prack', false); colocarBarra(); };
+$('comp').onchange = (e) => { estado.comp = e.target.checked; cargarObjetivo(parseFloat($('objetivo').value)); };
+
+// ---------------------------------------------------------------- bucle
+let t0 = performance.now();
+const reducir = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function frame() {
+  const t = (performance.now() - t0) / 1000;
+  for (const p of piezas) {
+    const k = reducir ? 1 : Math.min(1, Math.max(0, (t - p.userData.retraso) / 0.35));
+    const e = 1 - Math.pow(1 - k, 3);
+    p.position.x += (p.userData.fin - p.position.x) * (k >= 1 ? 1 : e * 0.35);
+  }
+  controls.target.lerp(objetivoCam, reducir ? 1 : 0.08);
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+resize();
+cargarObjetivo(100);
+$('carga').hidden = true;
+requestAnimationFrame(frame);
+</script>
