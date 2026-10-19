@@ -167,6 +167,18 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px; color
 <div class="ayuda"><b>Arrastra</b> para girar · <b>rueda</b> para acercar</div>
 <div id="carga">Cargando…</div>
 
+<script>
+// errores y paso actual visibles en la pantalla de carga
+(function () {
+  const msg = (t) => { const c = document.getElementById('carga'); if (c) { c.hidden = false; c.textContent = t; } };
+  addEventListener('error', (e) => msg('Error: ' + (e.message || 'no se pudo cargar') + (window.MW_PASO ? ' · paso: ' + window.MW_PASO : '')));
+  addEventListener('unhandledrejection', (e) => msg('Error: ' + ((e.reason && e.reason.message) || e.reason) + (window.MW_PASO ? ' · paso: ' + window.MW_PASO : '')));
+  setTimeout(() => {
+    const c = document.getElementById('carga');
+    if (c && !c.hidden && !/Error/.test(c.textContent)) msg('Sigue cargando · paso: ' + (window.MW_PASO || 'el script no arrancó'));
+  }, 15000);
+})();
+</script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -182,6 +194,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as CANNON from 'cannon-es';
 
 const $ = (id) => document.getElementById(id);
+const paso = (t) => { window.MW_PASO = t; $('carga').textContent = t; };
+paso('Iniciando 3D…');
 const PLATOS = [25, 20, 15, 10, 5, 2.5, 1.25];
 const INFO = {
   25: { c: '#c8120f', g: 0.064, r: 0.225 }, 20: { c: '#0d3aa6', g: 0.054, r: 0.225 }, 15: { c: '#e0ad0a', g: 0.044, r: 0.225 },
@@ -258,7 +272,11 @@ async function bytesGLB() {
   }
   return (await fetch('equipamiento_gym.glb')).arrayBuffer();
 }
-const gltf = await new Promise(async (ok, mal) => new GLTFLoader().parse(await bytesGLB(), '', ok, mal));
+paso('Leyendo modelos…');
+const datosGLB = await bytesGLB();
+paso('Preparando modelos…');
+const gltf = await new Promise((ok, mal) => new GLTFLoader().parse(datosGLB, '', ok, mal));
+paso('Montando el rack…');
 const lib = gltf.scene;
 const nodo = (n) => lib.getObjectByName(n);
 function sombras(o) { o.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); return o; }
@@ -395,20 +413,26 @@ function anadirPar(kg) {
 }
 
 // ---------------------------------------------------------------- física (cannon-es)
-const mundo = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.81, 0) });
-mundo.solver.iterations = 25;
-mundo.allowSleep = true;
-const matPlat = new CANNON.Material('plataforma');
-const matGoma = new CANNON.Material('bumper');
-const matAcero = new CANNON.Material('acero');
-// calibrado: 15–30 cm de rebote al soltar desde encima de la cabeza (rango real de bumpers sobre caucho)
-mundo.addContactMaterial(new CANNON.ContactMaterial(matPlat, matGoma, { friction: 0.6, restitution: 0.32 }));
-mundo.addContactMaterial(new CANNON.ContactMaterial(matPlat, matAcero, { friction: 0.3, restitution: 0.3 }));
-const plano = new CANNON.Body({ mass: 0, material: matPlat, shape: new CANNON.Plane() });
-plano.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-plano.position.set(0, PLAT, 0);
-mundo.addBody(plano);
-const aEjeX = new CANNON.Quaternion().setFromAxisAngle(new CANNON.Vec3(0, 0, 1), Math.PI / 2);
+let mundo = null, matPlat = null, matGoma = null, matAcero = null;
+try {
+  paso('Preparando física…');
+  mundo = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.81, 0) });
+  mundo.solver.iterations = 25;
+  mundo.allowSleep = true;
+  matPlat = new CANNON.Material('plataforma');
+  matGoma = new CANNON.Material('bumper');
+  matAcero = new CANNON.Material('acero');
+  // calibrado: 15–30 cm de rebote al soltar desde encima de la cabeza (rango real de bumpers sobre caucho)
+  mundo.addContactMaterial(new CANNON.ContactMaterial(matPlat, matGoma, { friction: 0.6, restitution: 0.32 }));
+  mundo.addContactMaterial(new CANNON.ContactMaterial(matPlat, matAcero, { friction: 0.3, restitution: 0.3 }));
+  const plano = new CANNON.Body({ mass: 0, material: matPlat, shape: new CANNON.Plane() });
+  plano.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+  plano.position.set(0, PLAT, 0);
+  mundo.addBody(plano);
+} catch (e) {
+  mundo = null;
+  console.error(e);
+}
 let cuerpo = null, sim = null;
 
 function pararFisica() {
@@ -418,6 +442,7 @@ function pararFisica() {
 }
 
 function soltar() {
+  if (!mundo) { $('d-reb').textContent = 'sin física'; return; }
   if (estado.montaje !== 'plat' || estado.pos !== 'suelo') {
     estado.montaje = 'plat'; estado.pos = 'suelo';
     seg('m-plat', 'm-banca', true); seg('psuelo', 'prack', true);
@@ -592,7 +617,10 @@ function frame() {
   requestAnimationFrame(frame);
 }
 resize();
+paso('Cargando la barra…');
 cargarObjetivo(100);
+if (!mundo) { $('t-fisica').disabled = true; $('t-fisica').title = 'La física no está disponible en este navegador'; }
 $('carga').hidden = true;
+window.MW_PASO = 'listo';
 requestAnimationFrame(frame);
 </script>
