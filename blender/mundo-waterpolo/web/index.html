@@ -192,7 +192,7 @@ const texLoader = new THREE.TextureLoader(manager);
 const cache = {};
 function tex(path, srgb) {
   if (cache[path]) return cache[path];
-  const t = texLoader.load(path);
+  const t = texLoader.load(url(path));
   t.flipY = false;
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
@@ -200,7 +200,13 @@ function tex(path, srgb) {
   return (cache[path] = t);
 }
 
-const man = await (await fetch('mundo.json')).json();
+// modo "archivo único": todos los recursos van incrustados en window.MW_DATOS (data: URIs)
+const EMB = window.MW_DATOS || null;
+const url = (p) => (EMB && EMB[p]) || p;
+const man = EMB ? EMB['mundo.json'] : await (await fetch('mundo.json')).json();
+const blanco = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+blanco.needsUpdate = true;
+blanco.channel = 1;
 
 function material(nombre, tieneColor) {
   const [base, grupo] = nombre.split('@');
@@ -212,11 +218,16 @@ function material(nombre, tieneColor) {
       normalMap: tex(`tex/${s.tex}_normal.jpg`, false),
       normalScale: new THREE.Vector2(s.nrm, -s.nrm),
       color: new THREE.Color().setRGB(...s.tinte, THREE.SRGBColorSpace),
-      metalness: s.metal, roughness: s.rough, vertexColors: tieneColor,
-      envMapIntensity: s.metal > 0.5 ? 0.85 : 0.12,
+      // el lightmap sólo ilumina la parte difusa: los metales conservan algo de difuso
+      // para recibir la luz horneada y reflejan el entorno con el resto
+      metalness: Math.min(s.metal, 0.55), roughness: s.rough, vertexColors: tieneColor,
+      envMapIntensity: s.metal > 0.5 ? 1.0 : 0.12,
     });
     const lm = grupo && man.lightmaps[grupo];
-    if (lm) {
+    if (lm && lm.uniforme) {
+      m.lightMap = blanco;
+      m.lightMapIntensity = Math.PI * 1.1;
+    } else if (lm) {
       const t = tex(lm.archivo, true);
       t.channel = 1;
       t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
@@ -241,8 +252,14 @@ function material(nombre, tieneColor) {
 }
 
 const draco = new DRACOLoader().setDecoderPath('./draco/').setDecoderConfig({ type: 'wasm' });
+if (EMB) {
+  draco._loadLibrary = async (f, tipo) => {
+    const r = await fetch(EMB['draco/' + f]);
+    return tipo === 'arraybuffer' ? r.arrayBuffer() : r.text();
+  };
+}
 const gltf = await new GLTFLoader(manager).setDRACOLoader(draco)
-  .loadAsync('mundo.glb', (e) => { pGlb = e.total ? e.loaded / e.total : 0.5; progreso(); });
+  .loadAsync(url('mundo.glb'), (e) => { pGlb = e.total ? e.loaded / e.total : 0.5; progreso(); });
 pGlb = 1; progreso();
 const mats = {};
 gltf.scene.traverse((o) => {
@@ -260,7 +277,7 @@ scene.add(gltf.scene);
 const sky = new Sky();
 sky.scale.setScalar(1200);
 const su = sky.material.uniforms;
-su.turbidity.value = 4; su.rayleigh.value = 1.4; su.mieCoefficient.value = 0.004; su.mieDirectionalG.value = 0.8;
+su.turbidity.value = 2.5; su.rayleigh.value = 2.2; su.mieCoefficient.value = 0.003; su.mieDirectionalG.value = 0.8;
 const e = THREE.MathUtils.degToRad(man.sol.elevacion), a = THREE.MathUtils.degToRad(man.sol.azimut);
 su.sunPosition.value.copy(B2T([Math.sin(a) * Math.cos(e), Math.cos(a) * Math.cos(e), Math.sin(e)]));
 scene.add(sky);

@@ -48,7 +48,8 @@ def lightmap_jpg(img, path):
     im.file_format = 'JPEG'
     im.save(filepath=path, quality=90)
     bpy.data.images.remove(im)
-    return escala
+    cobertura = float((rgb.max(-1) > 1e-4).mean())
+    return escala, cobertura
 
 
 def main():
@@ -73,7 +74,9 @@ def main():
         if img.source == 'FILE':
             img.reload()
         f = f'lm/LM_{o.name}.jpg'
-        man['lightmaps'][o.name] = {'archivo': f, 'escala': lightmap_jpg(img, os.path.join(WEB, f))}
+        esc, cob = lightmap_jpg(img, os.path.join(WEB, f))
+        # un lightmap casi vacío (resolución insuficiente) se sustituye por luz uniforme en el visor
+        man['lightmaps'][o.name] = {'archivo': f, 'escala': esc, 'uniforme': cob < 0.05}
         print('  lightmap', o.name, man['lightmaps'][o.name]['escala'], flush=True)
 
     # materiales (por nombre base) + texturas usadas
@@ -125,6 +128,7 @@ def main():
     with open(os.path.join(WEB, 'mundo.json'), 'w', encoding='utf-8') as fh:
         json.dump(man, fh, ensure_ascii=False, indent=1)
     index_html()
+    html_unico()
     print('> web exportada en', WEB, flush=True)
 
 
@@ -138,6 +142,30 @@ def index_html():
             + frag[:i] + '\n</head>\n<body>\n' + frag[i:] + '\n</body>\n</html>\n')
     with open(os.path.join(WEB, 'index.html'), 'w', encoding='utf-8') as fh:
         fh.write(html)
+
+
+
+def html_unico(destino=None):
+    """Un solo .html con TODO incrustado (abre con doble clic, sin servidor).
+    Sólo three.js y las fuentes se cargan de internet (CDN)."""
+    import base64
+    destino = destino or os.path.join(AQUI, 'mundo_waterpolo_3d.html')
+    tipos = {'.jpg': 'image/jpeg', '.glb': 'model/gltf-binary', '.wasm': 'application/wasm', '.js': 'text/javascript'}
+    datos = {}
+    man = json.load(open(os.path.join(WEB, 'mundo.json'), encoding='utf-8'))
+    rutas = ['mundo.glb', 'draco/draco_wasm_wrapper.js', 'draco/draco_decoder.wasm']
+    rutas += [lm['archivo'] for lm in man['lightmaps'].values() if not lm.get('uniforme')]
+    rutas += [f'tex/{t}_{k}.jpg' for t in man['texturas'] for k in ('albedo', 'rough', 'normal')]
+    for r in rutas:
+        b = open(os.path.join(WEB, r), 'rb').read()
+        datos[r] = f'data:{tipos[os.path.splitext(r)[1]]};base64,' + base64.b64encode(b).decode('ascii')
+    datos['mundo.json'] = man
+    html = open(os.path.join(WEB, 'index.html'), encoding='utf-8').read()
+    carga = '<script>window.MW_DATOS = ' + json.dumps(datos, ensure_ascii=False) + ';</script>\n'
+    html = html.replace('<script type="importmap">', carga + '<script type="importmap">', 1)
+    with open(destino, 'w', encoding='utf-8') as fh:
+        fh.write(html)
+    print(f'> archivo único {destino} ({os.path.getsize(destino) / 1e6:.1f} MB)', flush=True)
 
 
 if __name__ == '__main__':
